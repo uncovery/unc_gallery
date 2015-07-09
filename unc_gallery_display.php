@@ -1,5 +1,11 @@
 <?php
 
+// If this file is called directly, abort.
+if (!defined('WPINC')) {
+	die;
+}
+
+
 function unc_gallery_display_page($content, $date = false, $gallery = false) {
     global $WPG_CONFIG;
     $out = "This is a gallery page for date $date and gallery $gallery";

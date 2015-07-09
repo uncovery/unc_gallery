@@ -10,6 +10,10 @@ License:     GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
 
+// If this file is called directly, abort.
+if (!defined('WPINC')) {
+	die;
+}
 
 global $WPG_CONFIG;
 
@@ -28,7 +32,7 @@ $WPG_CONFIG['timezone'] = 'Asia/Hong_Kong';
 $WPG_CONFIG['thumbnail_size'] = 300;
 $WPG_CONFIG['thumbnail_ext'] = 'PNG';
 
-require_once(__DIR__ . "/unc_gallery_display.php");
+require_once( plugin_dir_path( __FILE__ ) . "/unc_gallery_display.php");
 
 // add filter to scan content for activating
 add_filter('the_content', 'unc_gallery', 0);
