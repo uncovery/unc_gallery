@@ -10,17 +10,39 @@ License:     GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
 
+
+global $WPG_CONFIG;
+
+$WPG_CONFIG['gallery_path'] = plugin_dir_path( __FILE__ ) . "galleries/default";
+// upload folders below above folder
+$WPG_CONFIG['upload'] = "/upload";
+
+$WPG_CONFIG['photos'] = "/photos";
+$WPG_CONFIG['invalid'] = "/invalid";
+$WPG_CONFIG['thumbnails'] = "/thumbs";
+
+$WPG_CONFIG['base_url'] = plugins_url();
+$WPG_CONFIG['gallery_url'] = $WPG_CONFIG['base_url'] . "/galleries";
+
+$WPG_CONFIG['timezone'] = 'Asia/Hong_Kong';
+$WPG_CONFIG['thumbnail_size'] = 300;
+$WPG_CONFIG['thumbnail_ext'] = 'PNG';
+
+require_once(__DIR__ . "/unc_gallery_display.php");
+
 // add filter to scan content for activating
 add_filter('the_content', 'unc_gallery', 0);
 // add an admin menu
 add_action('admin_menu', 'unc_gallery_admin_menu');
 
 add_action('admin_init', 'unc_gallery_admin_init');
+
+add_action( 'wp_enqueue_scripts', 'unc_gallery_add_css_and_js' );
 /**
- * main function. Checks for the keyword in the content and switches that define 
+ * main function. Checks for the keyword in the content and switches that define
  * the content further. Then calls the function that creates the actual content
  * and returns the modified content
- * 
+ *
  * @param type $content
  * @return type
  */
@@ -28,11 +50,11 @@ function unc_gallery($content) {
     $pattern = '/\[(?\'activator\'unc_gallery)( date="(?\'date\'[0-9-]{10})")?( gallery_name="(?\'gallery\'[a-z_-]*)")?\]/';
     $matches = false;
     preg_match($pattern, $content, $matches);
-    
+
     if (!isset($matches['activator'])) {
         return $content;
     }
-    
+
     $date = false;
     if (isset($matches['date'])) {
         $date = $matches['date'];
@@ -40,23 +62,11 @@ function unc_gallery($content) {
     if (isset($matches['gallery'])) {
         $gallery = $matches['gallery'];
     }
-    
-    $content_new = unc_gallery_create_page($content, $date, $gallery);
-    
+
+    $content_new = unc_gallery_display_page($content, $date, $gallery);
+
     return $content_new;
 }
-
-function unc_gallery_create_page($content, $date = false, $gallery = false) {
-    
-    
-    $out = "This is a gallery page for date $date and gallery $gallery";
-
-    // replace the whole activator code in the content
-    $pattern = '/(\[unc_gallery.*\])/';
-    $new_content = preg_replace($pattern, $out, $content);
-    return $new_content;
-}
-
 
 function unc_gallery_admin_menu() {
     add_options_page(
@@ -64,7 +74,7 @@ function unc_gallery_admin_menu() {
         'Uncovery Gallery',  // menu title
         'manage_options', // capability, manage_options is the default
         'unc_gallery', // menu_slug
-        'unc_gallery_options' // callback 
+        'unc_gallery_options' // callback
     );
 }
 
@@ -78,7 +88,7 @@ function unc_gallery_admin_init() {
 /*
  * Helptext for the settings menu
  */
-function umc_gallery_settings_callback() { 
+function umc_gallery_settings_callback() {
     echo "Please set your options:";
 }
 
@@ -86,7 +96,7 @@ function unc_gallery_field_one_callback() {
     $settings = (array) get_option( 'unc_gallery_setting' );
     $color = esc_attr( $settings['color'] );
     echo "<input type='text' name='unc_gallery_setting[color]' value='$color' />";
-    
+
 }
 
 function unc_gallery_options() {
@@ -101,3 +111,24 @@ function unc_gallery_options() {
     </div>
     <?php
 }
+
+/**
+ * add additional CSS and JS
+ */
+function unc_gallery_add_css_and_js() {
+    wp_enqueue_style('lightbox', plugins_url('css/lightbox.css', __FILE__ ));
+    wp_enqueue_script('lightbox_js', plugins_url('js/lightbox.min.js', __FILE__ ), array(), false, true); // in footer
+    wp_enqueue_script('unc_gallery_js', plugins_url('js/unc_gallery.js', __FILE__ ) );
+    wp_enqueue_script('jquery-ui-datepicker');
+    wp_enqueue_style('jquery-style',  plugins_url('css/jquery-ui.css', __FILE__ ));
+    wp_enqueue_style('unc_Gallery_css', plugins_url('css/gallery.css', __FILE__ ));
+}
+
+function unc_datetime($date = NULL) {
+    global $WPG_CONFIG;
+
+    $date_new = new DateTime($date);
+    $date_new->setTimezone(new DateTimeZone($WPG_CONFIG['timezone']));
+    return $date_new;
+}
+

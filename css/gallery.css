@@ -1,31 +1,32 @@
-* {
+.photopage * {
     margin: 0px;
-    padding:0px;  
+    padding:0px;
 }
 
-.gallery_menu li{
+.photopage .gallery_menu li{
     float:left;
     list-style:none;
 }
 
-.photobox{
+.photopage .photobox{
     float:left;
-    margin: 5px;
+    margin-left: 5px;
 }
 
-.photobox img {
+.photopage .photobox img {
     height:220px;
 }
 
-.photopage{
-    
-}
-
-#datepicker {
+.photopage #datepicker {
     float:left;
     margin:5px;
 }
 
-div.ui-datepicker{
+.photopage div.ui-datepicker{
     font-size:13px;
+}
+.photopage .ui-icon { 
+    width: 16px; 
+    height: 16px; 
+    background-image: url(../media/ui-icons_222222_256x240.png); 
 }
