@@ -1,10 +1,38 @@
 <?php
 
-// If this file is called directly, abort.
 if (!defined('WPINC')) {
-	die;
+    die;
 }
 
+/**
+ * main function. Checks for the keyword in the content and switches that define
+ * the content further. Then calls the function that creates the actual content
+ * and returns the modified content
+ *
+ * @param type $content
+ * @return type
+ */
+function unc_gallery($content) {
+    $pattern = '/\[(?\'activator\'unc_gallery)( date="(?\'date\'[0-9-]{10})")?( gallery_name="(?\'gallery\'[a-z_-]*)")?\]/';
+    $matches = false;
+    preg_match($pattern, $content, $matches);
+
+    if (!isset($matches['activator'])) {
+        return $content;
+    }
+
+    $date = false;
+    if (isset($matches['date'])) {
+        $date = $matches['date'];
+    }
+    if (isset($matches['gallery'])) {
+        $gallery = $matches['gallery'];
+    }
+
+    $content_new = unc_gallery_display_page($content, $date, $gallery);
+
+    return $content_new;
+}
 
 function unc_gallery_display_page($content, $date = false, $gallery = false) {
     global $WPG_CONFIG;
@@ -65,46 +93,6 @@ function unc_gallery_display_page($content, $date = false, $gallery = false) {
     return $new_content;
 }
 
-
-/*
- * returns a date-time object with todays timezone
- * get a MySQL timestamp with $now = $date_now->format("Y-m-d H:i:s");
- */
-function unc_gallery_datetime($date = NULL) {
-    global $WPG_CONFIG;
-
-    if ($date != NULL) {
-        $date .= "+08:00"; // incoming timezones are already HKT
-    }
-    $date_new = new DateTime($date);
-    $date_new->setTimezone(new DateTimeZone($WPG_CONFIG['timezone']));
-    return $date_new;
-}
-
-/**
- * recurse a folder and return filecount
- *
- * @param type $base_folder
- * @param type $function
- * @return type
- */
-function unc_gallery_recurse_files($base_folder, $function) {
-    $out = '';
-    // safety net
-    if (strstr($base_folder, './') || strstr($base_folder, '../')) {
-        die("Error, recusive path! $base_folder");
-    }
-    foreach (glob($base_folder.DIRECTORY_SEPARATOR."*") as $file) {
-        if (is_dir($file)) {
-            $out .= unc_gallery_recurse_files($file, $function);
-        } else {
-            // working on $file in folder $main
-            $out .= $function($file);
-        }
-    }
-    return $out;
-}
-
 function unc_display_folder_list($base_folder) {
     global $WPG_CONFIG;
     $global_base = $WPG_CONFIG['gallery_path'] . $WPG_CONFIG['photos'];
@@ -156,17 +144,6 @@ function unc_display_folder_images($date_str) {
     return $out;
 }
 
-function unc_display_fix_timezones($dates) {
-    $new_dates = array();
-    foreach ($dates as $date) {
-        $date_obj = unc_datetime($date);
-        // change timezone to UTC
-        $date_obj->setTimezone(new DateTimeZone('UTC'));
-        $date_str = $date_obj->format("Y-m-d");
-        $new_dates[] = $date_str;
-    }
-    return $new_dates;
-}
 
 function unc_display_find_latest() {
     global $WPG_CONFIG;
