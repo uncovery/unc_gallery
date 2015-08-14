@@ -33,8 +33,8 @@ function unc_gallery_admin_menu() {
 
 function unc_gallery_admin_init() {
     global $WPG_CONFIG;
-    register_setting( 'unc_gallery_settings_group', 'unc_gallery_setting' );
-    add_settings_section( 'basic_settings', 'Upload images', 'unc_gallery_backend_image_upload', 'unc_gallery');
+    register_setting('unc_gallery_settings_group', 'unc_gallery_setting');
+    add_settings_section('basic_settings', 'Basic Settings', 'unc_gallery_backend_basic_settings', 'unc_gallery');
     //add_settings_field( 'field-one', 'Field One', 'unc_gallery_backend_image_upload', 'unc_gallery', 'basic_settings');
     // check if the upload folder exists:
     $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
@@ -57,55 +57,23 @@ function unc_gallery_admin_add_css_and_js() {
     wp_enqueue_style('plugin_style-css', plugin_dir_url( __FILE__ ) . 'css/style1.css');
 }
 
-function unc_gallery_backend_image_upload() {
-    ?>
-    <div class="wrap">
-        <h2>Upload Images</h2>
-    </div>
-    <form id="uploadForm" action="<?php echo plugins_url(); ?>/unc_gallery/unc_upload.php" method="POST" enctype="multipart/form-data">
-        <script type="text/javascript">
-            jQuery(document).ready(function($) {
-                $(document).ready(function() {
-                    var status = $('#targetLayer');
-                    var options = {
-                        target: '#targetLayer',
-                        beforeSubmit: beforeSubmit,
-                        uploadProgress: uploadProgress,
-                        resetForm: true,
-                        complete: complete
-                    };
-                    $('#uploadForm').submit(function() {
-                        //if($('#userImage').val()) {
-                            $('#loader-icon').show();
-                            $(this).ajaxSubmit(options);
-                            return false;
-                        //}
-                   });
-                });
-                function complete(xhr) {
-                    $('#loader-icon').hide();
-                    $('#targetLayer').html(xhr.responseText);
-                }
-                function uploadProgress(event, position, total, percentComplete) {
-                    $("#progress-bar").width(percentComplete + '%');
-                    $("#progress-bar").html('<div id="progress-status">' + percentComplete +' %</div>');
-                }
-                function beforeSubmit(formData, jqForm, options) {
-                    $("#progress-bar").width('0%');
-                    $('#targetLayer').html('');
-                    return true;
-                }
+function unc_gallery_backend_basic_settings() {
 
-            });
-        </script>
-        <div class="image_upload_input">
-            <label>Select files to upload:</label>
-            <input type="file" id="userImage" name="userImage[]" class="demoInputBox" multiple required/>
-        </div>
-        <div class="image_upload_submit"><input type="submit" id="btnSubmit" value="submit" class="btnSubmit" /></div>
-        <div id="progress-div"><div id="progress-bar"></div></div>
-        <div id="targetLayer"></div>
-    </form>
-    <div id="loader-icon" style="display:none;"><img src="<?php echo plugins_url(); ?>/unc_gallery/images/LoaderIcon.gif" /></div>
-    <?php
+    echo "test";
 }
+
+
+//// delete image record start
+//if (isset($_REQUEST['delete_id'])){
+//    $table_name = $wpdb->prefix . 'image_info';
+//    $pageposts = $wpdb->get_results("SELECT * from $table_name WHERE image_id=" . $_REQUEST['delete_id']);
+//    if ($pageposts) {
+//        foreach ($pageposts as $post) {
+//            $remove_image = $dirPath . '/' . $post->image_name;
+//            unlink($remove_image);
+//        }
+//    } else {
+//        echo "Image Not found in folder";
+//    }
+//    $delete = $wpdb->query("DELETE FROM $table_name WHERE image_id = '" . $_REQUEST['delete_id'] . "'");
+//}
