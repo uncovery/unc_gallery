@@ -18,6 +18,7 @@ if (!defined('WPINC')) {
 
 require_once( plugin_dir_path( __FILE__ ) . "unc_config.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_backend.inc.php");
+require_once( plugin_dir_path( __FILE__ ) . "unc_upload.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_display.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_tools.inc.php");
 
