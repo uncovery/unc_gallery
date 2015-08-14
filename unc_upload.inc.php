@@ -1,0 +1,270 @@
+<?php
+
+function unc_gallery_backend_image_upload() {
+    // process uploads
+    // this is not ideal sicne it will still add the wordpress footer in the end 2x
+    if (count($_FILES["userImage"]["name"]) > 0) {
+        return unc_manage_uploads();
+    }
+    // choose upload folder instead
+    //    $source_path = $WPG_CONFIG['gallery_path'] . $WPG_CONFIG['upload'];
+    //    $out = wpg_recurse_files($source_path, 'wpg_import_process_file');
+    //    wpg_import_delete_empty_folders($source_path);
+
+
+    ?>
+    <div class="wrap">
+        <h2>Upload Images</h2>
+    </div>
+    <form id="uploadForm" action="?page=unc_gallery_admin_submenu" method="POST" enctype="multipart/form-data">
+        <script type="text/javascript">
+            jQuery(document).ready(function($) {
+                $(document).ready(function() {
+                    var options = {
+                        target: '#targetLayer',
+                        beforeSubmit: beforeSubmit,
+                        uploadProgress: uploadProgress,
+                        resetForm: true,
+                        complete: complete
+                    };
+                    $('#uploadForm').submit(function() {
+                        //if($('#userImage').val()) {
+                            $('#loader-icon').show();
+                            $(this).ajaxSubmit(options);
+                            return false;
+                        //}
+                   });
+                });
+                function complete(xhr) {
+                    $('#loader-icon').hide();
+                    $('#targetLayer').html(xhr.responseText);
+                }
+                function uploadProgress(event, position, total, percentComplete) {
+                    $("#progress-bar").width(percentComplete + '%');
+                    $("#progress-bar").html('<div id="progress-status">' + percentComplete +' %</div>');
+                }
+                function beforeSubmit(formData, jqForm, options) {
+                    $("#progress-bar").width('0%');
+                    $('#targetLayer').html('');
+                    return true;
+                }
+
+            });
+        </script>
+        <div class="image_upload_input">
+            <label>Select files to upload:</label>
+            <input type="file" id="userImage" name="userImage[]" class="demoInputBox" multiple required/>
+        </div>
+        <div class="image_upload_submit"><input type="submit" id="btnSubmit" value="submit" class="btnSubmit" /></div>
+        <div id="progress-div"><div id="progress-bar"></div></div>
+        <div id="targetLayer"></div>
+    </form>
+    <div id="loader-icon" style="display:none;"><img src="<?php echo plugins_url(); ?>/unc_gallery/images/LoaderIcon.gif" /></div>
+    <?php
+}
+
+function unc_manage_uploads() {
+    $count = count($_FILES["userImage"]["name"]);
+    if ($count < 1) {
+        echo "No images found to upload";
+        return false;
+    }
+    echo "Processing $count image(s)....<br>";
+
+    for ($i=0; $i<$count; $i++){
+        $date_str = unc_image_validate($i);
+        if (!$date_str) {
+            continue;
+        }
+        // $check = unc_image_move($F['tmp_name'][$i], $date_str);
+    }
+}
+
+/**
+ * Cheks uploaded files, returns the datestring from EXIF
+ *
+ * @global type $WPG_CONFIG
+ * @param type $i
+ * @return boolean
+ */
+function unc_image_validate($i) {
+    global $WPG_CONFIG;
+
+    //array(1) {
+    //    ["userImage"]=> array(5) {
+    //        ["name"]=> array(1) { [0]=> string(23) "2013-11-02 21.00.38.jpg" }
+    //        ["type"]=> array(1) { [0]=> string(10) "image/jpeg" }
+    //        ["tmp_name"]=> array(1) { [0]=> string(14) "/tmp/phptgNK2k" }
+    //        ["error"]=> array(1) { [0]=> int(0) }
+    //        ["size"]=> array(1) { [0]=> int(213485) }
+    //    }
+    //}
+
+    $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
+    $F = $_FILES["userImage"];
+
+    if ($F["error"][$i] > 0){
+        echo "Unable to read the file, upload cancelled of file " . $F['name'][$i] . "<br />";
+        return false;
+    }
+    $image_check = getimagesize($F['tmp_name'][$i]);
+    if (!$image_check) {
+        echo "Not image file, upload cancelled of file " . $F['name'][$i] . "<br />";
+        return false;
+    }
+    // get imagetype
+    $exif_imagetype = exif_imagetype($F['tmp_name'][$i]);
+    if (!$exif_imagetype) {
+        echo "Could not determine image type of file " . $F['name'][$i] . ", upload cancelled<br />";
+        return false;
+    }
+
+    $mime_type = image_type_to_mime_type($exif_imagetype);
+    if (!isset($mime_type, $WPG_CONFIG['valid_filetypes'])){
+        echo "Invalid file type :" . $F["type"][$i];
+        return false;
+    }
+
+    $extension = $WPG_CONFIG['valid_filetypes'][$mime_type];
+    $file_no_ext = pathinfo($F['name'][$i], PATHINFO_FILENAME);
+    $target_filename = $file_no_ext . "." . $extension;
+
+    if (is_uploaded_file($F['tmp_name'][$i])) {
+        $sourcePath = $F['tmp_name'][$i];
+    } else {
+        echo "Error finding uploaded file {$F['tmp_name'][$i]}!";
+        return false;
+    }
+
+    $exif_data = exif_read_data($sourcePath);
+    if (!$exif_data || !isset($exif_data['DateTimeOriginal'])) {
+        echo "Error reading EXIF of file $sourcePath <br>\n";
+        return false;
+    }
+
+    $date_str = $exif_data['DateTimeOriginal']; // format: 2011:06:04 08:56:22
+    $date_check = date_create($date_str);
+    if (!$date_check) {
+        echo "ERROR: '$date_str' is invalid date in EXIF<br>";
+        return false;
+    }
+
+    $date_obj = unc_image_folder_create($date_str);
+    if (!$date_obj) {
+        return false;
+    }
+
+    $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
+
+    $target_subfolder = $dirPath . $WPG_CONFIG['photos'] . $date_obj->format("/Y/m/d");
+    $thumb_subfolder = $dirPath . $WPG_CONFIG['thumbnails'] . $date_obj->format("/Y/m/d");
+    $new_path =  $target_subfolder . DIRECTORY_SEPARATOR . $target_filename;
+
+    if (file_exists($new_path)) {
+        echo "$new_path Filename already exists!<br>";
+        return false;
+    }
+
+    $rename_chk = move_uploaded_file($F['tmp_name'][$i], $new_path);
+    if (!$rename_chk) {
+        echo "Error (move_uploaded_file): Could not move {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path<br>";
+        return false;
+    } else {
+        echo "Moving file from {$F['tmp_name'][$i]} to $new_path<br>";
+    }
+
+    // chmod file to make sure it cannot be executed
+    $check_chmod = chmod($new_path, 0644);
+    if (!$check_chmod) {
+        echo "Error (chmod): Could chmod 644 file $new_path<br>";
+        return false;
+    } else {
+        echo "Chmod successful!<br>";
+    }
+
+    $check = unc_import_make_thumbnail($new_path, $thumb_subfolder);
+
+    return true;
+}
+
+/**
+ *
+ * @global type $WPG_CONFIG
+ * @param type $i
+ * @param type $date_str
+ * @return type
+ */
+function unc_image_folder_create($date_str) {
+    global $WPG_CONFIG;
+
+    $date_folders = array(false, "Y", "m", "d");
+    $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
+    $date_obj = unc_gallery_datetime($date_str);
+    // substract 12 hours to get the correct date
+    $date_obj->modify($WPG_CONFIG['offset']);
+
+    $path_arr = array($WPG_CONFIG['photos'], $WPG_CONFIG['thumbnails']);
+    foreach ($path_arr as $img_folder) {
+        $base_folder = $dirPath . $img_folder;
+        foreach ($date_folders as $date_folder) {
+            if ($date_folder) {
+                $date_element = $date_obj->format($date_folder);
+                $base_folder .= DIRECTORY_SEPARATOR . "$date_element";
+            }
+            if (!file_exists($base_folder)) {
+                $mkdir_chk = mkdir($base_folder);
+                if (!$mkdir_chk) {
+                    echo "ERROR, could not create folder $base_folder<br>";
+                    return false;
+                } else {
+                    echo "Created folder $base_folder<br>";
+                }
+            }
+        }
+    }
+    return $date_obj;
+}
+
+
+function unc_import_make_thumbnail($image_filename, $target_subfolder) {
+    global $WPG_CONFIG;
+
+    $out = $image_filename;
+    $thumbnail_size = $WPG_CONFIG['thumbnail_size'];
+    $filename = basename($image_filename);
+
+    $img_types = array(1 => 'GIF', 2 => 'JPEG', 3 => 'PNG');
+
+    $arr_image_details = getimagesize($image_filename); // pass id to thumb name
+    if (!$arr_image_details) {
+        echo "ERROR: Failed to get image size of $image_filename<br>";
+        return false;
+    }
+    $original_width = $arr_image_details[0];
+    $original_height = $arr_image_details[1];
+    $out .= " | Size: $original_width / $original_height | ";
+
+    if ($original_width == 0 || $original_height == 0) {
+        echo "ERROR: Image size $image_filename == 0<br>";
+        return false;
+    }
+    // landscape image
+    if ($original_width > $original_height) {
+        $new_height = intval($original_height * ($thumbnail_size / $original_width));
+        $new_width = $thumbnail_size;
+    } else { // portrait image
+        $new_width = intval($original_width * ($thumbnail_size / $original_height));
+        $new_height = $thumbnail_size;
+    }
+    // get image extension
+    $image_ext = $img_types[$arr_image_details[2]];
+    $img_generator = "Image" . $WPG_CONFIG['thumbnail_ext'];
+    $imgcreatefrom = "ImageCreateFrom" . $image_ext;
+
+    $old_image = $imgcreatefrom($image_filename);
+    $new_image = imagecreatetruecolor($new_width, $new_height);
+    imagecopyresized($new_image, $old_image, 0, 0, 0, 0, $new_width, $new_height, $original_width, $original_height);
+    $img_generator($new_image, $target_subfolder . "/" . $filename);
+
+    return true;
+}
