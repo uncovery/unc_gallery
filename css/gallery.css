@@ -31,3 +31,66 @@
     height: 16px; 
     background-image: url(../media/ui-icons_222222_256x240.png); 
 }
+
+#uploadForm {
+    border-top:#F0F0F0 2px solid;
+    background:#FAF8F8;
+    padding:10px;
+}
+#uploadForm label {
+    margin:2px; 
+    font-size:1em; 
+    font-weight:bold;
+}
+.demoInputBox{
+    padding:5px; 
+    border:#F0F0F0 1px solid; 
+    border-radius:4px; 
+    background-color:#FFF;
+}
+#progress-bar {
+    background-color: #12CC1A;
+    height:20px;
+    color: #FFFFFF;
+    width:0%;
+    -webkit-transition: width .3s;
+    -moz-transition: width .3s;
+    transition: width .3s;
+}
+.btnSubmit{
+    background-color:#09f;
+    border:0;
+    padding:10px 40px;
+    color:#FFF;
+    border:#F0F0F0 1px solid; 
+    border-radius:4px;
+}
+#progress-div {
+    border:#0FA015 1px solid;
+    padding: 5px 0px;
+    margin:30px 0px;
+    border-radius:4px;
+    text-align:center;
+}
+#targetLayer{
+    width:100%;
+    text-align:center;
+} 
+.image_upload_input {
+    float: left;
+    width: 30%;
+}
+#targetLayer #adminmenumain > div {
+    display: none;
+}
+#uploadForm label {
+    font-size: 1em;
+    font-weight: bold;
+    margin: 2px;
+}
+#uploadForm {
+    background: #faf8f8 none repeat scroll 0 0;
+    border: 2px solid;
+    padding: 15px;
+    width: 95%;
+}
