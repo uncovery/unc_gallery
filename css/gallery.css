@@ -3,6 +3,10 @@
     padding:0px;
 }
 
+.dateShown a.ui-state-default {
+    font-weight: bold;
+}
+
 .photopage .gallery_menu li{
     float:left;
     list-style:none;
