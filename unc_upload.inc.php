@@ -1,10 +1,14 @@
 <?php
 
-function unc_gallery_backend_image_upload() {
+/**
+ * Main form for uploads in the admin screen
+ * @return string
+ */
+function unc_uploads_form() {
     // process uploads
     // this is not ideal sicne it will still add the wordpress footer in the end 2x
     if (count($_FILES["userImage"]["name"]) > 0) {
-        return unc_manage_uploads();
+        return unc_uploads_iteration();
     }
     // choose upload folder instead
     //    $source_path = $WPG_CONFIG['gallery_path'] . $WPG_CONFIG['upload'];
@@ -16,7 +20,7 @@ function unc_gallery_backend_image_upload() {
     <div class="wrap">
         <h2>Upload Images</h2>
     </div>
-    <form id="uploadForm" action="?page=unc_gallery_admin_submenu" method="POST" enctype="multipart/form-data">
+    <form id="uploadForm" action="?page=unc_gallery_admin_upload" method="POST" enctype="multipart/form-data">
         <script type="text/javascript">
             jQuery(document).ready(function($) {
                 $(document).ready(function() {
@@ -63,7 +67,12 @@ function unc_gallery_backend_image_upload() {
     <?php
 }
 
-function unc_manage_uploads() {
+/**
+ * Main iterator for uploads handling after form was submitted
+ *
+ * @return boolean
+ */
+function unc_uploads_iteration() {
     $count = count($_FILES["userImage"]["name"]);
     if ($count < 1) {
         echo "No images found to upload";
@@ -72,12 +81,12 @@ function unc_manage_uploads() {
     echo "Processing $count image(s)....<br>";
 
     for ($i=0; $i<$count; $i++){
-        $date_str = unc_image_validate($i);
+        $date_str = unc_uploads_process($i);
         if (!$date_str) {
             continue;
         }
-        // $check = unc_image_move($F['tmp_name'][$i], $date_str);
     }
+    echo "All images processed!";
 }
 
 /**
@@ -87,7 +96,7 @@ function unc_manage_uploads() {
  * @param type $i
  * @return boolean
  */
-function unc_image_validate($i) {
+function unc_uploads_process($i) {
     global $WPG_CONFIG;
 
     //array(1) {
@@ -149,7 +158,7 @@ function unc_image_validate($i) {
         return false;
     }
 
-    $date_obj = unc_image_folder_create($date_str);
+    $date_obj = unc_date_folder_create($date_str);
     if (!$date_obj) {
         return false;
     }
@@ -183,48 +192,11 @@ function unc_image_validate($i) {
     }
 
     $check = unc_import_make_thumbnail($new_path, $thumb_subfolder);
-
+    if ($check) {
+        echo "Done!<br>";
+    }
     return true;
 }
-
-/**
- *
- * @global type $WPG_CONFIG
- * @param type $i
- * @param type $date_str
- * @return type
- */
-function unc_image_folder_create($date_str) {
-    global $WPG_CONFIG;
-
-    $date_folders = array(false, "Y", "m", "d");
-    $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
-    $date_obj = unc_gallery_datetime($date_str);
-    // substract 12 hours to get the correct date
-    $date_obj->modify($WPG_CONFIG['offset']);
-
-    $path_arr = array($WPG_CONFIG['photos'], $WPG_CONFIG['thumbnails']);
-    foreach ($path_arr as $img_folder) {
-        $base_folder = $dirPath . $img_folder;
-        foreach ($date_folders as $date_folder) {
-            if ($date_folder) {
-                $date_element = $date_obj->format($date_folder);
-                $base_folder .= DIRECTORY_SEPARATOR . "$date_element";
-            }
-            if (!file_exists($base_folder)) {
-                $mkdir_chk = mkdir($base_folder);
-                if (!$mkdir_chk) {
-                    echo "ERROR, could not create folder $base_folder<br>";
-                    return false;
-                } else {
-                    echo "Created folder $base_folder<br>";
-                }
-            }
-        }
-    }
-    return $date_obj;
-}
-
 
 function unc_import_make_thumbnail($image_filename, $target_subfolder) {
     global $WPG_CONFIG;
@@ -265,6 +237,6 @@ function unc_import_make_thumbnail($image_filename, $target_subfolder) {
     $new_image = imagecreatetruecolor($new_width, $new_height);
     imagecopyresized($new_image, $old_image, 0, 0, 0, 0, $new_width, $new_height, $original_width, $original_height);
     $img_generator($new_image, $target_subfolder . "/" . $filename);
-
+    echo "Thumbnail created!<br>";
     return true;
 }
