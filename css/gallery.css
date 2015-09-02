@@ -11,6 +11,7 @@
 .photopage .photobox{
     float:left;
     margin-left: 5px;
+    margin-bottom: 5px;
 }
 
 .photopage .photobox img {
