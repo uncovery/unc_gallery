@@ -39,6 +39,7 @@ function unc_gallery_admin_menu() {
     );
     add_action('admin_print_scripts-' . $view_page_hook_suffix, 'unc_gallery_admin_add_css_and_js');
     if (isset($_FILES["userImage"])) {
+        // do not show footer in ajax-loaded image form
         add_filter('admin_footer_text', 'unc_remove_footer_admin');
     }
 
