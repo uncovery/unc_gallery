@@ -38,6 +38,10 @@ function unc_gallery_admin_menu() {
         'unc_images_display' // function
     );
     add_action('admin_print_scripts-' . $view_page_hook_suffix, 'unc_gallery_admin_add_css_and_js');
+    if (isset($_FILES["userImage"])) {
+        add_filter('admin_footer_text', 'unc_remove_footer_admin');
+    }
+
 }
 
 function unc_gallery_admin_init() {
@@ -74,6 +78,12 @@ function unc_gallery_admin_add_css_and_js() {
 function unc_gallery_backend_basic_settings() {
 
     echo "test";
+}
+
+// this is just a dummy function to remove the footer for AJAX return when the
+// images are uploaded
+function unc_remove_footer_admin() {
+    return '';
 }
 
 
