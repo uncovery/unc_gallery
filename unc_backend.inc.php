@@ -20,15 +20,24 @@ function unc_gallery_admin_menu() {
         'unc_gallery_admin_menu', // $menu_slug,
         'unc_gallery_options' // $function, $icon_url, $position
     );
-    $page_hook_suffix = add_submenu_page(
+    $upload_page_hook_suffix = add_submenu_page(
         'unc_gallery_admin_menu', // $parent_slug
         'Upload Images',  // $page_title
         'Upload Images', // $menu_title
         'manage_options', // capability, manage_options is the default
-        'unc_gallery_admin_submenu', // menu_slug
-        'unc_gallery_backend_image_upload' // function
+        'unc_gallery_admin_upload', // menu_slug
+        'unc_uploads_form' // function
     );
-    add_action('admin_print_scripts-' . $page_hook_suffix, 'unc_gallery_admin_add_css_and_js');
+    add_action('admin_print_scripts-' . $upload_page_hook_suffix, 'unc_gallery_admin_add_css_and_js');
+    $view_page_hook_suffix = add_submenu_page(
+        'unc_gallery_admin_menu', // $parent_slug
+        'View Images',  // $page_title
+        'View Images', // $menu_title
+        'manage_options', // capability, manage_options is the default
+        'unc_gallery_admin_view', // menu_slug
+        'unc_images_display' // function
+    );
+    add_action('admin_print_scripts-' . $view_page_hook_suffix, 'unc_gallery_admin_add_css_and_js');
 }
 
 function unc_gallery_admin_init() {
@@ -49,12 +58,17 @@ function unc_gallery_admin_init() {
  * add additional CSS and JS
  */
 function unc_gallery_admin_add_css_and_js() {
+    wp_enqueue_script('jquery-ui');
     wp_enqueue_script('jquery-ui-datepicker');
     wp_enqueue_script('jquery-form');
     wp_enqueue_style('bootstrap-css', plugin_dir_url( __FILE__ ) . 'css/bootstrap.min.css');
     wp_enqueue_style('magnific-popup-css', plugin_dir_url( __FILE__ ) . 'css/magnific-popup.css');
     wp_enqueue_style('plugin_style-css', plugin_dir_url( __FILE__ ) . 'css/plugin_style.css');
     wp_enqueue_style('plugin_style-css', plugin_dir_url( __FILE__ ) . 'css/style1.css');
+
+    wp_enqueue_script('unc_gallery_js', plugin_dir_url( __FILE__ ) . 'js/unc_gallery.js');
+    wp_enqueue_style('unc_gallery_css', plugin_dir_url( __FILE__ ) . 'css/gallery.css');
+    wp_enqueue_style('jquery_ui_css', plugin_dir_url( __FILE__ ) . 'css/jquery-ui.css');
 }
 
 function unc_gallery_backend_basic_settings() {
