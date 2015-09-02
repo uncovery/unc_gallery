@@ -4,6 +4,12 @@ if (!defined('WPINC')) {
     die;
 }
 
+function unc_images_display() {
+    echo "<h2>Uncovery Gallery: All Images</h2>\n";
+    $content_new = unc_gallery_display_page('[unc_gallery]', false, false, "?page=unc_gallery_admin_view&");
+    echo $content_new;
+}
+
 /**
  * main function. Checks for the keyword in the content and switches that define
  * the content further. Then calls the function that creates the actual content
@@ -34,11 +40,13 @@ function unc_gallery($content) {
     return $content_new;
 }
 
-function unc_gallery_display_page($content, $date = false, $gallery = false) {
+function unc_gallery_display_page($content, $date = false, $gallery = false , $uri = '?') {
     global $WPG_CONFIG;
-    $out = "This is a gallery page for date $date and gallery $gallery";
+
     remove_filter( 'the_content', 'wpautop' );
-    $photo_folder = $WPG_CONFIG['gallery_path'] . $WPG_CONFIG['photos'];
+
+    $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
+
     $folder_list = unc_display_folder_list($photo_folder);
 
     ksort($folder_list);
@@ -46,32 +54,35 @@ function unc_gallery_display_page($content, $date = false, $gallery = false) {
     // the above dates are local timezone, we need the same date in UTC
     $new_dates = unc_display_fix_timezones($all_dates);
     $date_json = 'var availableDates = ["' . implode("\",\"", $new_dates) . '"];';
+
     $s_get = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
     $images = '';
-    if (isset($s_get['date'])) {
+    if (isset($s_get['unc_date'])) {
         // validate if this is a proper date
-        $date_check = date_create($s_get['date']);
+        $date_check = date_create($s_get['unc_date']);
         if (!$date_check) {
             return "ERROR: Date not found";
         }
-        $date_obj = unc_datetime($s_get['date'] . " 00:00:00");
-        if ($date_obj) {
-            $date_str = $date_obj->format("Y/m/d");
-            if (file_exists($photo_folder . "/" . $date_str)) {
-                $images = unc_display_folder_images($date_str);
-            } else {
-                return "ERROR: Date not found (folder error) $photo_folder/$date_str";
-            }
-        } else {
-            return "ERROR: Date not found (object error)";
-        }
-        $latest_date = $s_get['date'];
+        $latest_date = $s_get['unc_date'];
     } else {
         $latest_date = unc_display_find_latest();
     }
 
+    $date_obj = unc_datetime($latest_date . " 00:00:00");
+    if ($date_obj) {
+        $date_str = $date_obj->format("Y/m/d");
+        if (file_exists($photo_folder . "/" . $date_str)) {
+            $images = unc_display_folder_images($date_str);
+        } else {
+            return "ERROR: Date not found (folder error) $photo_folder/$date_str";
+        }
+    } else {
+        return "ERROR: Date not found (object error)";
+    }
 
-    $out = "\n        <script>
+    $out = "Showing date $latest_date"; //and gallery $gallery
+
+    $out .= "\n        <script>
         $date_json
         jQuery(document).ready(function($) {
             jQuery( \"#datepicker\" ).datepicker({
@@ -95,8 +106,8 @@ function unc_gallery_display_page($content, $date = false, $gallery = false) {
 
 function unc_display_folder_list($base_folder) {
     global $WPG_CONFIG;
-    $global_base = $WPG_CONFIG['gallery_path'] . $WPG_CONFIG['photos'];
-    $base_length = strlen($global_base) + 1;
+    $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
+    $base_length = strlen($photo_folder) + 1;
 
     $dates = array();
     foreach (glob($base_folder.DIRECTORY_SEPARATOR."*") as $current_path) {
@@ -123,7 +134,7 @@ function unc_display_folder_list($base_folder) {
 function unc_display_folder_images($date_str) {
     global $WPG_CONFIG;
     // $photo_folder = $WPG_CONFIG['gallery_path'] . $WPG_CONFIG['photos'];
-    $thumb_folder = $WPG_CONFIG['gallery_path'] . $WPG_CONFIG['thumbnails'];
+    $thumb_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] .  $WPG_CONFIG['thumbnails'];
 
     // $curr_photo_folder = $photo_folder . "/" . $date_str;
     $curr_thumb_folder = $thumb_folder . "/" . $date_str;
@@ -132,8 +143,8 @@ function unc_display_folder_images($date_str) {
     foreach (glob($curr_thumb_folder.DIRECTORY_SEPARATOR."*") as $file) {
         $filename = basename($file);
         if ($file != '.' && $file != '..') {
-            $photo_url = plugins_url("galleries/default/photos/$date_str/$filename", __FILE__ );
-            $thumb_url = plugins_url("galleries/default/thumbs/$date_str/$filename", __FILE__ );
+            $photo_url = content_url($WPG_CONFIG['upload'] . $WPG_CONFIG['photos'] . "/$date_str/$filename");
+            $thumb_url = content_url($WPG_CONFIG['upload'] . $WPG_CONFIG['thumbnails'] . "/$date_str/$filename");
             $out .= "    <div class=\"photobox\">\n"
                 . "        <a href=\"$photo_url\" data-lightbox=\"$date_iso\">\n"
                 . "            <img alt=\"$filename\" src=\"$thumb_url\">\n"
@@ -150,10 +161,10 @@ function unc_display_find_latest() {
     $date_obj = unc_datetime();
     $date_str = $date_obj->format("Y/m/d");
 
-    $base_folder = $WPG_CONFIG['gallery_path'] . $WPG_CONFIG['photos'];
+    $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
 
     // this could be improved by going back first years, then months, then days
-    while (!file_exists($base_folder . "/". $date_str)) {
+    while (!file_exists($photo_folder . "/". $date_str)) {
         $date_obj->modify("-1 day");
         $date_str = $date_obj->format("Y/m/d");
     }
