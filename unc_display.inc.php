@@ -57,6 +57,8 @@ function unc_gallery_display_page($content, $date = false, $gallery = false , $u
 
     $s_get = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
     $images = '';
+    $out = "Showing ";
+    // show the selected date
     if (isset($s_get['unc_date'])) {
         // validate if this is a proper date
         $date_check = date_create($s_get['unc_date']);
@@ -64,8 +66,11 @@ function unc_gallery_display_page($content, $date = false, $gallery = false , $u
             return "ERROR: Date not found";
         }
         $latest_date = $s_get['unc_date'];
+        $out .= "date ";
     } else {
+        // show the latest date
         $latest_date = unc_display_find_latest();
+        $out .= "most recent date ";
     }
 
     $date_obj = unc_datetime($latest_date . " 00:00:00");
@@ -80,7 +85,7 @@ function unc_gallery_display_page($content, $date = false, $gallery = false , $u
         return "ERROR: Date not found (object error)";
     }
 
-    $out = "Showing date $latest_date"; //and gallery $gallery
+    $out .= "$latest_date"; //and gallery $gallery
 
     $out .= "\n        <script>
         $date_json
