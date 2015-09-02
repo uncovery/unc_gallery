@@ -144,7 +144,6 @@ function unc_display_folder_images($date_str) {
     // $curr_photo_folder = $photo_folder . "/" . $date_str;
     $curr_thumb_folder = $thumb_folder . "/" . $date_str;
 
-    $date_iso = str_replace("/", "-", $date_str);
     foreach (glob($curr_thumb_folder.DIRECTORY_SEPARATOR."*") as $file) {
         $filename = basename($file);
         if ($file != '.' && $file != '..') {
