@@ -151,7 +151,7 @@ function unc_display_folder_images($date_str) {
             $photo_url = content_url($WPG_CONFIG['upload'] . $WPG_CONFIG['photos'] . "/$date_str/$filename");
             $thumb_url = content_url($WPG_CONFIG['upload'] . $WPG_CONFIG['thumbnails'] . "/$date_str/$filename");
             $out .= "    <div class=\"photobox\">\n"
-                . "        <a href=\"$photo_url\" data-lightbox=\"$date_iso\">\n"
+                . "        <a href=\"$photo_url\" class=\"thickbox\" rel=\"gallery\">\n"
                 . "            <img alt=\"$filename\" src=\"$thumb_url\">\n"
                 . "        </a>\n"
                 . "    </div>\n";
