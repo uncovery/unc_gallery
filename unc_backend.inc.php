@@ -35,7 +35,7 @@ function unc_gallery_admin_menu() {
         'View Images', // $menu_title
         'manage_options', // capability, manage_options is the default
         'unc_gallery_admin_view', // menu_slug
-        'unc_images_display' // function
+        'unc_gallery_images_display_admin' // function
     );
     add_action('admin_print_scripts-' . $view_page_hook_suffix, 'unc_gallery_admin_add_css_and_js');
     if (isset($_FILES["userImage"])) {
