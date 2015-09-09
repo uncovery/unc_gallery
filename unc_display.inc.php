@@ -40,6 +40,26 @@ function unc_gallery($content) {
     return $content_new;
 }
 
+function unc_gallery_images_display_admin() {
+    global $WPG_CONFIG;
+    
+    $out = "<h2>Uncovery Gallery: All Images</h2>\n";
+    remove_filter( 'the_content', 'wpautop' );
+    
+    $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
+
+    $folder_list = unc_display_folder_list($photo_folder);
+    ksort($folder_list);
+    $all_dates = array_keys($folder_list);
+    // the above dates are local timezone, we need the same date in UTC
+    $new_dates = unc_display_fix_timezones($all_dates);
+
+    foreach ($folder_list as $date => $details) {
+        $out .= $date . " (" . count($details) . ")<br>";
+    }
+    echo $out;
+}
+
 function unc_gallery_display_page($content, $date = false, $gallery = false , $uri = '?') {
     global $WPG_CONFIG;
 
