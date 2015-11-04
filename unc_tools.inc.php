@@ -72,6 +72,9 @@ function unc_display_fix_timezones($dates) {
 }
 
 function unc_array_iterate_compact($array) {
+    if (!is_array(($array))) {
+        return $array;
+    }
     $out = "\n<ul>";
     foreach ($array as $element => $content) {
         $out .= "\n<li>$element \n";
