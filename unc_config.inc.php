@@ -7,6 +7,7 @@ if (!defined('WPINC')) {
 global $WPG_CONFIG;
 
 // upload folders below above folder
+// these configs should be moved to database settings
 $WPG_CONFIG['upload'] = "/unc_gallery";
 
 $WPG_CONFIG['photos'] = "/photos";
