@@ -61,14 +61,25 @@ function unc_datetime($date = NULL) {
 
 function unc_display_fix_timezones($dates) {
     $new_dates = array();
-    foreach ($dates as $date) {
+    foreach ($dates as $date => $details) {
         $date_obj = unc_datetime($date);
         // change timezone to UTC
         $date_obj->setTimezone(new DateTimeZone('UTC'));
         $date_str = $date_obj->format("Y-m-d");
-        $new_dates[] = $date_str;
+        $new_dates[$date_str] = $details;
     }
     return $new_dates;
+}
+
+function unc_array_iterate_compact($array) {
+    $out = "\n<ul>";
+    foreach ($array as $element => $content) {
+        $out .= "\n<li>$element \n";
+        $out .= unc_array_iterate_compact($content, true);
+        $out .= "</li>";
+    }
+    $out .= "</ul>";
+    return $out;
 }
 
 /**
