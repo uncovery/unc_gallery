@@ -98,3 +98,9 @@
     padding: 15px;
     width: 95%;
 }
+
+.admin_gallery ul, .admin_gallery li {
+    list-style-type:  unset;
+    margin-left: 10px;
+	
+}
