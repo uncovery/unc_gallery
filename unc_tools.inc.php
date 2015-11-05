@@ -43,6 +43,44 @@ function unc_date_folder_create($date_str) {
     return $date_obj;
 }
 
+/**
+ * Delete a date folder and all it's contents, images AND thumbs.
+ * 
+ * @param type $date_str
+ */
+function unc_date_folder_delete($date_str) {
+    global $WPG_CONFIG;
+
+    $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
+    $date_obj = unc_datetime($date_str);
+    // convert date to folder string
+    $fstr = DIRECTORY_SEPARATOR;
+    $out = "";
+    $date_folder = date_format($date_obj, "Y{$fstr}m{$fstr}d");
+
+    $path_arr = array($WPG_CONFIG['photos'], $WPG_CONFIG['thumbnails']);
+    foreach ($path_arr as $img_folder) {
+        $base_folder = $dirPath . $img_folder . DIRECTORY_SEPARATOR . $date_folder;
+        if (!file_exists($base_folder)) {
+            return "Folder $base_folder could not be deleted!";
+        }
+        $out .= "Deleting folder $img_folder/$date_folder:<br>";
+        $it = new RecursiveDirectoryIterator($base_folder, RecursiveDirectoryIterator::SKIP_DOTS);
+        $files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
+        foreach ($files as $file) {
+            if ($file->isDir()){
+                //$out .= " $file... <br>";
+                rmdir($file->getRealPath());
+            } else {
+                //$out .= " $file... <br>";
+                unlink($file->getRealPath());
+            }
+        }
+        // $out .= " /$base_folder... <br>";
+        rmdir($base_folder);
+    }
+    return $out;
+}
 
 /*
  * returns a date-time object with todays timezone
@@ -71,14 +109,15 @@ function unc_display_fix_timezones($dates) {
     return $new_dates;
 }
 
-function unc_array_iterate_compact($array) {
+function unc_array_iterate_compact($array, $path = '') {
     if (!is_array(($array))) {
-        return $array;
+        return "$array";
     }
     $out = "\n<ul>";
     foreach ($array as $element => $content) {
         $out .= "\n<li>$element \n";
-        $out .= unc_array_iterate_compact($content, true);
+        $path .= "/" . $element;
+        $out .= unc_array_iterate_compact($content, $path);
         $out .= "</li>";
     }
     $out .= "</ul>";
