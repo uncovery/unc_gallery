@@ -33,6 +33,10 @@
     margin-bottom: 5px;
 }
 
+.adminpage .delete_folder_link {
+    font-size: 0.9em;
+}
+
 .photopage .photobox img {
     height:220px;
 }
