@@ -50,13 +50,24 @@ function unc_gallery_images_display_admin() {
 
     $folder_list = unc_display_folder_list($photo_folder);
     ksort($folder_list);
-    $all_dates = array_keys($folder_list);
+    
     // the above dates are local timezone, we need the same date in UTC
-    $new_dates = unc_display_fix_timezones($all_dates);
+    $new_dates = unc_display_fix_timezones($folder_list);
 
-    foreach ($folder_list as $date => $details) {
-        $out .= $date . " (" . count($details) . ")<br>";
+    $dates_arr = array();
+
+    foreach ($new_dates as $date => $details) {
+        $date_split = explode("-", $date);
+        $dates_arr["{$date_split[0]}/{$date_split[1]}/{$date_split[2]}"] = $details;
     }
+    
+    $out .= "<div class=\"photopage adminpage\">\n";
+    foreach ($dates_arr as $text => $image_arr) {
+        $delete_link = " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$text\">Delete Folder</a>";
+        $images = unc_display_folder_images($text);
+        $out .= "<h3>$text:$delete_link</h3>\n" . $images . "<br>";
+    }
+    $out .= "</div>\n";
     echo $out;
 }
 
@@ -70,9 +81,11 @@ function unc_gallery_display_page($content, $date = false, $gallery = false , $u
     $folder_list = unc_display_folder_list($photo_folder);
 
     ksort($folder_list);
-    $all_dates = array_keys($folder_list);
     // the above dates are local timezone, we need the same date in UTC
-    $new_dates = unc_display_fix_timezones($all_dates);
+    $all_dates = unc_display_fix_timezones($folder_list);    
+    
+    $new_dates = array_keys($all_dates);
+
     $date_json = 'var availableDates = ["' . implode("\",\"", $new_dates) . '"];';
 
     $s_get = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
@@ -135,7 +148,7 @@ function unc_display_folder_list($base_folder) {
     $base_length = strlen($photo_folder) + 1;
 
     $dates = array();
-    foreach (glob($base_folder.DIRECTORY_SEPARATOR."*") as $current_path) {
+    foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $current_path) {
         $file = basename($current_path);
         // get current date from subfolder
         if (is_dir($current_path)) { // we have a directory
