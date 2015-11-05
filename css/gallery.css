@@ -18,6 +18,21 @@
     margin-bottom: 5px;
 }
 
+.adminpage h3:before{
+    content:'';
+    display:block;
+    clear: both;
+}
+
+.adminpage .photobox img {
+    max-height: 70px;
+}
+
+.adminpage h3 {
+    font-size: 1em;
+    margin-bottom: 5px;
+}
+
 .photopage .photobox img {
     height:220px;
 }
@@ -97,10 +112,4 @@
     border: 2px solid;
     padding: 15px;
     width: 95%;
-}
-
-.admin_gallery ul, .admin_gallery li {
-    list-style-type:  unset;
-    margin-left: 10px;
-	
 }
