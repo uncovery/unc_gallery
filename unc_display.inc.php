@@ -44,6 +44,13 @@ function unc_gallery_images_display_admin() {
     global $WPG_CONFIG;
     
     $out = "<h2>Uncovery Gallery: All Images</h2>\n";
+    
+    // check first if there is a folder to delete:
+    $s_get = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
+    if (isset($s_get['folder_del'])) {
+        $out .= unc_date_folder_delete($s_get['folder_del']);
+    }
+
     remove_filter( 'the_content', 'wpautop' );
     
     $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
