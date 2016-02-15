@@ -19,6 +19,7 @@ function unc_uploads_form() {
                     data: {action: 'unc_uploads'},
                     success: success,
                     uploadProgress: uploadProgress,
+                    beforeSubmit, beforeSubmit
                 };                
                 jQuery('#uploadForm').submit(function() {
                     jQuery(this).ajaxSubmit(options);
@@ -31,7 +32,7 @@ function unc_uploads_form() {
                     jQuery("#progress-bar").width(percentComplete + '%');
                     jQuery("#progress-bar").html('<div id="progress-status">' + percentComplete +' %</div>');
                 }
-                function beforeSend(formData, jqForm, options) {
+                function beforeSubmit(formData, jqForm, options) {
                     jQuery("#progress-bar").width('0%');
                     jQuery('#targetLayer').html('');
                     return true;
