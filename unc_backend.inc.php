@@ -5,12 +5,18 @@ if (!defined('WPINC')) {
     die;
 }
 
+global $XMPP_ERROR;
+$XMPP_ERROR['config']['project_name'] = 'unc_gallery';
+$XMPP_ERROR['config']['enabled'] = true;
+require_once('/home/includes/xmpp_error/xmpp_error.php');
+
 // add filter to scan content for activating
 add_filter('the_content', 'unc_gallery', 0);
 // initialize the plugin, create the upload folder
 add_action('admin_init', 'unc_gallery_admin_init');
 // add an admin menu
 add_action('admin_menu', 'unc_gallery_admin_menu');
+add_action('wp_ajax_unc_uploads', 'unc_uploads_handler');
 
 function unc_gallery_admin_menu() {
     add_menu_page(
@@ -42,7 +48,7 @@ function unc_gallery_admin_menu() {
         // do not show footer in ajax-loaded image form
         add_filter('admin_footer_text', 'unc_remove_footer_admin');
     }
-
+    
 }
 
 function unc_gallery_admin_init() {
