@@ -63,7 +63,6 @@ function unc_uploads_form() {
         <div id="progress-div"><div id="progress-bar"></div></div>
         <div id="targetLayer"></div>
     </form>
-    <div id="loader-icon" style="display:none;"><img src="<?php echo plugins_url(); ?>/unc_gallery/images/LoaderIcon.gif" /></div>
     <?php
 }
 
