@@ -87,19 +87,3 @@ function unc_gallery_backend_basic_settings() {
 function unc_remove_footer_admin() {
     return '';
 }
-
-
-//// delete image record start
-//if (isset($_REQUEST['delete_id'])){
-//    $table_name = $wpdb->prefix . 'image_info';
-//    $pageposts = $wpdb->get_results("SELECT * from $table_name WHERE image_id=" . $_REQUEST['delete_id']);
-//    if ($pageposts) {
-//        foreach ($pageposts as $post) {
-//            $remove_image = $dirPath . '/' . $post->image_name;
-//            unlink($remove_image);
-//        }
-//    } else {
-//        echo "Image Not found in folder";
-//    }
-//    $delete = $wpdb->query("DELETE FROM $table_name WHERE image_id = '" . $_REQUEST['delete_id'] . "'");
-//}
