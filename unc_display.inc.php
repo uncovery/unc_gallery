@@ -42,9 +42,9 @@ function unc_gallery($content) {
 
 function unc_gallery_images_display_admin() {
     global $WPG_CONFIG;
-    
+
     $out = "<h2>Uncovery Gallery: All Images</h2>\n";
-    
+
     // check first if there is a folder to delete:
     $s_get = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
     if (isset($s_get['folder_del'])) {
@@ -52,12 +52,13 @@ function unc_gallery_images_display_admin() {
     }
 
     remove_filter( 'the_content', 'wpautop' );
-    
+
     $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
 
     $folder_list = unc_display_folder_list($photo_folder);
-    ksort($folder_list);
-    
+    // sort by date, reversed (latest first)
+    krsort($folder_list);
+
     // the above dates are local timezone, we need the same date in UTC
     $new_dates = unc_display_fix_timezones($folder_list);
 
@@ -67,7 +68,7 @@ function unc_gallery_images_display_admin() {
         $date_split = explode("-", $date);
         $dates_arr["{$date_split[0]}/{$date_split[1]}/{$date_split[2]}"] = $details;
     }
-    
+
     $out .= "<div class=\"photopage adminpage\">\n";
     foreach ($dates_arr as $text => $image_arr) {
         $delete_link = " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$text\">Delete Folder</a>";
@@ -87,10 +88,10 @@ function unc_gallery_display_page($content, $date = false, $gallery = false , $u
 
     $folder_list = unc_display_folder_list($photo_folder);
 
-    ksort($folder_list);
+    krsort($folder_list);
     // the above dates are local timezone, we need the same date in UTC
-    $all_dates = unc_display_fix_timezones($folder_list);    
-    
+    $all_dates = unc_display_fix_timezones($folder_list);
+
     $new_dates = array_keys($all_dates);
 
     $date_json = 'var availableDates = ["' . implode("\",\"", $new_dates) . '"];';
