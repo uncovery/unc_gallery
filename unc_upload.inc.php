@@ -19,7 +19,7 @@ function unc_uploads_form() {
                     data: {action: 'unc_uploads'},
                     success: success,
                     uploadProgress: uploadProgress,
-                    beforeSubmit, beforeSubmit
+                    beforeSubmit: beforeSubmit
                 };                
                 jQuery('#uploadForm').submit(function() {
                     jQuery(this).ajaxSubmit(options);
