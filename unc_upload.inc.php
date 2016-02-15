@@ -90,7 +90,7 @@ function unc_uploads_iteration() {
 }
 
 /**
- * Cheks uploaded files, returns the datestring from EXIF
+ * Checks uploaded files, returns the datestring from EXIF
  *
  * @global type $WPG_CONFIG
  * @param type $i
