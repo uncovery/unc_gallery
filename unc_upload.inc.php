@@ -5,17 +5,8 @@
  * @return string
  */
 function unc_uploads_form() {
-    // process uploads
-    // this is not ideal sicne it will still add the wordpress footer in the end 2x
-    if (count($_FILES["userImage"]["name"]) > 0) {
-        return unc_uploads_iteration();
-    }
-    // choose upload folder instead
-    //    $source_path = $WPG_CONFIG['gallery_path'] . $WPG_CONFIG['upload'];
-    //    $out = wpg_recurse_files($source_path, 'wpg_import_process_file');
-    //    wpg_import_delete_empty_folders($source_path);
-
-
+    XMPP_ERROR_trace(__FUNCTION__, func_get_args());
+    XMPP_ERROR_trigger("test");
     ?>
     <div class="wrap">
         <h2>Upload Images</h2>
@@ -25,6 +16,9 @@ function unc_uploads_form() {
             jQuery(document).ready(function($) {
                 $(document).ready(function() {
                     var options = {
+                        url: ajaxurl,
+                        action: 'unc_uploads',
+                        data: 'my_form_data',
                         target: '#targetLayer',
                         beforeSubmit: beforeSubmit,
                         uploadProgress: uploadProgress,
@@ -32,11 +26,8 @@ function unc_uploads_form() {
                         complete: complete
                     };
                     $('#uploadForm').submit(function() {
-                        //if($('#userImage').val()) {
-                            $('#loader-icon').show();
-                            $(this).ajaxSubmit(options);
-                            return false;
-                        //}
+                        $(this).ajaxSubmit(options);
+                        return false;
                    });
                 });
                 function complete(xhr) {
@@ -52,7 +43,6 @@ function unc_uploads_form() {
                     $('#targetLayer').html('');
                     return true;
                 }
-
             });
         </script>
         <div class="image_upload_input">
@@ -71,13 +61,17 @@ function unc_uploads_form() {
  *
  * @return boolean
  */
-function unc_uploads_iteration() {
+function unc_uploads_handler() { 
+    XMPP_ERROR_trace(__FUNCTION__, func_get_args());
+    XMPP_ERROR_trigger("test");
+    echo "test";
+    var_dump($_POST);
     $count = count($_FILES["userImage"]["name"]);
     if ($count < 1) {
-        echo "No images found to upload";
-        return false;
+        $out = "No images found to upload";
+        return $out;
     }
-    echo "Processing $count image(s)....<br>";
+    $out = "Processing $count image(s)....<br>";
 
     for ($i=0; $i<$count; $i++){
         $date_str = unc_uploads_process($i);
@@ -85,7 +79,8 @@ function unc_uploads_iteration() {
             continue;
         }
     }
-    echo "All images processed!";
+    $out .= "All images processed!";
+    echo $out;
 }
 
 /**
