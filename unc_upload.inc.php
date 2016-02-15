@@ -7,7 +7,6 @@ if (isset($_POST['my_form_data'])) {
  * @return string
  */
 function unc_uploads_form() {
-    XMPP_ERROR_trace(__FUNCTION__, func_get_args());
     ?>
     <div class="wrap">
         <h2>Upload Images</h2>
@@ -56,8 +55,6 @@ function unc_uploads_form() {
  * @return boolean
  */
 function unc_uploads_handler() { 
-    XMPP_ERROR_trace(__FUNCTION__, func_get_args());
-    XMPP_ERROR_trigger("test");
     $count = count($_FILES["userImage"]["name"]);
     if ($count < 1) {
         $out = "No images found to upload";
