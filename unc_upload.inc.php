@@ -1,48 +1,42 @@
 <?php
-
+if (isset($_POST['my_form_data'])) {
+    XMPP_ERROR_trigger("test");
+}
 /**
  * Main form for uploads in the admin screen
  * @return string
  */
 function unc_uploads_form() {
     XMPP_ERROR_trace(__FUNCTION__, func_get_args());
-    XMPP_ERROR_trigger("test");
     ?>
     <div class="wrap">
         <h2>Upload Images</h2>
     </div>
-    <form id="uploadForm" action="?page=unc_gallery_admin_upload" method="POST" enctype="multipart/form-data">
+    <form id="uploadForm"  action="?page=unc_gallery_admin_upload" method="POST" enctype="multipart/form-data">
         <script type="text/javascript">
-            jQuery(document).ready(function($) {
-                $(document).ready(function() {
-                    var options = {
-                        url: ajaxurl,
-                        action: 'unc_uploads',
-                        data: 'my_form_data',
-                        target: '#targetLayer',
-                        beforeSubmit: beforeSubmit,
-                        uploadProgress: uploadProgress,
-                        resetForm: true,
-                        complete: complete
-                    };
-                    $('#uploadForm').submit(function() {
-                        $(this).ajaxSubmit(options);
-                        return false;
-                   });
+            jQuery(document).ready(function() {
+                var options = {
+                    url: ajaxurl,
+                    data: {action: 'unc_uploads'},
+                    success: success,
+                    uploadProgress: uploadProgress,
+                };                
+                jQuery('#uploadForm').submit(function() {
+                    jQuery(this).ajaxSubmit(options);
+                    return false;
                 });
-                function complete(xhr) {
-                    $('#loader-icon').hide();
-                    $('#targetLayer').html(xhr.responseText);
-                }
+                function success(response){
+                    jQuery('#targetLayer').html(response);
+                }                
                 function uploadProgress(event, position, total, percentComplete) {
-                    $("#progress-bar").width(percentComplete + '%');
-                    $("#progress-bar").html('<div id="progress-status">' + percentComplete +' %</div>');
+                    jQuery("#progress-bar").width(percentComplete + '%');
+                    jQuery("#progress-bar").html('<div id="progress-status">' + percentComplete +' %</div>');
                 }
-                function beforeSubmit(formData, jqForm, options) {
-                    $("#progress-bar").width('0%');
-                    $('#targetLayer').html('');
+                function beforeSend(formData, jqForm, options) {
+                    jQuery("#progress-bar").width('0%');
+                    jQuery('#targetLayer').html('');
                     return true;
-                }
+                }               
             });
         </script>
         <div class="image_upload_input">
@@ -64,8 +58,6 @@ function unc_uploads_form() {
 function unc_uploads_handler() { 
     XMPP_ERROR_trace(__FUNCTION__, func_get_args());
     XMPP_ERROR_trigger("test");
-    echo "test";
-    var_dump($_POST);
     $count = count($_FILES["userImage"]["name"]);
     if ($count < 1) {
         $out = "No images found to upload";
