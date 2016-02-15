@@ -5,11 +5,6 @@ if (!defined('WPINC')) {
     die;
 }
 
-global $XMPP_ERROR;
-$XMPP_ERROR['config']['project_name'] = 'unc_gallery';
-$XMPP_ERROR['config']['enabled'] = true;
-require_once('/home/includes/xmpp_error/xmpp_error.php');
-
 // add filter to scan content for activating
 add_filter('the_content', 'unc_gallery', 0);
 // initialize the plugin, create the upload folder
