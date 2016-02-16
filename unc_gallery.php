@@ -15,7 +15,6 @@ if (!defined('WPINC')) {
     die;
 }
 
-
 require_once( plugin_dir_path( __FILE__ ) . "unc_config.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_backend.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_upload.inc.php");
@@ -56,7 +55,6 @@ function unc_gallery_plugin_activate() {
             echo "There was an error creating the upload folder $dirPath!";
         }
     }
-
 }
 
 function unc_gallery_plugin_deactivate() {
