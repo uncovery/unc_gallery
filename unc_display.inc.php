@@ -11,78 +11,65 @@ function unc_images_display() {
 }
 
 /**
- * main function. Checks for the keyword in the content and switches that define
+ * Displays content through keyword replacement
+ * Checks for the keyword in the content and switches that define
  * the content further. Then calls the function that creates the actual content
  * and returns the modified content
  *
- * @param type $content
- * @return type
+ * @param string $content
+ * @return string
  */
 function unc_gallery($content) {
-    $pattern = '/\[(?\'activator\'unc_gallery)( date="(?\'date\'[0-9-]{10})")?( gallery_name="(?\'gallery\'[a-z_-]*)")?\]/';
+    // this is the REGEX to check only for the activator, other stuff is done later
+    $pattern_activator = '/\[(?\'activator\'unc_gallery)( date="(?\'date\'[0-9-]{10})")?( gallery_name="(?\'gallery\'[a-z_-]*)")?\]/';
     $matches = false;
-    preg_match($pattern, $content, $matches);
-
+    preg_match($pattern_activator, $content, $matches);
+    
+    // if we cannot even find unc_gallery just return back the content
     if (!isset($matches['activator'])) {
         return $content;
     }
+    // Required features:
+    /*
+     * - show the selected date, all pictures (optional datepicker)                
+     *      [unc_gallery type="date" date="2016-12-31" datepicker]
+     * - show the selected date, only one random photo (optional link to the day)  
+     *      [unc_gallery type="image" date="2016-12-31" random link]
+     * - show only one specific image                                              
+     *      [unc_gallery type="image" date="2016-12-31" file="filename.jpg"]
+     * - show the latest day, all photos (optional datepicker)                     
+     *      [unc_gallery type="date" date="latest" datepicker]
+     * - show the latest day, random photo (optional link to the day)              
+     *      [unc_gallery type="image" date="latest" random link] 
+     * - 
+     */
+    
+    $keywords_array = array('type', 'date', 'file');
+    $types_array = array('date', 'image', 'icon');
+    $options_array = array(
+        'date' => array('datepicker'),
+        'image' => array('link', 'random', ),
+    );
 
     $date = false;
     if (isset($matches['date'])) {
         $date = $matches['date'];
     }
+    
     if (isset($matches['gallery'])) {
         $gallery = $matches['gallery'];
     }
 
+    // now we got the variables, let's get the actual content
     $content_new = unc_gallery_display_page($content, $date, $gallery);
-
     return $content_new;
-}
-
-function unc_gallery_images_display_admin() {
-    global $WPG_CONFIG;
-
-    $out = "<h2>Uncovery Gallery: All Images</h2>\n";
-
-    // check first if there is a folder to delete:
-    $s_get = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
-    if (isset($s_get['folder_del'])) {
-        $out .= unc_date_folder_delete($s_get['folder_del']);
-    }
-
-    remove_filter( 'the_content', 'wpautop' );
-
-    $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
-
-    $folder_list = unc_display_folder_list($photo_folder);
-    // sort by date, reversed (latest first)
-    krsort($folder_list);
-
-    // the above dates are local timezone, we need the same date in UTC
-    $new_dates = unc_display_fix_timezones($folder_list);
-
-    $dates_arr = array();
-
-    foreach ($new_dates as $date => $details) {
-        $date_split = explode("-", $date);
-        $dates_arr["{$date_split[0]}/{$date_split[1]}/{$date_split[2]}"] = $details;
-    }
-
-    $out .= "<div class=\"photopage adminpage\">\n";
-    foreach ($dates_arr as $text => $image_arr) {
-        $delete_link = " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$text\">Delete Folder</a>";
-        $images = unc_display_folder_images($text);
-        $out .= "<h3>$text:$delete_link</h3>\n" . $images . "<br>";
-    }
-    $out .= "</div>\n";
-    echo $out;
 }
 
 function unc_gallery_display_page($content, $date = false, $gallery = false , $uri = '?') {
     global $WPG_CONFIG;
 
-    remove_filter( 'the_content', 'wpautop' );
+    // do not let wp manipulate linebreaks
+    remove_filter('the_content', 'wpautop');
 
     $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
 
@@ -100,21 +87,27 @@ function unc_gallery_display_page($content, $date = false, $gallery = false , $u
     $images = '';
     $out = "Showing ";
     // show the selected date
-    if (isset($s_get['unc_date'])) {
+    if ($date) {
+        $date_check = date_create($date);
+        if (!$date_check) {
+            return "ERROR: Date not found";
+        }
+        $requested_date = $date_check;
+    } else if (isset($s_get['unc_date'])) {
         // validate if this is a proper date
         $date_check = date_create($s_get['unc_date']);
         if (!$date_check) {
             return "ERROR: Date not found";
         }
-        $latest_date = $s_get['unc_date'];
-        $out .= "date ";
+        $requested_date = $s_get['unc_date'];
+        $out .= "date $requested_date ";
     } else {
         // show the latest date
-        $latest_date = unc_display_find_latest();
+        $requested_date = unc_display_find_latest();
         $out .= "most recent date ";
     }
 
-    $date_obj = unc_datetime($latest_date . " 00:00:00");
+    $date_obj = unc_datetime($requested_date . " 00:00:00");
     if ($date_obj) {
         $date_str = $date_obj->format("Y/m/d");
         if (file_exists($photo_folder . "/" . $date_str)) {
@@ -126,14 +119,14 @@ function unc_gallery_display_page($content, $date = false, $gallery = false , $u
         return "ERROR: Date not found (object error)";
     }
 
-    $out .= "$latest_date"; //and gallery $gallery
-
+    $out .= "$requested_date"; //and gallery $gallery
+    // get a json datepicker
     $out .= "\n        <script>
         $date_json
         jQuery(document).ready(function($) {
             jQuery( \"#datepicker\" ).datepicker({
                 dateFormat: \"yy-mm-dd\",
-                defaultDate: \"$latest_date\",
+                defaultDate: \"$requested_date\",
                 beforeShowDay: available,
                 onSelect: openlink,
             });
