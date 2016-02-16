@@ -15,20 +15,30 @@ if (!defined('WPINC')) {
 function unc_date_folder_create($date_str) {
     global $WPG_CONFIG;
 
+    // these are the format strings for $date->format
+    // the 'false' is to create the root folder
     $date_folders = array(false, "Y", "m", "d");
+    // we get the base folder from config
     $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
+    // let's create a date object for the given date
     $date_obj = unc_datetime($date_str);
     // substract 12 hours to get the correct date
     $date_obj->modify($WPG_CONFIG['offset']);
 
+    // both folders, photo and thumbnail are created together
     $path_arr = array($WPG_CONFIG['photos'], $WPG_CONFIG['thumbnails']);
+    // iterate them
     foreach ($path_arr as $img_folder) {
+        // create the complete folder
         $base_folder = $dirPath . $img_folder;
+        // iterate the date strings y m d 
         foreach ($date_folders as $date_folder) {
+            // if it's not the root folder, we format the date to reflect he element
             if ($date_folder) {
                 $date_element = $date_obj->format($date_folder);
                 $base_folder .= DIRECTORY_SEPARATOR . "$date_element";
             }
+            // take the final folder string and check if already exists
             if (!file_exists($base_folder)) {
                 $mkdir_chk = mkdir($base_folder);
                 if (!$mkdir_chk) {
@@ -45,6 +55,7 @@ function unc_date_folder_create($date_str) {
 
 /**
  * Delete a date folder and all it's contents, images AND thumbs.
+ * we need to validate that the $date_str is a valid date
  * 
  * @param type $date_str
  */
@@ -53,6 +64,9 @@ function unc_date_folder_delete($date_str) {
 
     $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
     $date_obj = unc_datetime($date_str);
+    if (!$date_obj) {
+        return "Invalid date folder!";
+    }
     // convert date to folder string
     $fstr = DIRECTORY_SEPARATOR;
     $out = "";
@@ -97,6 +111,12 @@ function unc_datetime($date = NULL) {
     return $date_new;
 }
 
+/**
+ * this converts an array of dates to UTC
+ * 
+ * @param type $dates
+ * @return type
+ */
 function unc_display_fix_timezones($dates) {
     $new_dates = array();
     foreach ($dates as $date => $details) {
@@ -109,6 +129,13 @@ function unc_display_fix_timezones($dates) {
     return $new_dates;
 }
 
+/**
+ * this display a multi-dimensional array as an HTML list
+ * 
+ * @param type $array
+ * @param string $path
+ * @return string
+ */
 function unc_array_iterate_compact($array, $path = '') {
     if (!is_array(($array))) {
         return "$array";
@@ -137,7 +164,7 @@ function unc_gallery_recurse_files($base_folder, $function) {
     if (strstr($base_folder, './') || strstr($base_folder, '../')) {
         die("Error, recusive path! $base_folder");
     }
-    foreach (glob($base_folder.DIRECTORY_SEPARATOR."*") as $file) {
+    foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file) {
         if (is_dir($file)) {
             $out .= unc_gallery_recurse_files($file, $function);
         } else {
