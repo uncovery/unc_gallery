@@ -12,26 +12,26 @@ function unc_uploads_form() {
         <script type="text/javascript">
             jQuery(document).ready(function() {
                 var options = {
-                    url: ajaxurl,
-                    data: {action: 'unc_uploads'},
-                    success: success,
-                    uploadProgress: uploadProgress,
-                    beforeSubmit: beforeSubmit
+                    url: ajaxurl, // this is pre-filled by WP to the ajac-response url
+                    data: {action: 'unc_uploads'}, // this needs to match the add_action add_action('wp_ajax_unc_uploads', 'unc_uploads_handler');
+                    success: success, // the function we run on success
+                    uploadProgress: uploadProgress, // the function tracking the upload progress
+                    beforeSubmit: beforeSubmit // what happens before we start submitting
                 };                
-                jQuery('#uploadForm').submit(function() {
-                    jQuery(this).ajaxSubmit(options);
-                    return false;
+                jQuery('#uploadForm').submit(function() { // once the form us submitted
+                    jQuery(this).ajaxSubmit(options);  // do ajaxSubmit with the obtions above 
+                    return false; // needs to be false so that the HTML is not actually submitted & reloaded
                 });
                 function success(response){
-                    jQuery('#targetLayer').html(response);
+                    jQuery('#targetLayer').html(response); // fill the right element with a response
                 }                
                 function uploadProgress(event, position, total, percentComplete) {
-                    jQuery("#progress-bar").width(percentComplete + '%');
+                    jQuery("#progress-bar").width(percentComplete + '%'); 
                     jQuery("#progress-bar").html('<div id="progress-status">' + percentComplete +' %</div>');
                 }
                 function beforeSubmit(formData, jqForm, options) {
                     jQuery("#progress-bar").width('0%');
-                    jQuery('#targetLayer').html('');
+                    jQuery('#targetLayer').html(''); // empty the div from the last submit
                     return true;
                 }               
             });
@@ -39,6 +39,8 @@ function unc_uploads_form() {
         <div class="image_upload_input">
             <label>Select files to upload:</label>
             <input type="file" id="userImage" name="userImage[]" class="demoInputBox" multiple required/>
+            <label>Overwrite existing files with the same name?</label>
+            <input type="checkbox" name="overwrite">
         </div>
         <div class="image_upload_submit"><input type="submit" id="btnSubmit" value="submit" class="btnSubmit" /></div>
         <div id="progress-div"><div id="progress-bar"></div></div>
@@ -60,9 +62,18 @@ function unc_uploads_handler() {
     }
     $out = "Processing $count image(s)....<br>";
 
+    // overwrite files?
+    $overwrite = false;
+    // filter_input is null when the vaiable is not in POST
+    if (!is_null(filter_input(INPUT_POST, 'overwrite'))) {
+        $overwrite = true;
+    }
+    
     for ($i=0; $i<$count; $i++){
-        $date_str = unc_uploads_process($i);
+        $date_str = unc_uploads_process($i, $overwrite);
         if (!$date_str) {
+            // something went wrong with this file, take the next
+            // this is a bit redundant since nothing else would happen anyway
             continue;
         }
     }
@@ -71,13 +82,14 @@ function unc_uploads_handler() {
 }
 
 /**
- * Checks uploaded files, returns the datestring from EXIF
+ * processes one uploaded file. Creates folders, moves files
  *
  * @global type $WPG_CONFIG
  * @param type $i
+ * @param type $overwrite
  * @return boolean
  */
-function unc_uploads_process($i) {
+function unc_uploads_process($i, $overwrite) {
     global $WPG_CONFIG;
 
     //array(1) {
@@ -139,7 +151,9 @@ function unc_uploads_process($i) {
         return false;
     }
 
+    // create all the by-day folders
     $date_obj = unc_date_folder_create($date_str);
+    // if it failed return back
     if (!$date_obj) {
         return false;
     }
@@ -150,9 +164,12 @@ function unc_uploads_process($i) {
     $thumb_subfolder = $dirPath . $WPG_CONFIG['thumbnails'] . $date_obj->format("/Y/m/d");
     $new_path =  $target_subfolder . DIRECTORY_SEPARATOR . $target_filename;
 
-    if (file_exists($new_path)) {
-        echo "$new_path Filename already exists!<br>";
+    if (!$overwrite && file_exists($new_path)) {
+        echo "$new_path Filename already exists, skipping!<br>";
         return false;
+    } else {
+        unlink($new_path);
+        echo "$new_path Filename already exists, overwriting!<br>";
     }
 
     $rename_chk = move_uploaded_file($F['tmp_name'][$i], $new_path);
@@ -179,6 +196,14 @@ function unc_uploads_process($i) {
     return true;
 }
 
+/**
+ * Creates image thumbnails
+ * 
+ * @global type $WPG_CONFIG
+ * @param type $image_filename
+ * @param type $target_subfolder
+ * @return boolean
+ */
 function unc_import_make_thumbnail($image_filename, $target_subfolder) {
     global $WPG_CONFIG;
 
