@@ -24,7 +24,7 @@ The admin can decide once for all photos when the day stops (and therefore the n
 
 There will be several display options:
 
-- individual days with a tag suchas [unc_gallery 2016-20-10]
+- individual days with a tag such as [unc_gallery 2016-20-10]
 
 - indivdual photos [unc_gallery 2016-20-10 filename.jpg]
 
