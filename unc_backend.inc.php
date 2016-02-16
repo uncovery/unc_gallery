@@ -108,8 +108,8 @@ function unc_gallery_admin_init() {
     if (!file_exists($dirPath)) {
         echo "There was an error creating the upload folder $dirPath!";
     }
-    wp_register_script('jquery-form');
-    wp_register_script('jquery-ui-datepicker');
+    wp_register_script('jquery-form', '/wp-includes/js/jquery/jquery.form.js');
+    wp_register_script('jquery-ui-datepicker', '/wp-includes/js/jquery/ui/jquery.ui.datepicker.min.js');
 }
 
 /**
