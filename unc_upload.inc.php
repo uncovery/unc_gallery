@@ -1,7 +1,4 @@
 <?php
-if (isset($_POST['my_form_data'])) {
-    XMPP_ERROR_trigger("test");
-}
 /**
  * Main form for uploads in the admin screen
  * @return string
