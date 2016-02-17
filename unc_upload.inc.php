@@ -8,12 +8,12 @@ function unc_uploads_form() {
     <div class="wrap">
         <h2>Upload Images</h2>
     </div>
-    <form id="uploadForm"  action="?page=unc_gallery_admin_upload" method="POST" enctype="multipart/form-data">
+    <form id="uploadForm" method="POST" enctype="multipart/form-data">
         <script type="text/javascript">
             jQuery(document).ready(function() {
                 var options = {
                     url: ajaxurl, // this is pre-filled by WP to the ajac-response url
-                    data: {action: 'unc_uploads'}, // this needs to match the add_action add_action('wp_ajax_unc_uploads', 'unc_uploads_handler');
+                    data: {action: 'unc_gallery_uploads'}, // this needs to match the add_action add_action('wp_ajax_unc_gallery_uploads', 'unc_uploads_iterate_files');
                     success: success, // the function we run on success
                     uploadProgress: uploadProgress, // the function tracking the upload progress
                     beforeSubmit: beforeSubmit // what happens before we start submitting
@@ -39,7 +39,7 @@ function unc_uploads_form() {
         <div class="image_upload_input">
             <label>Select files to upload:</label>
             <input type="file" id="userImage" name="userImage[]" class="demoInputBox" multiple required/>
-            <label>Overwrite existing files with the same name?</label>
+            <label>Overwrite existing files?</label>
             <input type="checkbox" name="overwrite">
         </div>
         <div class="image_upload_submit"><input type="submit" id="btnSubmit" value="submit" class="btnSubmit" /></div>
@@ -54,7 +54,9 @@ function unc_uploads_form() {
  *
  * @return boolean
  */
-function unc_uploads_handler() { 
+function unc_uploads_iterate_files() { 
+    
+    // get the amount of files
     $count = count($_FILES["userImage"]["name"]);
     if ($count < 1) {
         $out = "No images found to upload";
@@ -69,8 +71,11 @@ function unc_uploads_handler() {
         $overwrite = true;
     }
     
+    // count up
     for ($i=0; $i<$count; $i++){
-        $date_str = unc_uploads_process($i, $overwrite);
+        // process one file
+        $date_str = unc_uploads_process_file($i, $overwrite);
+        // did we get a valid result?
         if (!$date_str) {
             // something went wrong with this file, take the next
             // this is a bit redundant since nothing else would happen anyway
@@ -89,7 +94,7 @@ function unc_uploads_handler() {
  * @param type $overwrite
  * @return boolean
  */
-function unc_uploads_process($i, $overwrite) {
+function unc_uploads_process_file($i, $overwrite) {
     global $WPG_CONFIG;
 
     //array(1) {
@@ -102,18 +107,37 @@ function unc_uploads_process($i, $overwrite) {
     //    }
     //}
 
-    $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
+    // the FILE array from the server
     $F = $_FILES["userImage"];
 
+    // is there an error with the file?
     if ($F["error"][$i] > 0){
         echo "Unable to read the file, upload cancelled of file " . $F['name'][$i] . "<br />";
         return false;
     }
+    
+    // if there is an imagesize, we have a valid image
     $image_check = getimagesize($F['tmp_name'][$i]);
     if (!$image_check) {
         echo "Not image file, upload cancelled of file " . $F['name'][$i] . "<br />";
         return false;
     }
+
+    $original_width = $image_check[0];
+    $original_height = $image_check[1];
+
+    // let's make sure the image is not 0-size
+    if ($original_width == 0 || $original_height == 0) {
+        echo "ERROR: Image size {$F['name'][$i]} = 0<br>";
+        return false;
+    }
+    
+    // let's shrink only if we need to 
+    if ($original_width == $WPG_CONFIG['thumbnail_size'] && $original_height == $WPG_CONFIG['thumbnail_size']) {
+        echo "ERROR: Image size {$F['name'][$i]} is smaller than thumbnail!<br>";
+        return false;
+    }
+    
     // get imagetype
     $exif_imagetype = exif_imagetype($F['tmp_name'][$i]);
     if (!$exif_imagetype) {
@@ -121,16 +145,19 @@ function unc_uploads_process($i, $overwrite) {
         return false;
     }
 
+    // get mime-type and check if it's in the list of valid ones
     $mime_type = image_type_to_mime_type($exif_imagetype);
     if (!isset($mime_type, $WPG_CONFIG['valid_filetypes'])){
         echo "Invalid file type :" . $F["type"][$i];
         return false;
     }
 
+    // we set the new filename of the image including extension so there is no guessing
     $extension = $WPG_CONFIG['valid_filetypes'][$mime_type];
     $file_no_ext = pathinfo($F['name'][$i], PATHINFO_FILENAME);
     $target_filename = $file_no_ext . "." . $extension;
 
+    // get the current path of the temp name
     if (is_uploaded_file($F['tmp_name'][$i])) {
         $sourcePath = $F['tmp_name'][$i];
     } else {
@@ -138,12 +165,14 @@ function unc_uploads_process($i, $overwrite) {
         return false;
     }
 
+    // we need the exif date to know when the image was taken
     $exif_data = exif_read_data($sourcePath);
     if (!$exif_data || !isset($exif_data['DateTimeOriginal'])) {
         echo "Error reading EXIF of file $sourcePath <br>\n";
         return false;
     }
 
+    // is that EXIF date a valid date?
     $date_str = $exif_data['DateTimeOriginal']; // format: 2011:06:04 08:56:22
     $date_check = date_create($date_str);
     if (!$date_check) {
@@ -158,20 +187,28 @@ function unc_uploads_process($i, $overwrite) {
         return false;
     }
 
+    // get the upload directory
     $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
-
-    $target_subfolder = $dirPath . $WPG_CONFIG['photos'] . $date_obj->format("/Y/m/d");
-    $thumb_subfolder = $dirPath . $WPG_CONFIG['thumbnails'] . $date_obj->format("/Y/m/d");
+    
+    // let's make the path with system-specific dir. separators
+    $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
+    
+    $target_subfolder = $dirPath . $WPG_CONFIG['photos'] . DIRECTORY_SEPARATOR . $date_obj->format($format);
+    $thumb_subfolder = $dirPath . $WPG_CONFIG['thumbnails'] . DIRECTORY_SEPARATOR . $date_obj->format($format);
     $new_path =  $target_subfolder . DIRECTORY_SEPARATOR . $target_filename;
+    $new_thumb_path =  $thumb_subfolder . DIRECTORY_SEPARATOR . $target_filename;
 
+    // let's check that file already exists
     if (!$overwrite && file_exists($new_path)) {
         echo "$new_path Filename already exists, skipping!<br>";
         return false;
     } else {
         unlink($new_path);
+        unlink($new_thumb_path);
         echo "$new_path Filename already exists, overwriting!<br>";
     }
 
+    // finally, move the file
     $rename_chk = move_uploaded_file($F['tmp_name'][$i], $new_path);
     if (!$rename_chk) {
         echo "Error (move_uploaded_file): Could not move {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path<br>";
@@ -183,13 +220,14 @@ function unc_uploads_process($i, $overwrite) {
     // chmod file to make sure it cannot be executed
     $check_chmod = chmod($new_path, 0644);
     if (!$check_chmod) {
-        echo "Error (chmod): Could chmod 644 file $new_path<br>";
+        echo "Error (chmod): Could not chmod 644 file $new_path<br>";
         return false;
     } else {
         echo "Chmod successful!<br>";
     }
 
-    $check = unc_import_make_thumbnail($new_path, $thumb_subfolder);
+    // now make the thumbnail
+    $check = unc_import_make_thumbnail($new_path, $new_thumb_path);
     if ($check) {
         echo "Done!<br>";
     }
@@ -200,32 +238,29 @@ function unc_uploads_process($i, $overwrite) {
  * Creates image thumbnails
  * 
  * @global type $WPG_CONFIG
- * @param type $image_filename
- * @param type $target_subfolder
+ * @param type $image_file_path
+ * @param type $target_file_path
  * @return boolean
  */
-function unc_import_make_thumbnail($image_filename, $target_subfolder) {
+function unc_import_make_thumbnail($image_file_path, $target_file_path) {
     global $WPG_CONFIG;
 
-    $out = $image_filename;
+    $out = $image_file_path;
     $thumbnail_size = $WPG_CONFIG['thumbnail_size'];
-    $filename = basename($image_filename);
 
     $img_types = array(1 => 'GIF', 2 => 'JPEG', 3 => 'PNG');
 
-    $arr_image_details = getimagesize($image_filename); // pass id to thumb name
+    // let's get the image size
+    // this exit check is a bit redundant since we did that before with the uploaded file
+    $arr_image_details = getimagesize($image_file_path); // pass id to thumb name
     if (!$arr_image_details) {
-        echo "ERROR: Failed to get image size of $image_filename<br>";
+        echo "ERROR: Failed to get image size of $image_file_path<br>";
         return false;
     }
     $original_width = $arr_image_details[0];
     $original_height = $arr_image_details[1];
     $out .= " | Size: $original_width / $original_height | ";
 
-    if ($original_width == 0 || $original_height == 0) {
-        echo "ERROR: Image size $image_filename == 0<br>";
-        return false;
-    }
     // landscape image
     if ($original_width > $original_height) {
         $new_height = intval($original_height * ($thumbnail_size / $original_width));
@@ -236,13 +271,15 @@ function unc_import_make_thumbnail($image_filename, $target_subfolder) {
     }
     // get image extension
     $image_ext = $img_types[$arr_image_details[2]];
+    
+    // set the function names for processing
     $img_generator = "Image" . $WPG_CONFIG['thumbnail_ext'];
     $imgcreatefrom = "ImageCreateFrom" . $image_ext;
 
-    $old_image = $imgcreatefrom($image_filename);
+    $old_image = $imgcreatefrom($image_file_path);
     $new_image = imagecreatetruecolor($new_width, $new_height);
     imagecopyresized($new_image, $old_image, 0, 0, 0, 0, $new_width, $new_height, $original_width, $original_height);
-    $img_generator($new_image, $target_subfolder . "/" . $filename);
+    $img_generator($new_image, $target_file_path);
     echo "Thumbnail created!<br>";
     return true;
 }

@@ -20,6 +20,10 @@ $WPG_CONFIG['timezone'] = 'Asia/Hong_Kong';
 $WPG_CONFIG['thumbnail_size'] = 300;
 $WPG_CONFIG['thumbnail_ext'] = 'PNG';
 
-$WPG_CONFIG['valid_filetypes'] = array("image/gif" => 'gif', "image/jpeg" => 'jpg', "image/png" => 'png',);
+$WPG_CONFIG['valid_filetypes'] = array(
+    "image/gif" => 'gif', 
+    "image/jpeg" => 'jpg', 
+    "image/png" => 'png',
+);
 
 $WPG_CONFIG['offset'] = "-12 hours";

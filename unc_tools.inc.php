@@ -96,9 +96,13 @@ function unc_date_folder_delete($date_str) {
     return $out;
 }
 
-/*
+/**
  * returns a date-time object with todays timezone
  * get a MySQL timestamp with $now = $date_now->format("Y-m-d H:i:s");
+ * 
+ * @global type $WPG_CONFIG
+ * @param type $date
+ * @return \DateTime
  */
 function unc_datetime($date = NULL) {
     global $WPG_CONFIG;
@@ -152,25 +156,69 @@ function unc_array_iterate_compact($array, $path = '') {
 }
 
 /**
- * recurse a folder and apply a custom function to the contents
+ * recurse a folder and apply a custom function to the files
  *
  * @param type $base_folder
  * @param type $function
- * @return type
+ * @return array
  */
 function unc_gallery_recurse_files($base_folder, $function) {
-    $out = '';
+    $out = array();
     // safety net
-    if (strstr($base_folder, './') || strstr($base_folder, '../')) {
+    if (strpos($base_folder, '.' . DIRECTORY_SEPARATOR)) {
         die("Error, recusive path! $base_folder");
     }
     foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file) {
         if (is_dir($file)) {
-            $out .= unc_gallery_recurse_files($file, $function);
+            $out[] = unc_gallery_recurse_files($file, $function);
         } else {
             // working on $file in folder $main
-            $out .= $function($file);
+            $out[] = $function($file);
         }
     }
     return $out;
+}
+
+/**
+ * returns the latest date
+ * 
+ * @global type $WPG_CONFIG
+ * @return type
+ */
+function unc_tools_date_latest() {
+    global $WPG_CONFIG;
+    $date_obj = unc_datetime();
+    $date_str = $date_obj->format("Y/m/d");
+
+    $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
+
+    // this could be improved by going back first years, then months, then days
+    while (!file_exists($photo_folder . "/". $date_str)) {
+        $date_obj->modify("-1 day");
+        $date_str = $date_obj->format("Y/m/d");
+    }
+    $return_str = $date_obj->format("Y-m-d");
+    return $return_str;
+}
+
+/**
+ * returns a random date
+ * 
+ * @global type $WPG_CONFIG
+ * @return type
+ */
+function unc_tools_date_random() {
+    global $WPG_CONFIG;
+    $date_obj = unc_datetime();
+    $date_str = $date_obj->format("Y/m/d");
+
+    $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
+
+    // this could be improved by going back first years, then months, then days
+    while (!file_exists($photo_folder . "/". $date_str)) {
+        $date_obj->modify("-1 day");
+        $date_str = $date_obj->format("Y/m/d");
+    }
+    $return_str = $date_obj->format("Y-m-d");
+    return $return_str;
 }

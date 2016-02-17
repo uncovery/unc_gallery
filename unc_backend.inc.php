@@ -12,7 +12,7 @@ add_action('admin_init', 'unc_gallery_admin_init');
 // add an admin menu
 add_action('admin_menu', 'unc_gallery_admin_menu');
 // this activates the returns without header & footer on upload Ajax POST
-add_action('wp_ajax_unc_uploads', 'unc_uploads_handler');
+add_action('wp_ajax_unc_gallery_uploads', 'unc_uploads_iterate_files');
 
 function unc_gallery_admin_menu() {
     // the main page where we manage the options
@@ -101,7 +101,7 @@ function unc_gallery_admin_display_images() {
 function unc_gallery_admin_init() {
     global $WPG_CONFIG;
     register_setting('unc_gallery_settings_group', 'unc_gallery_setting');
-    add_settings_section('basic_settings', 'Basic Settings', 'unc_gallery_admin_basic_settings', 'unc_gallery');
+    add_settings_section('basic_settings', 'Basic Settings', 'unc_gallery_admin_help_settings', 'unc_gallery');
     //add_settings_field( 'field-one', 'Field One', 'unc_gallery_backend_image_upload', 'unc_gallery', 'basic_settings');
     // check if the upload folder exists:
     $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
@@ -133,7 +133,6 @@ function unc_gallery_admin_add_css_and_js() {
 /**
  * this will manage the settings
  */
-function unc_gallery_admin_basic_settings() {
-
+function unc_gallery_admin_settings() {
     echo "test";
 }

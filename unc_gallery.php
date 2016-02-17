@@ -58,11 +58,7 @@ function unc_gallery_plugin_activate() {
 }
 
 function unc_gallery_plugin_deactivate() {
-    global $wpdb, $WPG_CONFIG;
-    //$table_name = $wpdb->prefix . 'unc_gallery_images';
-    //$sql = "DROP TABLE IF EXISTS $table_name;";
-    //$wpdb->query($sql);
-
+    global $WPG_CONFIG;
     $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
     if (file_exists($dirPath)) {
         $result = rmdir($dirPath);
