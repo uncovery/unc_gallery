@@ -179,6 +179,24 @@ function unc_gallery_recurse_files($base_folder, $function) {
     return $out;
 }
 
+function unc_tools_recurse_folders($base_folder) {
+    $out = array();
+    if (strpos($base_folder, '.' . DIRECTORY_SEPARATOR)) {
+        die("Error, recusive path! $base_folder");
+    }
+    foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $folder) {
+        // found a sub-folder, go deeper
+        if (is_dir($folder)) {
+            $out[] = unc_gallery_recurse_files($folder);
+        } else { // no
+            return $base_folder;
+        }
+    }
+    // sort it descending
+    asort($out);
+    return $out;
+}
+
 /**
  * returns the latest date
  * 
