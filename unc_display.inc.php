@@ -26,13 +26,14 @@ function unc_gallery_apply($atts) {
         'type' => 'day',
         'date' => 'latest',
         'file' => 'latest',
-        'options' => false,
+        'options' => array(),
     ), $atts );
 
     $type = $a['type'];
     $date = $a['date'];
     $file = $a['file'];
-    $options = $a['options'];
+    // there can be several options, separated by space
+    $options = explode(" ", $a['options']);
 
     // options for displays
     $keywords = array(
@@ -76,10 +77,12 @@ function unc_gallery_apply($atts) {
 
     // options
     $possible_type_options = $keywords['type'][$type];
-    if ($options && !in_array($options, $possible_type_options)) {
-        $error = "ERROR: You have an invalid option for the display type \"$type\" in your tag."
-            . "<br>Valid options are: " . implode(",", $keywords['type'][$type]);
-        return $error;
+    foreach ($options as $option) {
+        if (!in_array($option, $possible_type_options)) {
+            $error = "ERROR: You have an invalid option for the display type \"$type\" in your tag."
+                . "<br>Valid options are: " . implode(",", $keywords['type'][$type]);
+            return $error;
+        }
     }
 
     $link = false;
@@ -118,9 +121,7 @@ function unc_gallery_display_page($date, $datepicker = false, $thumb = false, $l
 
     $date_json = 'var availableDates = ["' . implode("\",\"", $new_dates) . '"];';
 
-    $s_get = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
-    $images = '';
-    $out = "Showing $date";
+    $out = "<span id=\"photodate\">Showing $date</span>";
     // show the selected date
 
     $date_obj = unc_datetime($date . " 00:00:00");
@@ -139,23 +140,21 @@ function unc_gallery_display_page($date, $datepicker = false, $thumb = false, $l
     // get a json datepicker
     $datepicker_div = '';
     if ($datepicker) {
-        $out .= "\n        <script>
+        $out .= "\n     <script type=\"text/javascript\">
         $date_json
+        var ajaxurl = '" . admin_url('admin-ajax.php') . "';
         jQuery(document).ready(function($) {
-            jQuery( \"#datepicker\" ).datepicker({
-                dateFormat: \"yy-mm-dd\",
-                defaultDate: \"$requested_date\",
-                beforeShowDay: available,
-                onSelect: openlink,
-            });
+            datepicker_ready('$date');
         });
         </script>";
-        $datepicker_div = '<div id=\"datepicker\"></div>';
+        $datepicker_div = '<div id="datepicker"></div>';
     }
     $out .= "
         <div class=\"photopage\">
             $datepicker_div
-            $images
+            <div id=\"photobox\">
+                $images
+            </div>
         </div>";
 
     // remove the page tag from the original content and insert the new content
@@ -196,26 +195,36 @@ function unc_display_folder_list($base_folder) {
  * @param type $date_str
  * @return string
  */
-function unc_display_folder_images($date_str) {
+function unc_display_folder_images($date_str = false) {
     global $WPG_CONFIG;
+    $echo = false;
+    if (!$date_str) {
+        $echo = true;
+        $date_wrong = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
+        $date_str = str_replace("-", DIRECTORY_SEPARATOR, $date_wrong);
+    }
+    
     // $photo_folder = $WPG_CONFIG['gallery_path'] . $WPG_CONFIG['photos'];
     $thumb_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] .  $WPG_CONFIG['thumbnails'];
 
     // $curr_photo_folder = $photo_folder . "/" . $date_str;
     $curr_thumb_folder = $thumb_folder . DIRECTORY_SEPARATOR . $date_str;
-
     $out = '';
     foreach (glob($curr_thumb_folder.DIRECTORY_SEPARATOR."*") as $file) {
         $filename = basename($file);
         if ($file != '.' && $file != '..') {
             $photo_url = content_url($WPG_CONFIG['upload'] . $WPG_CONFIG['photos'] . "/$date_str/$filename");
             $thumb_url = content_url($WPG_CONFIG['upload'] . $WPG_CONFIG['thumbnails'] . "/$date_str/$filename");
-            $out .= "    <div class=\"photobox\">\n"
-                . "        <a href=\"$photo_url\" class=\"thickbox\" rel=\"gallery\">\n"
+            $out .= "        <a href=\"$photo_url\" class=\"thickbox\" rel=\"gallery\">\n"
                 . "            <img alt=\"$filename\" src=\"$thumb_url\">\n"
-                . "        </a>\n"
-                . "    </div>\n";
+                . "        </a>\n";
         }
     }
-    return $out;
+    if ($echo) {
+        ob_clean();
+        echo $out;
+        wp_die();
+    } else {
+        return $out;
+    }
 }
