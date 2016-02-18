@@ -21,6 +21,11 @@ require_once( plugin_dir_path( __FILE__ ) . "unc_upload.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_display.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_tools.inc.php");
 
+global $XMPP_ERROR;
+require_once('/home/includes/xmpp_error/xmpp_error.php');
+$XMPP_ERROR['config']['project_name'] = 'unc_gallery';
+$XMPP_ERROR['config']['enabled'] = true;
+
 // actions on activating and deactivating the plugin
 register_activation_hook( __FILE__, 'unc_gallery_plugin_activate');
 register_deactivation_hook( __FILE__, 'unc_gallery_plugin_deactivate');
@@ -66,4 +71,22 @@ function unc_gallery_plugin_deactivate() {
             echo "There was an error deleting the upload folder $dirPath!";
         }
     }
+}
+
+/**
+ * add additional CSS and JS
+ */
+function unc_gallery_add_css_and_js() {
+    wp_enqueue_script('jquery-ui');
+    wp_enqueue_script('jquery-ui-datepicker');
+    wp_enqueue_script('jquery-form');
+    wp_enqueue_script('thickbox', null, array('jquery'));
+    wp_enqueue_style('thickbox.css', '/'.WPINC.'/js/thickbox/thickbox.css', null, '1.0');
+
+    wp_enqueue_style('bootstrap-css', plugin_dir_url( __FILE__ ) . 'css/bootstrap.min.css');
+    wp_enqueue_style('magnific-popup-css', plugin_dir_url( __FILE__ ) . 'css/magnific-popup.css');
+
+    wp_enqueue_script('unc_gallery_js', plugin_dir_url( __FILE__ ) . 'js/unc_gallery.js');
+    wp_enqueue_style('unc_gallery_css', plugin_dir_url( __FILE__ ) . 'css/gallery.css');
+    wp_enqueue_style('jquery_ui_css', plugin_dir_url( __FILE__ ) . 'css/jquery-ui.css');
 }
