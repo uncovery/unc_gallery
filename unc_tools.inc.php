@@ -31,7 +31,7 @@ function unc_date_folder_create($date_str) {
     foreach ($path_arr as $img_folder) {
         // create the complete folder
         $base_folder = $dirPath . $img_folder;
-        // iterate the date strings y m d 
+        // iterate the date strings y m d
         foreach ($date_folders as $date_folder) {
             // if it's not the root folder, we format the date to reflect he element
             if ($date_folder) {
@@ -56,7 +56,7 @@ function unc_date_folder_create($date_str) {
 /**
  * Delete a date folder and all it's contents, images AND thumbs.
  * we need to validate that the $date_str is a valid date
- * 
+ *
  * @param type $date_str
  */
 function unc_date_folder_delete($date_str) {
@@ -99,7 +99,7 @@ function unc_date_folder_delete($date_str) {
 /**
  * returns a date-time object with todays timezone
  * get a MySQL timestamp with $now = $date_now->format("Y-m-d H:i:s");
- * 
+ *
  * @global type $WPG_CONFIG
  * @param type $date
  * @return \DateTime
@@ -117,7 +117,7 @@ function unc_datetime($date = NULL) {
 
 /**
  * this converts an array of dates to UTC
- * 
+ *
  * @param type $dates
  * @return type
  */
@@ -135,7 +135,7 @@ function unc_display_fix_timezones($dates) {
 
 /**
  * this display a multi-dimensional array as an HTML list
- * 
+ *
  * @param type $array
  * @param string $path
  * @return string
@@ -166,7 +166,7 @@ function unc_gallery_recurse_files($base_folder, $function) {
     $out = array();
     // safety net
     if (strpos($base_folder, '.' . DIRECTORY_SEPARATOR)) {
-        die("Error, recusive path! $base_folder");
+        die("Error, recursive path! $base_folder");
     }
     foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file) {
         if (is_dir($file)) {
@@ -180,63 +180,84 @@ function unc_gallery_recurse_files($base_folder, $function) {
 }
 
 function unc_tools_recurse_folders($base_folder) {
-    $out = array();
+    global $TMP_FOLDERS;
     if (strpos($base_folder, '.' . DIRECTORY_SEPARATOR)) {
-        die("Error, recusive path! $base_folder");
+        die("Error, recursive path! $base_folder");
     }
+    $has_subfolder = false;
     foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $folder) {
         // found a sub-folder, go deeper
         if (is_dir($folder)) {
-            $out[] = unc_gallery_recurse_files($folder);
-        } else { // no
-            return $base_folder;
+            unc_tools_recurse_folders($folder);
+            $has_subfolder = true;
         }
     }
-    // sort it descending
-    asort($out);
-    return $out;
+    if (!$has_subfolder) {
+        $TMP_FOLDERS[] = $base_folder;
+    }
+    return $TMP_FOLDERS;
 }
 
 /**
  * returns the latest date
- * 
+ *
  * @global type $WPG_CONFIG
  * @return type
  */
 function unc_tools_date_latest() {
     global $WPG_CONFIG;
-    $date_obj = unc_datetime();
-    $date_str = $date_obj->format("Y/m/d");
-
     $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
+    $folders = unc_tools_recurse_folders($photo_folder);
 
-    // this could be improved by going back first years, then months, then days
-    while (!file_exists($photo_folder . "/". $date_str)) {
-        $date_obj->modify("-1 day");
-        $date_str = $date_obj->format("Y/m/d");
-    }
-    $return_str = $date_obj->format("Y-m-d");
-    return $return_str;
+    rsort($folders);
+
+    $my_folder = $folders[0];
+    $new_date_str = unc_tools_folder_date($my_folder);
+    return $new_date_str;
 }
 
 /**
  * returns a random date
- * 
+ *
  * @global type $WPG_CONFIG
  * @return type
  */
 function unc_tools_date_random() {
     global $WPG_CONFIG;
-    $date_obj = unc_datetime();
-    $date_str = $date_obj->format("Y/m/d");
-
     $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
+    $folders = unc_tools_recurse_folders($photo_folder);
 
-    // this could be improved by going back first years, then months, then days
-    while (!file_exists($photo_folder . "/". $date_str)) {
-        $date_obj->modify("-1 day");
-        $date_str = $date_obj->format("Y/m/d");
-    }
-    $return_str = $date_obj->format("Y-m-d");
-    return $return_str;
+    $count = count($folders);
+    $rnd = random_int (0, $count - 1);
+    $my_folder = $folders[$rnd];
+    // split by path
+    $new_date_str = unc_tools_folder_date($my_folder);
+    return $new_date_str;
+}
+
+/**
+ * checks if a date is valid and sends it back
+ *
+ * @param type $date
+ * @return type
+ */
+function unc_tools_date_validate($date) {
+
+    $newdate = $date;
+    return $newdate;
+}
+
+/**
+ * takes a folder and returns the date of the folder.
+ *
+ * @param type $folder
+ * @return type
+ */
+function unc_tools_folder_date($folder) {
+    $path_arr = explode(DIRECTORY_SEPARATOR, $folder);
+    $folder_count = count($path_arr);
+    // get last 3 elements
+    $new_date_arr = array($path_arr[$folder_count - 3], $path_arr[$folder_count - 2], $path_arr[$folder_count - 1]);
+    $new_date_str = implode("-", $new_date_arr);
+    return $new_date_str;
 }
