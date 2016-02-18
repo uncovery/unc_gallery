@@ -121,9 +121,6 @@ function unc_gallery_display_page($date, $datepicker = false, $thumb = false, $l
 
     $date_json = 'var availableDates = ["' . implode("\",\"", $new_dates) . '"];';
 
-    $out = "<span id=\"photodate\">Showing $date</span>";
-    // show the selected date
-
     $date_obj = unc_datetime($date . " 00:00:00");
     if ($date_obj) {
         $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
@@ -138,7 +135,7 @@ function unc_gallery_display_page($date, $datepicker = false, $thumb = false, $l
     }
 
     // get a json datepicker
-    $datepicker_div = '';
+    $datepicker_div = "<span id=\"photodate\">Showing $date</span>";
     if ($datepicker) {
         $out .= "\n     <script type=\"text/javascript\">
         $date_json
@@ -147,7 +144,7 @@ function unc_gallery_display_page($date, $datepicker = false, $thumb = false, $l
             datepicker_ready('$date');
         });
         </script>";
-        $datepicker_div = '<div id="datepicker"></div>';
+        $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"$date\">";
     }
     $out .= "
         <div class=\"photopage\">
