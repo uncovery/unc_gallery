@@ -65,6 +65,7 @@ function unc_gallery_apply($atts) {
             $date = $datetime->format("Y-m-d");
         }
     }
+    
     // get the latest or a random date if required
     if ($date == 'latest') {
         $date = unc_tools_date_latest();
@@ -73,7 +74,7 @@ function unc_gallery_apply($atts) {
     } else {
         $date = unc_tools_date_validate($date);
     }
-
+    
 
     // options
     $possible_type_options = $keywords['type'][$type];

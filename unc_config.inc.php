@@ -17,7 +17,7 @@ $WPG_CONFIG['base_url'] = plugins_url();
 $WPG_CONFIG['gallery_url'] = $WPG_CONFIG['base_url'] . "/galleries";
 
 $WPG_CONFIG['timezone'] = 'Asia/Hong_Kong';
-$WPG_CONFIG['thumbnail_size'] = 300;
+$WPG_CONFIG['thumbnail_height'] = 150;
 $WPG_CONFIG['thumbnail_ext'] = 'PNG';
 
 $WPG_CONFIG['valid_filetypes'] = array(

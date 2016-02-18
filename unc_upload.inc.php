@@ -246,7 +246,7 @@ function unc_import_make_thumbnail($image_file_path, $target_file_path) {
     global $WPG_CONFIG;
 
     $out = $image_file_path;
-    $thumbnail_size = $WPG_CONFIG['thumbnail_size'];
+    $thumbnail_height = $WPG_CONFIG['thumbnail_height'];
 
     $img_types = array(1 => 'GIF', 2 => 'JPEG', 3 => 'PNG');
 
@@ -261,14 +261,10 @@ function unc_import_make_thumbnail($image_file_path, $target_file_path) {
     $original_height = $arr_image_details[1];
     $out .= " | Size: $original_width / $original_height | ";
 
-    // landscape image
-    if ($original_width > $original_height) {
-        $new_height = intval($original_height * ($thumbnail_size / $original_width));
-        $new_width = $thumbnail_size;
-    } else { // portrait image
-        $new_width = intval($original_width * ($thumbnail_size / $original_height));
-        $new_height = $thumbnail_size;
-    }
+    // we try to get the same height for all images
+    $new_height = $thumbnail_height;
+    $new_width = intval($original_width * ($thumbnail_height / $original_height));
+
     // get image extension
     $image_ext = $img_types[$arr_image_details[2]];
     
