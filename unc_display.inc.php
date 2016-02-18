@@ -21,7 +21,7 @@ function unc_images_display() {
  */
 function unc_gallery_apply($atts) {
     // this is the REGEX to check only for the activator, other stuff is done later
-
+    unc_gallery_add_css_and_js();
     $a = shortcode_atts( array(
         'type' => 'day',
         'date' => 'latest',
@@ -51,9 +51,12 @@ function unc_gallery_apply($atts) {
         $thumb = true;
     }
 
-    if (in_array($date, $keywords['date'])) {
-        $date = $keywords['date'][$date]; // either latest or random
-    } else { //if none of the defaults, we assume date
+    if (!in_array($date, $keywords['date'])) {
+        // lets REGEX
+        $pattern = '/[\d]{4}-[\d]{2}-[\d\d]{2}/';
+        if (preg_match($pattern, $date) == 0) {
+            return "ERROR: Your date needs to be in the format '2016-01-31'";
+        }
         $datetime = new DateTime($date);
         if (!$datetime) { // invalid date, fallback to latest
             $date = 'latest'; // TODO: this should throw an error
@@ -92,15 +95,12 @@ function unc_gallery_apply($atts) {
     if ($type == 'day') {
         $content_new = unc_gallery_display_page($date, $datepicker);
     } else {
-        $content_new = unc_gallery_display_image($date, $thumb, $link, $file);
+        $content_new = unc_gallery_display_image($date, $datepicker, $thumb, $link, $file);
     }
-
-    // now we got the variables, let's get the actual content
-    $content_new = $out . unc_gallery_display_page($date);
     return $content_new;
 }
 
-function unc_gallery_display_page($date = false) {
+function unc_gallery_display_page($date, $datepicker = false, $thumb = false, $link = false, $file = false) {
     global $WPG_CONFIG;
 
     // do not let wp manipulate linebreaks
@@ -120,29 +120,10 @@ function unc_gallery_display_page($date = false) {
 
     $s_get = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
     $images = '';
-    $out = "Showing ";
+    $out = "Showing $date";
     // show the selected date
-    if ($date) {
-        $date_check = date_create($date);
-        if (!$date_check) {
-            return "ERROR: Date '$date' not found";
-        }
-        $requested_date = $date_check;
-    } else if (isset($s_get['unc_date'])) {
-        // validate if this is a proper date
-        $date_check = date_create($s_get['unc_date']);
-        if (!$date_check) {
-            return "ERROR: Date not found";
-        }
-        $requested_date = $s_get['unc_date'];
-        $out .= "date $requested_date ";
-    } else {
-        // show the latest date
-        $requested_date = unc_tools_date_latest();
-        $out .= "most recent date ";
-    }
 
-    $date_obj = unc_datetime($requested_date . " 00:00:00");
+    $date_obj = unc_datetime($date . " 00:00:00");
     if ($date_obj) {
         $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
         $date_str = $date_obj->format($format);
@@ -155,9 +136,10 @@ function unc_gallery_display_page($date = false) {
         return "ERROR: Date not found (object error)";
     }
 
-    $out .= "$requested_date"; //and gallery $gallery
     // get a json datepicker
-    $out .= "\n        <script>
+    $datepicker_div = '';
+    if ($datepicker) {
+        $out .= "\n        <script>
         $date_json
         jQuery(document).ready(function($) {
             jQuery( \"#datepicker\" ).datepicker({
@@ -167,9 +149,12 @@ function unc_gallery_display_page($date = false) {
                 onSelect: openlink,
             });
         });
-        </script>
+        </script>";
+        $datepicker_div = '<div id=\"datepicker\"></div>';
+    }
+    $out .= "
         <div class=\"photopage\">
-            <div id=\"datepicker\"></div>
+            $datepicker_div
             $images
         </div>";
 
