@@ -50,6 +50,10 @@
     width: auto;
 }
 
+#TB_window {
+    padding-bottom: 20px;
+}
+
 .photopage div.ui-datepicker{
     font-size:13px;
 }
