@@ -5,8 +5,7 @@ if (!defined('WPINC')) {
     die;
 }
 
-// add filter to scan content for activating
-add_filter('the_content', 'unc_gallery', 0);
+add_shortcode('unc_gallery', 'unc_gallery_apply');
 // initialize the plugin, create the upload folder
 add_action('admin_init', 'unc_gallery_admin_init');
 // add an admin menu
