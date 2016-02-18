@@ -46,8 +46,8 @@
 }
 
 .photopage #datepicker {
-    float:left;
     margin:5px;
+    width: auto;
 }
 
 .photopage div.ui-datepicker{
