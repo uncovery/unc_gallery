@@ -42,14 +42,14 @@ function unc_gallery_admin_menu() {
         'unc_gallery_admin_view', // menu_slug
         'unc_gallery_admin_display_images' // function
     );
-    add_action('admin_print_scripts-' . $view_page_hook_suffix, 'unc_gallery_admin_add_css_and_js');    
+    add_action('admin_print_scripts-' . $view_page_hook_suffix, 'unc_gallery_admin_add_css_and_js');
 }
 
 /**
  * displayes the complete image catalogue for the admin
  * TODO: the content should only show the past few dates and collapse the rest
  * and then provide buttons for AJAX-loading of older content
- * 
+ *
  * @global type $WPG_CONFIG
  */
 function unc_gallery_admin_display_images() {
@@ -64,7 +64,7 @@ function unc_gallery_admin_display_images() {
         $out .= unc_date_folder_delete($folder_del);
     }
 
-    // we do not want to convert linebreaks 
+    // we do not want to convert linebreaks
     remove_filter('the_content', 'wpautop');
 
     $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
@@ -80,14 +80,15 @@ function unc_gallery_admin_display_images() {
 
     foreach ($new_dates as $date => $details) {
         $date_split = explode("-", $date);
-        $dates_arr["{$date_split[0]}/{$date_split[1]}/{$date_split[2]}"] = $details;
+        $date_path = implode(DIRECTORY_SEPARATOR, $date_split);
+        $dates_arr[$date_path] = $date;
     }
 
     $out .= "<div class=\"photopage adminpage\">\n";
-    foreach ($dates_arr as $text => $image_arr) {
+    foreach ($dates_arr as $text => $date_str) {
         $delete_link = " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$text\">Delete Folder</a>";
         $images = unc_display_folder_images($text);
-        $out .= "<h3>$text:$delete_link</h3>\n" . $images . "<br>";
+        $out .= "<h3>$date_str:$delete_link</h3>\n" . $images . "<br>";
     }
     $out .= "</div>\n";
     echo $out;
@@ -95,13 +96,13 @@ function unc_gallery_admin_display_images() {
 
 /**
  * This adds the Wordpress features for the admin pages
- * 
+ *
  * @global type $WPG_CONFIG
  */
 function unc_gallery_admin_init() {
     global $WPG_CONFIG;
     register_setting('unc_gallery_settings_group', 'unc_gallery_setting');
-    add_settings_section('basic_settings', 'Basic Settings', 'unc_gallery_admin_help_settings', 'unc_gallery');
+    add_settings_section('basic_settings', 'Basic Settings', 'unc_gallery_admin_settings', 'unc_gallery');
     //add_settings_field( 'field-one', 'Field One', 'unc_gallery_backend_image_upload', 'unc_gallery', 'basic_settings');
     // check if the upload folder exists:
     $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
