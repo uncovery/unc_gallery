@@ -16,20 +16,20 @@
     list-style:none;
 }
 
-#photobox .thickbox{
+#photobox .thickbox {
     float:left;
-    margin-left:10px;
-    margin-bottom: 10px;
+    margin-left:5px;
+    margin-bottom: 5px;
+}
+
+#TB_window {
+    padding-bottom: 20px;
 }
 
 .adminpage h3:before{
     content:'';
     display:block;
     clear: both;
-}
-
-.adminpage .photobox img {
-    max-height: 70px;
 }
 
 .adminpage h3 {
@@ -41,20 +41,12 @@
     font-size: 0.9em;
 }
 
-.photopage .photobox img {
-    height:220px;
-}
-
 .photopage #datepicker {
     margin:5px;
     width: auto;
 }
 
-#TB_window {
-    padding-bottom: 20px;
-}
-
-.photopage div.ui-datepicker{
+.photopage input.ui-datepicker{
     font-size:13px;
 }
 .photopage .ui-icon { 
