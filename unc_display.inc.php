@@ -24,17 +24,17 @@ function unc_gallery($content) {
     $pattern_activator = "/\[(?'activator'unc_gallery) (?'modifiers'.*)\]/";
     $base_matches = false;
     preg_match($pattern_activator, $content, $base_matches);
-    
+
     // if we cannot even find unc_gallery just return back the content
     if (!isset($base_matches['activator'])) {
         return $content;
     }
-    
+
     // get all the individual key="value1 value2" patterns:
     $modifier_matches = false;
     $groups_pattern = '/( [a-z="]*)/gi';
     preg_match($groups_pattern, $base_matches['modifiers'], $modifier_matches);
-    
+
     // now we split them into key=array(value1, value2)
     $sub_group_pattern = "/(?'key'[\w]*)=\"(?'values'[ \w]*)\"/";
     $settings = array();
@@ -52,11 +52,11 @@ function unc_gallery($content) {
             'gallery' => array('datepicker'), // shows a single date's gallery, optional date picker
             'image' => array('link'), // only one image, requires file addon unless random or latest
             'icon' => array('link'), // only the icon of one image, requires file addon unless random or latest
-        ), 
+        ),
         'date' => array('random', 'latest'),  // whichdate to chose
-        'file', // in case of image or icon type, you can chose one filename 
-    );    
-    
+        'file', // in case of image or icon type, you can chose one filename
+    );
+
     // type, we defauly to 'day' if not given or invalid token
     if (!isset($settings['type']) || isset($settings['type'], $keywords['type'])) {
         $type = 'day';
@@ -69,7 +69,7 @@ function unc_gallery($content) {
     if ($type == 'icon') {
         $thumb = true;
     }
-    
+
     // date, we default to latest
     if (!isset($settings['date'])) {
         $date = 'latest';
@@ -96,17 +96,17 @@ function unc_gallery($content) {
         $error = "You have an invalid option for the display type $type in your tag";
         return $error;
     }
-    
+
     $link = false;
     if (in_array('link', $settings['options'])) {
         $link = true;
     }
-    
+
     $datepicker = false;
     if (in_array('datepicker', $settings['options'])) {
         $datepicker = true;
     }
-    
+
     // date
     if (!isset($settings['date'])) {
         return false;
@@ -118,13 +118,13 @@ function unc_gallery($content) {
     } else {
         $date = unc_tools_date_validate($date);
     }
-    
+
     if ($type == 'day') {
         $content_new = unc_gallery_display_page($content, $date, $datepicker);
     } else {
         $content_new = unc_gallery_display_image($content, $date, $thumb, $link, $settings['file']);
     }
-    
+
     // now we got the variables, let's get the actual content
     $content_new = unc_gallery_display_page($content, $date);
     return $content_new;
@@ -174,8 +174,9 @@ function unc_gallery_display_page($content, $date = false) {
 
     $date_obj = unc_datetime($requested_date . " 00:00:00");
     if ($date_obj) {
-        $date_str = $date_obj->format("Y/m/d");
-        if (file_exists($photo_folder . "/" . $date_str)) {
+        $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
+        $date_str = $date_obj->format($format);
+        if (file_exists($photo_folder . DIRECTORY_SEPARATOR . $date_str)) {
             $images = unc_display_folder_images($date_str);
         } else {
             return "ERROR: Date not found (folder error) $photo_folder/$date_str";
@@ -237,7 +238,7 @@ function unc_display_folder_list($base_folder) {
 
 /**
  * Open a folder of a certain date and display all the images in there
- * 
+ *
  * @global type $WPG_CONFIG
  * @param type $date_str
  * @return string
