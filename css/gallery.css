@@ -3,6 +3,10 @@
     padding:0px;
 }
 
+.photopage {
+    overflow:auto;
+}
+
 .dateShown a.ui-state-default {
     font-weight: bold;
 }
@@ -12,10 +16,14 @@
     list-style:none;
 }
 
-.photopage .photobox{
+#photobox .thickbox{
     float:left;
     margin-left: 5px;
     margin-bottom: 5px;
+} 
+
+#photobox:after {
+    clear: both;    
 }
 
 .adminpage h3:before{
@@ -116,4 +124,10 @@
     border: 2px solid;
     padding: 15px;
     width: 95%;
+}
+#ui-datepicker-div {
+    display:none;
+}
+datepicker #ui-datepicker-div {
+    display:block;
 }

@@ -155,7 +155,8 @@ function unc_gallery_display_page($date, $datepicker = false, $thumb = false, $l
             <div id=\"photobox\">
                 $images
             </div>
-        </div>";
+        </div>
+        <span style=\"clear:both;\"></span>";
 
     // remove the page tag from the original content and insert the new content
     return $out;

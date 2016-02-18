@@ -12,6 +12,8 @@ add_action('admin_init', 'unc_gallery_admin_init');
 add_action('admin_menu', 'unc_gallery_admin_menu');
 // this activates the returns without header & footer on upload Ajax POST
 add_action('wp_ajax_unc_gallery_uploads', 'unc_uploads_iterate_files');
+add_action('wp_ajax_nopriv_unc_gallery_datepicker', 'unc_display_folder_images');
+add_action('wp_ajax_unc_gallery_datepicker', 'unc_display_folder_images');
 
 function unc_gallery_admin_menu() {
     // the main page where we manage the options
