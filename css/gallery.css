@@ -18,12 +18,8 @@
 
 #photobox .thickbox{
     float:left;
-    margin-left: 5px;
-    margin-bottom: 5px;
-} 
-
-#photobox:after {
-    clear: both;    
+    margin-left:10px;
+    margin-bottom: 10px;
 }
 
 .adminpage h3:before{
