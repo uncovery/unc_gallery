@@ -31,7 +31,7 @@ function unc_gallery_admin_menu() {
         'unc_gallery_admin_upload', // menu_slug
         'unc_uploads_form' // function
     );
-    add_action('admin_print_scripts-' . $upload_page_hook_suffix, 'unc_gallery_admin_add_css_and_js');
+    add_action('admin_print_scripts-' . $upload_page_hook_suffix, 'unc_gallery_add_css_and_js');
     // where we list up all the images
     $view_page_hook_suffix = add_submenu_page(
         'unc_gallery_admin_menu', // $parent_slug
@@ -41,7 +41,7 @@ function unc_gallery_admin_menu() {
         'unc_gallery_admin_view', // menu_slug
         'unc_gallery_admin_display_images' // function
     );
-    add_action('admin_print_scripts-' . $view_page_hook_suffix, 'unc_gallery_admin_add_css_and_js');
+    add_action('admin_print_scripts-' . $view_page_hook_suffix, 'unc_gallery_add_css_and_js');
 }
 
 /**
@@ -110,24 +110,6 @@ function unc_gallery_admin_init() {
     }
     wp_register_script('jquery-form', '/wp-includes/js/jquery/jquery.form.js');
     wp_register_script('jquery-ui-datepicker', '/wp-includes/js/jquery/ui/jquery.ui.datepicker.min.js');
-}
-
-/**
- * add additional CSS and JS
- */
-function unc_gallery_admin_add_css_and_js() {
-    wp_enqueue_script('jquery-ui');
-    wp_enqueue_script('jquery-ui-datepicker');
-    wp_enqueue_script('jquery-form');
-    wp_enqueue_script('thickbox', null, array('jquery'));
-    wp_enqueue_style('thickbox.css', '/'.WPINC.'/js/thickbox/thickbox.css', null, '1.0');
-
-    wp_enqueue_style('bootstrap-css', plugin_dir_url( __FILE__ ) . 'css/bootstrap.min.css');
-    wp_enqueue_style('magnific-popup-css', plugin_dir_url( __FILE__ ) . 'css/magnific-popup.css');
-
-    wp_enqueue_script('unc_gallery_js', plugin_dir_url( __FILE__ ) . 'js/unc_gallery.js');
-    wp_enqueue_style('unc_gallery_css', plugin_dir_url( __FILE__ ) . 'css/gallery.css');
-    wp_enqueue_style('jquery_ui_css', plugin_dir_url( __FILE__ ) . 'css/jquery-ui.css');
 }
 
 /**
