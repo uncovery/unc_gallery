@@ -42,7 +42,7 @@ function unc_date_folder_create($date_str) {
             if (!file_exists($base_folder)) {
                 $mkdir_chk = mkdir($base_folder);
                 if (!$mkdir_chk) {
-                    echo "ERROR, could not create folder $base_folder<br>";
+                    echo unc_tools_errormsg("could not create folder $base_folder");
                     return false;
                 } else {
                     echo "Created folder $base_folder<br>";
@@ -65,7 +65,7 @@ function unc_date_folder_delete($date_str) {
     $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
     $date_obj = unc_datetime($date_str);
     if (!$date_obj) {
-        return "Invalid date folder!";
+        return unc_tools_errormsg("Invalid date folder!");
     }
     // convert date to folder string
     $fstr = DIRECTORY_SEPARATOR;
@@ -76,7 +76,7 @@ function unc_date_folder_delete($date_str) {
     foreach ($path_arr as $img_folder) {
         $base_folder = $dirPath . $img_folder . DIRECTORY_SEPARATOR . $date_folder;
         if (!file_exists($base_folder)) {
-            return "Folder $base_folder could not be deleted!";
+            return unc_tools_errormsg("Folder $base_folder could not be deleted!");
         }
         $out .= "Deleting folder $img_folder/$date_folder:<br>";
         $it = new RecursiveDirectoryIterator($base_folder, RecursiveDirectoryIterator::SKIP_DOTS);
@@ -162,23 +162,31 @@ function unc_array_iterate_compact($array, $path = '') {
  * @param type $function
  * @return array
  */
-function unc_gallery_recurse_files($base_folder, $function) {
-    $out = array();
+function unc_gallery_recurse_files($base_folder, $file_function, $dir_function) {
+    global $TMP_FOLDERS;
     // safety net
     if (strpos($base_folder, '.' . DIRECTORY_SEPARATOR)) {
         die("Error, recursive path! $base_folder");
     }
     foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file) {
         if (is_dir($file)) {
-            $out[] = unc_gallery_recurse_files($file, $function);
+            $TMP_FOLDERS[] = unc_gallery_recurse_files($file, $file_function, $dir_function);
         } else {
             // working on $file in folder $main
-            $out[] = $function($file);
+            $TMP_FOLDERS[] = $file_function($file);
         }
     }
-    return $out;
+    $TMP_FOLDERS[] = $dir_function($base_folder);
+    return $TMP_FOLDERS;
 }
 
+/**
+ * Recursively scan directories and make a list of the deepest folders
+ *
+ * @global type $TMP_FOLDERS
+ * @param type $base_folder
+ * @return type
+ */
 function unc_tools_recurse_folders($base_folder) {
     global $TMP_FOLDERS;
     if (strpos($base_folder, '.' . DIRECTORY_SEPARATOR)) {
@@ -208,7 +216,10 @@ function unc_tools_date_latest() {
     global $WPG_CONFIG;
     $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
     $folders = unc_tools_recurse_folders($photo_folder);
-
+    XMPP_ERROR_trigger($folders);
+    if (count($folders) == 1 && $folders[0] == $photo_folder) {
+        return false;
+    }
     rsort($folders);
 
     $my_folder = $folders[0];
@@ -226,7 +237,9 @@ function unc_tools_date_random() {
     global $WPG_CONFIG;
     $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
     $folders = unc_tools_recurse_folders($photo_folder);
-
+    if (count($folders) == 0) {
+        return false;
+    }
     $count = count($folders);
     $rnd = random_int (0, $count - 1);
     $my_folder = $folders[$rnd];
@@ -260,4 +273,8 @@ function unc_tools_folder_date($folder) {
     $new_date_arr = array($path_arr[$folder_count - 3], $path_arr[$folder_count - 2], $path_arr[$folder_count - 1]);
     $new_date_str = implode("-", $new_date_arr);
     return $new_date_str;
+}
+
+function unc_tools_errormsg($error) {
+    return "<div class=\"unc_gallery_error\">ERROR: $error</div>";
 }

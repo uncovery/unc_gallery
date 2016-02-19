@@ -60,11 +60,10 @@
     font-size:1em;
     font-weight:bold;
 }
-.demoInputBox{
+.uploadInputBox{
     padding:5px;
     border:#F0F0F0 1px solid;
     border-radius:4px;
-    background-color:#FFF;
 }
 #progress-bar {
     background-color: #12CC1A;

@@ -20,7 +20,6 @@ function unc_images_display() {
  * @return string
  */
 function unc_gallery_apply($atts) {
-    // this is the REGEX to check only for the activator, other stuff is done later
     unc_gallery_add_css_and_js();
     $a = shortcode_atts( array(
         'type' => 'day',
@@ -56,7 +55,7 @@ function unc_gallery_apply($atts) {
         // lets REGEX
         $pattern = '/[\d]{4}-[\d]{2}-[\d\d]{2}/';
         if (preg_match($pattern, $date) == 0) {
-            return "ERROR: Your date needs to be in the format '2016-01-31'";
+            return unc_tools_errormsg("Your date needs to be in the format '2016-01-31'");
         }
         $datetime = new DateTime($date);
         if (!$datetime) { // invalid date, fallback to latest
@@ -65,7 +64,7 @@ function unc_gallery_apply($atts) {
             $date = $datetime->format("Y-m-d");
         }
     }
-    
+
     // get the latest or a random date if required
     if ($date == 'latest') {
         $date = unc_tools_date_latest();
@@ -74,14 +73,18 @@ function unc_gallery_apply($atts) {
     } else {
         $date = unc_tools_date_validate($date);
     }
-    
+
+    if (!$date) {
+        // there are no pictures
+        return unc_tools_errormsg("No pictures found!");
+    }
 
     // options
     $possible_type_options = $keywords['type'][$type];
     foreach ($options as $option) {
         if (!in_array($option, $possible_type_options)) {
-            $error = "ERROR: You have an invalid option for the display type \"$type\" in your tag."
-                . "<br>Valid options are: " . implode(",", $keywords['type'][$type]);
+            $error = unc_tools_errormsg("You have an invalid option for the display type \"$type\" in your tag."
+                . "<br>Valid options are: " . implode(",", $keywords['type'][$type]));
             return $error;
         }
     }
@@ -129,10 +132,10 @@ function unc_gallery_display_page($date, $datepicker = false, $thumb = false, $l
         if (file_exists($photo_folder . DIRECTORY_SEPARATOR . $date_str)) {
             $images = unc_display_folder_images($date_str);
         } else {
-            return "ERROR: Date not found (folder error) $photo_folder/$date_str";
+            return unc_tools_errormsg("Date not found (folder error) $photo_folder/$date_str");
         }
     } else {
-        return "ERROR: Date not found (object error)";
+        return unc_tools_errormsg("Date not found (object error)");
     }
 
     // get a json datepicker
@@ -202,7 +205,7 @@ function unc_display_folder_images($date_str = false) {
         $date_wrong = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
         $date_str = str_replace("-", DIRECTORY_SEPARATOR, $date_wrong);
     }
-    
+
     // $photo_folder = $WPG_CONFIG['gallery_path'] . $WPG_CONFIG['photos'];
     $thumb_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] .  $WPG_CONFIG['thumbnails'];
 

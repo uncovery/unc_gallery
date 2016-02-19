@@ -56,7 +56,7 @@ function unc_gallery_plugin_activate() {
         $result = mkdir($dirPath, 0755);
         // check success
         if (!$result) {
-            echo "There was an error creating the upload folder $dirPath!";
+            echo unc_tools_errormsg("There was an error creating the upload folder $dirPath!");
         }
     }
 }
@@ -70,12 +70,10 @@ function unc_gallery_plugin_activate() {
 function unc_gallery_plugin_deactivate() {
     global $WPG_CONFIG;
     $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
-    if (file_exists($dirPath)) {
-        $result = rmdir($dirPath);
-        if (!$result) {
-            echo "There was an error deleting the upload folder $dirPath!";
-        }
-    }
+
+    // delete all files
+    unc_gallery_recurse_files($dirPath, 'unlink', 'rmdir');
+
     // remove all settings
     foreach ($WPG_CONFIG['user_settings'] as $setting => $D) {
         unregister_setting('unc_gallery_settings_group', $setting);

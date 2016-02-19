@@ -19,7 +19,7 @@ function unc_gallery_admin_menu() {
     add_submenu_page(
         'unc_gallery_admin_menu',
         'Uncovery Gallery Settings',
-        'Settings',
+        'Settings & Upload',
         'read',
         'unc_gallery_admin_menu',
         'unc_gallery_admin_settings'
@@ -61,6 +61,10 @@ function unc_gallery_admin_display_images() {
     $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
     // let's get the all image folders
     $folder_list = unc_display_folder_list($photo_folder);
+    if (count($folder_list) == 0) {
+        echo $out . "There are no images uploaded!";
+        return;
+    }
     // sort by date, reversed (latest first)
     krsort($folder_list);
 
@@ -101,7 +105,7 @@ function unc_gallery_admin_init() {
     // check if the upload folder exists:
     $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
     if (!file_exists($dirPath)) {
-        echo "There was an error creating the upload folder $dirPath!";
+        echo unc_tools_errormsg("There was an error creating the upload folder $dirPath!");
     }
     wp_register_script('jquery-form', '/wp-includes/js/jquery/jquery.form.js');
     wp_register_script('jquery-ui-datepicker', '/wp-includes/js/jquery/ui/jquery.ui.datepicker.min.js');
@@ -111,6 +115,7 @@ function unc_gallery_admin_init() {
  * this will manage the settings
  */
 function unc_gallery_admin_settings() {
+    echo "<h2>Uncovery Gallery Settings</h2>\n";
     echo '<div class="wrap">';
     echo unc_gallery_user_options();
     echo unc_gallery_admin_upload();
@@ -119,7 +124,6 @@ function unc_gallery_admin_settings() {
 
 function unc_gallery_user_options() {
     global $WPG_CONFIG;
-    echo "<h2>Uncovery Gallery Settings</h2>\n";
     echo '<form method="post" action="options.php">'. "\n";
     settings_fields('unc_gallery_settings_group');
     do_settings_sections( 'unc_gallery_settings_group');

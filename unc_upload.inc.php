@@ -35,10 +35,16 @@ function unc_gallery_admin_upload() {
             });
         </script>
         <div class="image_upload_input">
-            <label>Select files to upload:</label>
-            <input type="file" id="userImage" name="userImage[]" class="demoInputBox" multiple required/><br>
-            <label>Overwrite existing files?</label>
-            <input type="checkbox" name="overwrite">
+            <table>
+                <tr>
+                    <td><label>Select files to upload:</label></td>
+                    <td><input type="file" id="userImage" name="userImage[]" class="uploadInputBox" multiple required/></td>
+                </tr>
+                <tr>
+                    <td><label>Overwrite existing files?</label></td>
+                    <td><input type="checkbox" name="overwrite"></td>
+                </tr>
+            </table>
         </div>
         <div id="progress-div">
             <div id="progress-bar"></div>
@@ -114,14 +120,14 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // is there an error with the file?
     if ($F["error"][$i] > 0){
-        echo "Unable to read the file, upload cancelled of file " . $F['name'][$i] . "<br />";
+        echo unc_tools_errormsg("Unable to read the file, upload cancelled of file " . $F['name'][$i]);
         return false;
     }
 
     // if there is an imagesize, we have a valid image
     $image_check = getimagesize($F['tmp_name'][$i]);
     if (!$image_check) {
-        echo "Not image file, upload cancelled of file " . $F['name'][$i] . "<br />";
+        echo unc_tools_errormsg("Not image file, upload cancelled of file " . $F['name'][$i]);
         return false;
     }
 
@@ -130,27 +136,27 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // let's make sure the image is not 0-size
     if ($original_width == 0 || $original_height == 0) {
-        echo "ERROR: Image size {$F['name'][$i]} = 0<br>";
+        echo unc_tools_errormsg("Image size {$F['name'][$i]} = 0");
         return false;
     }
 
     // let's shrink only if we need to
     if ($original_width == $WPG_CONFIG['thumbnail_size'] && $original_height == $WPG_CONFIG['thumbnail_size']) {
-        echo "ERROR: Image size {$F['name'][$i]} is smaller than thumbnail!<br>";
+        echo unc_tools_errormsg("Image size {$F['name'][$i]} is smaller than thumbnail!");
         return false;
     }
 
     // get imagetype
     $exif_imagetype = exif_imagetype($F['tmp_name'][$i]);
     if (!$exif_imagetype) {
-        echo "Could not determine image type of file " . $F['name'][$i] . ", upload cancelled<br />";
+        echo unc_tools_errormsg("Could not determine image type of file " . $F['name'][$i] . ", upload cancelled!");
         return false;
     }
 
     // get mime-type and check if it's in the list of valid ones
     $mime_type = image_type_to_mime_type($exif_imagetype);
     if (!isset($mime_type, $WPG_CONFIG['valid_filetypes'])){
-        echo "Invalid file type :" . $F["type"][$i];
+        echo unc_tools_errormsg("Invalid file type :" . $F["type"][$i]);
         return false;
     }
 
@@ -163,14 +169,14 @@ function unc_uploads_process_file($i, $overwrite) {
     if (is_uploaded_file($F['tmp_name'][$i])) {
         $sourcePath = $F['tmp_name'][$i];
     } else {
-        echo "Error finding uploaded file {$F['tmp_name'][$i]}!";
+        echo unc_tools_errormsg("Cannot find uploaded file {$F['tmp_name'][$i]}!");
         return false;
     }
 
     // we need the exif date to know when the image was taken
     $exif_data = exif_read_data($sourcePath);
     if (!$exif_data || !isset($exif_data['DateTimeOriginal'])) {
-        echo "Error reading EXIF of file $sourcePath <br>\n";
+        echo unc_tools_errormsg("Cannot read EXIF of file $sourcePath");
         return false;
     }
 
@@ -178,7 +184,7 @@ function unc_uploads_process_file($i, $overwrite) {
     $date_str = $exif_data['DateTimeOriginal']; // format: 2011:06:04 08:56:22
     $date_check = date_create($date_str);
     if (!$date_check) {
-        echo "ERROR: '$date_str' is invalid date in EXIF<br>";
+        echo unc_tools_errormsg("'$date_str' is invalid date in EXIF");
         return false;
     }
 
@@ -213,7 +219,7 @@ function unc_uploads_process_file($i, $overwrite) {
     // finally, move the file
     $rename_chk = move_uploaded_file($F['tmp_name'][$i], $new_path);
     if (!$rename_chk) {
-        echo "Error (move_uploaded_file): Could not move {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path<br>";
+        echo unc_tools_errormsg("Could not move {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path");
         return false;
     } else {
         echo "Moving file from {$F['tmp_name'][$i]} to $new_path<br>";
@@ -222,7 +228,7 @@ function unc_uploads_process_file($i, $overwrite) {
     // chmod file to make sure it cannot be executed
     $check_chmod = chmod($new_path, 0644);
     if (!$check_chmod) {
-        echo "Error (chmod): Could not chmod 644 file $new_path<br>";
+        echo unc_tools_errormsg("Could not chmod 644 file $new_path");
         return false;
     } else {
         echo "Chmod successful!<br>";
@@ -256,7 +262,7 @@ function unc_import_make_thumbnail($image_file_path, $target_file_path) {
     // this exit check is a bit redundant since we did that before with the uploaded file
     $arr_image_details = getimagesize($image_file_path); // pass id to thumb name
     if (!$arr_image_details) {
-        echo "ERROR: Failed to get image size of $image_file_path<br>";
+        echo unc_tools_errormsg("Failed to get image size of $image_file_path");
         return false;
     }
     $original_width = $arr_image_details[0];
