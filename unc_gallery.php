@@ -76,6 +76,10 @@ function unc_gallery_plugin_deactivate() {
             echo "There was an error deleting the upload folder $dirPath!";
         }
     }
+    // remove all settings
+    foreach ($WPG_CONFIG['user_settings'] as $setting => $D) {
+        unregister_setting('unc_gallery_settings_group', $setting);
+    }
 }
 
 /**
