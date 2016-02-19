@@ -5,35 +5,25 @@ if (!defined('WPINC')) {
     die;
 }
 
-add_shortcode('unc_gallery', 'unc_gallery_apply');
-// initialize the plugin, create the upload folder
-add_action('admin_init', 'unc_gallery_admin_init');
-// add an admin menu
-add_action('admin_menu', 'unc_gallery_admin_menu');
-// this activates the returns without header & footer on upload Ajax POST
-add_action('wp_ajax_unc_gallery_uploads', 'unc_uploads_iterate_files');
-add_action('wp_ajax_nopriv_unc_gallery_datepicker', 'unc_display_folder_images');
-add_action('wp_ajax_unc_gallery_datepicker', 'unc_display_folder_images');
-
 function unc_gallery_admin_menu() {
     // the main page where we manage the options
-    add_menu_page(
+    $main_options_page_hook_suffix = add_menu_page(
         'Uncovery Gallery Options', // $page_title,
         'Uncovery Gallery', // $menu_title,
         'manage_options', // $capability,
         'unc_gallery_admin_menu', // $menu_slug,
-        'unc_gallery_options' // $function, $icon_url, $position
+        'unc_gallery_admin_settings' // $function, $icon_url, $position
     );
-    // where we upload images
-    $upload_page_hook_suffix = add_submenu_page(
-        'unc_gallery_admin_menu', // $parent_slug
-        'Upload Images',  // $page_title
-        'Upload Images', // $menu_title
-        'manage_options', // capability, manage_options is the default
-        'unc_gallery_admin_upload', // menu_slug
-        'unc_uploads_form' // function
+    add_action('admin_print_scripts-' . $main_options_page_hook_suffix, 'unc_gallery_add_css_and_js');
+    // let's rename that
+    add_submenu_page(
+        'unc_gallery_admin_menu',
+        'Uncovery Gallery Settings',
+        'Settings',
+        'read',
+        'unc_gallery_admin_menu',
+        'unc_gallery_admin_settings'
     );
-    add_action('admin_print_scripts-' . $upload_page_hook_suffix, 'unc_gallery_add_css_and_js');
     // where we list up all the images
     $view_page_hook_suffix = add_submenu_page(
         'unc_gallery_admin_menu', // $parent_slug
@@ -102,8 +92,11 @@ function unc_gallery_admin_display_images() {
  */
 function unc_gallery_admin_init() {
     global $WPG_CONFIG;
-    register_setting('unc_gallery_settings_group', 'unc_gallery_setting');
     add_settings_section('basic_settings', 'Basic Settings', 'unc_gallery_admin_settings', 'unc_gallery');
+    foreach ($WPG_CONFIG['user_settings'] as $setting => $D) {
+        register_setting('unc_gallery_settings_group', $setting);
+    }
+
     //add_settings_field( 'field-one', 'Field One', 'unc_gallery_backend_image_upload', 'unc_gallery', 'basic_settings');
     // check if the upload folder exists:
     $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
@@ -118,5 +111,27 @@ function unc_gallery_admin_init() {
  * this will manage the settings
  */
 function unc_gallery_admin_settings() {
-    echo "test";
+    echo '<div class="wrap">';
+    echo unc_gallery_user_options();
+    echo unc_gallery_admin_upload();
+    echo "</div>";
+}
+
+function unc_gallery_user_options() {
+    global $WPG_CONFIG;
+    echo "<h2>Uncovery Gallery Settings</h2>\n";
+    echo '<form method="post" action="options.php">'. "\n";
+    settings_fields('unc_gallery_settings_group');
+    do_settings_sections( 'unc_gallery_settings_group');
+    echo "\n<table>\n";
+    foreach ($WPG_CONFIG['user_settings'] as $setting => $D) {
+        $default = $D['default'];
+        $help = $D['help'];
+        $set_value = esc_attr(get_option($setting, $default));
+        $description = ucwords(str_replace("_", " ", $setting));
+        echo "<tr><td><label>$description:</label></td><td><input type=\"text\" name=\"$setting\" value=\"$set_value\"></td><td>$help <strong>Default:</strong> '$default'.</td></tr>\n";
+    }
+    echo "</table>\n";
+    submit_button();
+    echo "</form>\n";
 }

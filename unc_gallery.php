@@ -30,26 +30,25 @@ $XMPP_ERROR['config']['enabled'] = true;
 register_activation_hook( __FILE__, 'unc_gallery_plugin_activate');
 register_deactivation_hook( __FILE__, 'unc_gallery_plugin_deactivate');
 
-/*
- * Helptext for the settings menu
+if (is_admin()){ // admin actions
+    add_action('admin_init', 'unc_gallery_admin_init');
+    // add an admin menu
+    add_action('admin_menu', 'unc_gallery_admin_menu');
+}
+// shortcode for the [unc_gallery] replacements
+add_shortcode('unc_gallery', 'unc_gallery_apply');
+// initialize the plugin, create the upload folder
+// this activates the returns without header & footer on upload Ajax POST
+add_action('wp_ajax_unc_gallery_uploads', 'unc_uploads_iterate_files');
+add_action('wp_ajax_nopriv_unc_gallery_datepicker', 'unc_display_folder_images');
+add_action('wp_ajax_unc_gallery_datepicker', 'unc_display_folder_images');
+
+/**
+ * standard wordpress function to activate the plugin.
+ * creates the uploads folder
+ *
+ * @global type $WPG_CONFIG
  */
-function umc_gallery_settings_callback() {
-    echo "Please set your options:";
-}
-
-function unc_gallery_options() {
-    ?>
-    <div class="wrap">
-        <h2>Uncovery Gallery Options</h2>
-        <form action="options.php" method="POST">
-            <?php settings_fields( 'unc_gallery_settings_group' ); ?>
-            <?php do_settings_sections( 'unc_gallery' ); ?>
-            <?php submit_button(); ?>
-        </form>
-    </div>
-    <?php
-}
-
 function unc_gallery_plugin_activate() {
     global $WPG_CONFIG;
     $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
@@ -62,6 +61,12 @@ function unc_gallery_plugin_activate() {
     }
 }
 
+/**
+ * standard wordpress function to deactivate the plugin.
+ * removes the download folder.
+ *
+ * @global type $WPG_CONFIG
+ */
 function unc_gallery_plugin_deactivate() {
     global $WPG_CONFIG;
     $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
@@ -74,7 +79,8 @@ function unc_gallery_plugin_deactivate() {
 }
 
 /**
- * add additional CSS and JS
+ * function that includes all the CSS and JS that are needed.
+ *
  */
 function unc_gallery_add_css_and_js() {
     wp_enqueue_script('jquery-ui');

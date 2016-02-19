@@ -208,7 +208,7 @@ function unc_tools_date_latest() {
     global $WPG_CONFIG;
     $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
     $folders = unc_tools_recurse_folders($photo_folder);
-    
+
     rsort($folders);
 
     $my_folder = $folders[0];

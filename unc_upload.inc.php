@@ -3,11 +3,9 @@
  * Main form for uploads in the admin screen
  * @return string
  */
-function unc_uploads_form() {
+function unc_gallery_admin_upload() {
     ?>
-    <div class="wrap">
-        <h2>Upload Images</h2>
-    </div>
+    <h2>Upload Images</h2>
     <form id="uploadForm" method="POST" enctype="multipart/form-data">
         <script type="text/javascript">
             jQuery(document).ready(function() {
@@ -17,33 +15,37 @@ function unc_uploads_form() {
                     success: success, // the function we run on success
                     uploadProgress: uploadProgress, // the function tracking the upload progress
                     beforeSubmit: beforeSubmit // what happens before we start submitting
-                };                
+                };
                 jQuery('#uploadForm').submit(function() { // once the form us submitted
-                    jQuery(this).ajaxSubmit(options);  // do ajaxSubmit with the obtions above 
+                    jQuery(this).ajaxSubmit(options);  // do ajaxSubmit with the obtions above
                     return false; // needs to be false so that the HTML is not actually submitted & reloaded
                 });
                 function success(response){
                     jQuery('#targetLayer').html(response); // fill the right element with a response
-                }                
+                }
                 function uploadProgress(event, position, total, percentComplete) {
-                    jQuery("#progress-bar").width(percentComplete + '%'); 
+                    jQuery("#progress-bar").width(percentComplete + '%');
                     jQuery("#progress-bar").html('<div id="progress-status">' + percentComplete +' %</div>');
                 }
                 function beforeSubmit(formData, jqForm, options) {
                     jQuery("#progress-bar").width('0%');
                     jQuery('#targetLayer').html(''); // empty the div from the last submit
                     return true;
-                }               
+                }
             });
         </script>
         <div class="image_upload_input">
             <label>Select files to upload:</label>
-            <input type="file" id="userImage" name="userImage[]" class="demoInputBox" multiple required/>
+            <input type="file" id="userImage" name="userImage[]" class="demoInputBox" multiple required/><br>
             <label>Overwrite existing files?</label>
             <input type="checkbox" name="overwrite">
         </div>
-        <div class="image_upload_submit"><input type="submit" id="btnSubmit" value="submit" class="btnSubmit" /></div>
-        <div id="progress-div"><div id="progress-bar"></div></div>
+        <div id="progress-div">
+            <div id="progress-bar"></div>
+        </div>
+        <div class="image_upload_submit">
+            <?php submit_button("Upload", "primary", "btnSubmit", false); ?>
+        </div>
         <div id="targetLayer"></div>
     </form>
     <?php
@@ -54,8 +56,8 @@ function unc_uploads_form() {
  *
  * @return boolean
  */
-function unc_uploads_iterate_files() { 
-    
+function unc_uploads_iterate_files() {
+
     // get the amount of files
     $count = count($_FILES["userImage"]["name"]);
     if ($count < 1) {
@@ -70,7 +72,7 @@ function unc_uploads_iterate_files() {
     if (!is_null(filter_input(INPUT_POST, 'overwrite'))) {
         $overwrite = true;
     }
-    
+
     // count up
     for ($i=0; $i<$count; $i++){
         // process one file
@@ -115,7 +117,7 @@ function unc_uploads_process_file($i, $overwrite) {
         echo "Unable to read the file, upload cancelled of file " . $F['name'][$i] . "<br />";
         return false;
     }
-    
+
     // if there is an imagesize, we have a valid image
     $image_check = getimagesize($F['tmp_name'][$i]);
     if (!$image_check) {
@@ -131,13 +133,13 @@ function unc_uploads_process_file($i, $overwrite) {
         echo "ERROR: Image size {$F['name'][$i]} = 0<br>";
         return false;
     }
-    
-    // let's shrink only if we need to 
+
+    // let's shrink only if we need to
     if ($original_width == $WPG_CONFIG['thumbnail_size'] && $original_height == $WPG_CONFIG['thumbnail_size']) {
         echo "ERROR: Image size {$F['name'][$i]} is smaller than thumbnail!<br>";
         return false;
     }
-    
+
     // get imagetype
     $exif_imagetype = exif_imagetype($F['tmp_name'][$i]);
     if (!$exif_imagetype) {
@@ -189,10 +191,10 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // get the upload directory
     $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
-    
+
     // let's make the path with system-specific dir. separators
     $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
-    
+
     $target_subfolder = $dirPath . $WPG_CONFIG['photos'] . DIRECTORY_SEPARATOR . $date_obj->format($format);
     $thumb_subfolder = $dirPath . $WPG_CONFIG['thumbnails'] . DIRECTORY_SEPARATOR . $date_obj->format($format);
     $new_path =  $target_subfolder . DIRECTORY_SEPARATOR . $target_filename;
@@ -236,7 +238,7 @@ function unc_uploads_process_file($i, $overwrite) {
 
 /**
  * Creates image thumbnails
- * 
+ *
  * @global type $WPG_CONFIG
  * @param type $image_file_path
  * @param type $target_file_path
@@ -267,7 +269,7 @@ function unc_import_make_thumbnail($image_file_path, $target_file_path) {
 
     // get image extension
     $image_ext = $img_types[$arr_image_details[2]];
-    
+
     // set the function names for processing
     $img_generator = "Image" . $WPG_CONFIG['thumbnail_ext'];
     $imgcreatefrom = "ImageCreateFrom" . $image_ext;
