@@ -67,9 +67,28 @@ function unc_gallery_admin_display_images() {
  */
 function unc_gallery_admin_init() {
     global $UNC_GALLERY;
-    add_settings_section('basic_settings', 'Basic Settings', 'unc_gallery_admin_settings', 'unc_gallery');
+
+
+    add_settings_section(
+        'unc_gallery_pluginPage_section',
+        __('Uncovery Gallery Settings', 'wordpress'),
+        'unc_gallery_settings_section_callback',
+        'unc_gallery_settings_page' // need to match menu_slug
+    );
+
     foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
-        register_setting('unc_gallery_settings_group', $setting);
+        $prefix = $UNC_GALLERY['settings_prefix'];
+        register_setting('unc_gallery_settings_page', $prefix . $setting);
+        $setting_value = get_option($prefix . $setting, $D['default']);
+        $args = array('setting' => $prefix . $setting, 'value'=> $setting_value, 'help'=> $D['help']);
+        add_settings_field(
+            $prefix . $setting,
+            __(ucwords(str_replace("_", " ", $setting)), 'wordpress'),
+            'unc_gallery_setting_text_field_render',
+            'unc_gallery_settings_page',
+            'unc_gallery_pluginPage_section',
+            $args
+        );
     }
 
     //add_settings_field( 'field-one', 'Field One', 'unc_gallery_backend_image_upload', 'unc_gallery', 'basic_settings');
@@ -82,11 +101,19 @@ function unc_gallery_admin_init() {
     wp_register_script('jquery-ui-datepicker', '/wp-includes/js/jquery/ui/jquery.ui.datepicker.min.js');
 }
 
+function unc_gallery_setting_text_field_render($A) {
+    $out = "<input type='text' name='{$A['setting']}' value='{$A['value']}'> {$A['help']}\n";
+    echo $out;
+}
+
+function unc_gallery_settings_section_callback(  ) {
+    echo __( 'Basic Settings', 'wordpress' );
+}
+
 /**
  * this will manage the settings
  */
 function unc_gallery_admin_settings() {
-    echo "<h2>Uncovery Gallery Settings</h2>\n";
     echo '<div class="wrap">';
     echo unc_gallery_user_options();
     echo unc_gallery_admin_upload();
@@ -96,9 +123,11 @@ function unc_gallery_admin_settings() {
 function unc_gallery_user_options() {
     global $UNC_GALLERY;
     echo '<form method="post" action="options.php">'. "\n";
-    settings_fields('unc_gallery_settings_group');
-    do_settings_sections( 'unc_gallery_settings_group');
+    settings_fields('unc_gallery_settings_page');
+    do_settings_sections( 'unc_gallery_settings_page');
+    /*
     echo "\n<table>\n";
+
     foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
         $default = $D['default'];
         $help = $D['help'];
@@ -107,6 +136,8 @@ function unc_gallery_user_options() {
         echo "<tr><td><label>$description:</label></td><td><input type=\"text\" name=\"$setting\" value=\"$set_value\"></td><td>$help <strong>Default:</strong> '$default'.</td></tr>\n";
     }
     echo "</table>\n";
+ *
+ */
     submit_button();
     echo "</form>\n";
 }

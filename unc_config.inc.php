@@ -13,6 +13,7 @@ $UNC_GALLERY['photos'] = "/photos";
 $UNC_GALLERY['thumbnails'] = "/thumbs";
 $UNC_GALLERY['base_url'] = plugins_url();
 $UNC_GALLERY['gallery_url'] = $UNC_GALLERY['base_url'] . "/galleries";
+$UNC_GALLERY['settings_prefix'] = 'unc_gallery_';
 
 // file & mime-types
 $UNC_GALLERY['thumbnail_ext'] = 'PNG';

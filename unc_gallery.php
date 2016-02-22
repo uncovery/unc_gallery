@@ -29,6 +29,7 @@ $XMPP_ERROR['config']['enabled'] = true;
 // actions on activating and deactivating the plugin
 register_activation_hook( __FILE__, 'unc_gallery_plugin_activate');
 register_deactivation_hook( __FILE__, 'unc_gallery_plugin_deactivate');
+register_uninstall_hook( __FILE__, 'unc_gallery_plugin_uninstall');
 
 if (is_admin()){ // admin actions
     add_action('admin_init', 'unc_gallery_admin_init');
@@ -72,21 +73,31 @@ function unc_gallery_plugin_activate() {
 
 /**
  * standard wordpress function to deactivate the plugin.
- * removes the download folder.
  *
  * @global type $UNC_GALLERY
  */
 function unc_gallery_plugin_deactivate() {
     global $UNC_GALLERY;
+    // deactivate all settings
+    $prefix = $UNC_GALLERY['settings_prefix'];
+    foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
+        unregister_setting('unc_gallery_settings_page', $prefix . $setting);
+    }
+}
+
+function unc_gallery_plugin_uninstall() {
+    global $UNC_GALLERY;
     $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
 
-    // delete all files
+    // delete all images
     unc_gallery_recurse_files($dirPath, 'unlink', 'rmdir');
 
-    // remove all settings
+    //delete all settings properly
+    $prefix = $UNC_GALLERY['settings_prefix'];
     foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
-        unregister_setting('unc_gallery_settings_group', $setting);
+        delete_option($prefix . $setting);
     }
+    // register_uninstall_hook($file, $callback)
 }
 
 /**
