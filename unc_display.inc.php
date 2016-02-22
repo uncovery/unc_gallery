@@ -19,7 +19,7 @@ function unc_images_display() {
  * @param string $atts
  * @return string
  */
-function unc_gallery_apply($atts) {
+function unc_gallery_apply($atts = array()) {
     unc_gallery_add_css_and_js();
     $a = shortcode_atts( array(
         'type' => 'day',
@@ -76,7 +76,7 @@ function unc_gallery_apply($atts) {
 
     if (!$date) {
         // there are no pictures
-        return unc_tools_errormsg("No pictures found!");
+        return unc_tools_errormsg("No pictures found, please upload some images first!");
     }
 
     // options
@@ -99,21 +99,27 @@ function unc_gallery_apply($atts) {
         $datepicker = true;
     }
 
+    $out = '';
     if ($type == 'day') {
-        $content_new = unc_gallery_display_page($date, $datepicker);
+        if (is_admin()) {
+            $date_split = explode("-", $date);
+            $date_path = implode(DIRECTORY_SEPARATOR, $date_split);
+            $out .= " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_path\">Delete Date: $date</a>";
+        }
+        $out .= unc_gallery_display_page($date, $datepicker);
     } else {
-        $content_new = unc_gallery_display_image($date, $datepicker, $thumb, $link, $file);
+        $out .= unc_gallery_display_image($date, $datepicker, $thumb, $link, $file);
     }
-    return $content_new;
+    return $out;
 }
 
 function unc_gallery_display_page($date, $datepicker = false, $thumb = false, $link = false, $file = false) {
-    global $WPG_CONFIG;
+    global $UNC_GALLERY;
 
     // do not let wp manipulate linebreaks
     remove_filter('the_content', 'wpautop');
 
-    $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
+    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
 
     $folder_list = unc_display_folder_list($photo_folder);
 
@@ -164,8 +170,8 @@ function unc_gallery_display_page($date, $datepicker = false, $thumb = false, $l
 }
 
 function unc_display_folder_list($base_folder) {
-    global $WPG_CONFIG;
-    $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
+    global $UNC_GALLERY;
+    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
     $base_length = strlen($photo_folder) + 1;
 
     $dates = array();
@@ -193,12 +199,12 @@ function unc_display_folder_list($base_folder) {
 /**
  * Open a folder of a certain date and display all the images in there
  *
- * @global type $WPG_CONFIG
+ * @global type $UNC_GALLERY
  * @param type $date_str
  * @return string
  */
 function unc_display_folder_images($date_str = false) {
-    global $WPG_CONFIG;
+    global $UNC_GALLERY;
     $echo = false;
     if (!$date_str) {
         $echo = true;
@@ -206,8 +212,8 @@ function unc_display_folder_images($date_str = false) {
         $date_str = str_replace("-", DIRECTORY_SEPARATOR, $date_wrong);
     }
 
-    // $photo_folder = $WPG_CONFIG['gallery_path'] . $WPG_CONFIG['photos'];
-    $thumb_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] .  $WPG_CONFIG['thumbnails'];
+    // $photo_folder = $UNC_GALLERY['gallery_path'] . $UNC_GALLERY['photos'];
+    $thumb_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['thumbnails'];
 
     // $curr_photo_folder = $photo_folder . "/" . $date_str;
     $curr_thumb_folder = $thumb_folder . DIRECTORY_SEPARATOR . $date_str;
@@ -215,8 +221,8 @@ function unc_display_folder_images($date_str = false) {
     foreach (glob($curr_thumb_folder.DIRECTORY_SEPARATOR."*") as $file) {
         $filename = basename($file);
         if ($file != '.' && $file != '..') {
-            $photo_url = content_url($WPG_CONFIG['upload'] . $WPG_CONFIG['photos'] . "/$date_str/$filename");
-            $thumb_url = content_url($WPG_CONFIG['upload'] . $WPG_CONFIG['thumbnails'] . "/$date_str/$filename");
+            $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$filename");
+            $thumb_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['thumbnails'] . "/$date_str/$filename");
             $out .= "        <a href=\"$photo_url\" class=\"thickbox\" rel=\"gallery\">\n"
                 . "            <img alt=\"$filename\" src=\"$thumb_url\">\n"
                 . "        </a>\n";

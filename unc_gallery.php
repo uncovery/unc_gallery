@@ -43,15 +43,24 @@ add_action('wp_ajax_unc_gallery_uploads', 'unc_uploads_iterate_files');
 add_action('wp_ajax_nopriv_unc_gallery_datepicker', 'unc_display_folder_images');
 add_action('wp_ajax_unc_gallery_datepicker', 'unc_display_folder_images');
 
+// get the settings from the system and set the global variables
+// this iterates the user settings that are supposed to be in the wordpress config
+// and gets them from there, setting the default if not available
+// inserts them into the global
+foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
+    $default = $D['default'];
+    $UNC_GALLERY[$setting] = get_option($setting, $default);
+}
+
 /**
  * standard wordpress function to activate the plugin.
  * creates the uploads folder
  *
- * @global type $WPG_CONFIG
+ * @global type $UNC_GALLERY
  */
 function unc_gallery_plugin_activate() {
-    global $WPG_CONFIG;
-    $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
+    global $UNC_GALLERY;
+    $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
     if (!file_exists($dirPath)) {
         $result = mkdir($dirPath, 0755);
         // check success
@@ -65,17 +74,17 @@ function unc_gallery_plugin_activate() {
  * standard wordpress function to deactivate the plugin.
  * removes the download folder.
  *
- * @global type $WPG_CONFIG
+ * @global type $UNC_GALLERY
  */
 function unc_gallery_plugin_deactivate() {
-    global $WPG_CONFIG;
-    $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
+    global $UNC_GALLERY;
+    $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
 
     // delete all files
     unc_gallery_recurse_files($dirPath, 'unlink', 'rmdir');
 
     // remove all settings
-    foreach ($WPG_CONFIG['user_settings'] as $setting => $D) {
+    foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
         unregister_setting('unc_gallery_settings_group', $setting);
     }
 }

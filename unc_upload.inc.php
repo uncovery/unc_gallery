@@ -97,13 +97,13 @@ function unc_uploads_iterate_files() {
 /**
  * processes one uploaded file. Creates folders, moves files
  *
- * @global type $WPG_CONFIG
+ * @global type $UNC_GALLERY
  * @param type $i
  * @param type $overwrite
  * @return boolean
  */
 function unc_uploads_process_file($i, $overwrite) {
-    global $WPG_CONFIG;
+    global $UNC_GALLERY;
 
     //array(1) {
     //    ["userImage"]=> array(5) {
@@ -141,7 +141,7 @@ function unc_uploads_process_file($i, $overwrite) {
     }
 
     // let's shrink only if we need to
-    if ($original_width == $WPG_CONFIG['thumbnail_size'] && $original_height == $WPG_CONFIG['thumbnail_size']) {
+    if ($original_width == $UNC_GALLERY['thumbnail_size'] && $original_height == $UNC_GALLERY['thumbnail_size']) {
         echo unc_tools_errormsg("Image size {$F['name'][$i]} is smaller than thumbnail!");
         return false;
     }
@@ -155,13 +155,13 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // get mime-type and check if it's in the list of valid ones
     $mime_type = image_type_to_mime_type($exif_imagetype);
-    if (!isset($mime_type, $WPG_CONFIG['valid_filetypes'])){
+    if (!isset($mime_type, $UNC_GALLERY['valid_filetypes'])){
         echo unc_tools_errormsg("Invalid file type :" . $F["type"][$i]);
         return false;
     }
 
     // we set the new filename of the image including extension so there is no guessing
-    $extension = $WPG_CONFIG['valid_filetypes'][$mime_type];
+    $extension = $UNC_GALLERY['valid_filetypes'][$mime_type];
     $file_no_ext = pathinfo($F['name'][$i], PATHINFO_FILENAME);
     $target_filename = $file_no_ext . "." . $extension;
 
@@ -196,13 +196,13 @@ function unc_uploads_process_file($i, $overwrite) {
     }
 
     // get the upload directory
-    $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
+    $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
 
     // let's make the path with system-specific dir. separators
     $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
 
-    $target_subfolder = $dirPath . $WPG_CONFIG['photos'] . DIRECTORY_SEPARATOR . $date_obj->format($format);
-    $thumb_subfolder = $dirPath . $WPG_CONFIG['thumbnails'] . DIRECTORY_SEPARATOR . $date_obj->format($format);
+    $target_subfolder = $dirPath . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_obj->format($format);
+    $thumb_subfolder = $dirPath . $UNC_GALLERY['thumbnails'] . DIRECTORY_SEPARATOR . $date_obj->format($format);
     $new_path =  $target_subfolder . DIRECTORY_SEPARATOR . $target_filename;
     $new_thumb_path =  $thumb_subfolder . DIRECTORY_SEPARATOR . $target_filename;
 
@@ -245,16 +245,16 @@ function unc_uploads_process_file($i, $overwrite) {
 /**
  * Creates image thumbnails
  *
- * @global type $WPG_CONFIG
+ * @global type $UNC_GALLERY
  * @param type $image_file_path
  * @param type $target_file_path
  * @return boolean
  */
 function unc_import_make_thumbnail($image_file_path, $target_file_path) {
-    global $WPG_CONFIG;
+    global $UNC_GALLERY;
 
     $out = $image_file_path;
-    $thumbnail_height = $WPG_CONFIG['thumbnail_height'];
+    $thumbnail_height = $UNC_GALLERY['thumbnail_height'];
 
     $img_types = array(1 => 'GIF', 2 => 'JPEG', 3 => 'PNG');
 
@@ -277,7 +277,7 @@ function unc_import_make_thumbnail($image_file_path, $target_file_path) {
     $image_ext = $img_types[$arr_image_details[2]];
 
     // set the function names for processing
-    $img_generator = "Image" . $WPG_CONFIG['thumbnail_ext'];
+    $img_generator = "Image" . $UNC_GALLERY['thumbnail_ext'];
     $imgcreatefrom = "ImageCreateFrom" . $image_ext;
 
     $old_image = $imgcreatefrom($image_file_path);

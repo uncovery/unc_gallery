@@ -41,13 +41,13 @@ function unc_gallery_admin_menu() {
  * TODO: the content should only show the past few dates and collapse the rest
  * and then provide buttons for AJAX-loading of older content
  *
- * @global type $WPG_CONFIG
+ * @global type $UNC_GALLERY
  */
 function unc_gallery_admin_display_images() {
-    global $WPG_CONFIG;
-
     $out = "<h2>Uncovery Gallery: All Images</h2>\n";
 
+    // we do not want to convert linebreaks
+    remove_filter('the_content', 'wpautop');
     // check first if there is a folder to delete:
     $folder_del = filter_input(INPUT_GET, 'folder_del', FILTER_SANITIZE_STRING);
     if (!is_null($folder_del)) {
@@ -55,55 +55,26 @@ function unc_gallery_admin_display_images() {
         $out .= unc_date_folder_delete($folder_del);
     }
 
-    // we do not want to convert linebreaks
-    remove_filter('the_content', 'wpautop');
-
-    $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
-    // let's get the all image folders
-    $folder_list = unc_display_folder_list($photo_folder);
-    if (count($folder_list) == 0) {
-        echo $out . "There are no images uploaded!";
-        return;
-    }
-    // sort by date, reversed (latest first)
-    krsort($folder_list);
-
-    // the above dates are local timezone, we need the same date in UTC
-    $new_dates = unc_display_fix_timezones($folder_list);
-
-    $dates_arr = array();
-
-    foreach ($new_dates as $date => $details) {
-        $date_split = explode("-", $date);
-        $date_path = implode(DIRECTORY_SEPARATOR, $date_split);
-        $dates_arr[$date_path] = $date;
-    }
-
-    $out .= "<div class=\"photopage adminpage\">\n";
-    foreach ($dates_arr as $text => $date_str) {
-        $delete_link = " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$text\">Delete Folder</a>";
-        $images = unc_display_folder_images($text);
-        $out .= "<h3>$date_str:$delete_link</h3>\n" . $images . "<br>";
-    }
-    $out .= "</div>\n";
+    // get a standard short-tag output for latest date with datepicker
+    $out .= unc_gallery_apply(array('options'=> 'datepicker'));
     echo $out;
 }
 
 /**
  * This adds the Wordpress features for the admin pages
  *
- * @global type $WPG_CONFIG
+ * @global type $UNC_GALLERY
  */
 function unc_gallery_admin_init() {
-    global $WPG_CONFIG;
+    global $UNC_GALLERY;
     add_settings_section('basic_settings', 'Basic Settings', 'unc_gallery_admin_settings', 'unc_gallery');
-    foreach ($WPG_CONFIG['user_settings'] as $setting => $D) {
+    foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
         register_setting('unc_gallery_settings_group', $setting);
     }
 
     //add_settings_field( 'field-one', 'Field One', 'unc_gallery_backend_image_upload', 'unc_gallery', 'basic_settings');
     // check if the upload folder exists:
-    $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
+    $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
     if (!file_exists($dirPath)) {
         echo unc_tools_errormsg("There was an error creating the upload folder $dirPath!");
     }
@@ -123,12 +94,12 @@ function unc_gallery_admin_settings() {
 }
 
 function unc_gallery_user_options() {
-    global $WPG_CONFIG;
+    global $UNC_GALLERY;
     echo '<form method="post" action="options.php">'. "\n";
     settings_fields('unc_gallery_settings_group');
     do_settings_sections( 'unc_gallery_settings_group');
     echo "\n<table>\n";
-    foreach ($WPG_CONFIG['user_settings'] as $setting => $D) {
+    foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
         $default = $D['default'];
         $help = $D['help'];
         $set_value = esc_attr(get_option($setting, $default));

@@ -7,26 +7,26 @@ if (!defined('WPINC')) {
 /**
  * Take a date string and create the respective folders
  *
- * @global type $WPG_CONFIG
+ * @global type $UNC_GALLERY
  * @param type $i
  * @param type $date_str
  * @return type
  */
 function unc_date_folder_create($date_str) {
-    global $WPG_CONFIG;
+    global $UNC_GALLERY;
 
     // these are the format strings for $date->format
     // the 'false' is to create the root folder
     $date_folders = array(false, "Y", "m", "d");
     // we get the base folder from config
-    $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
+    $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
     // let's create a date object for the given date
     $date_obj = unc_datetime($date_str);
     // substract 12 hours to get the correct date
-    $date_obj->modify($WPG_CONFIG['offset']);
+    $date_obj->modify($UNC_GALLERY['offset']);
 
     // both folders, photo and thumbnail are created together
-    $path_arr = array($WPG_CONFIG['photos'], $WPG_CONFIG['thumbnails']);
+    $path_arr = array($UNC_GALLERY['photos'], $UNC_GALLERY['thumbnails']);
     // iterate them
     foreach ($path_arr as $img_folder) {
         // create the complete folder
@@ -55,14 +55,14 @@ function unc_date_folder_create($date_str) {
 
 /**
  * Delete a date folder and all it's contents, images AND thumbs.
- * we need to validate that the $date_str is a valid date
+ * we validate that the $date_str is a valid date
  *
  * @param type $date_str
  */
 function unc_date_folder_delete($date_str) {
-    global $WPG_CONFIG;
+    global $UNC_GALLERY;
 
-    $dirPath =  WP_CONTENT_DIR . $WPG_CONFIG['upload'];
+    $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
     $date_obj = unc_datetime($date_str);
     if (!$date_obj) {
         return unc_tools_errormsg("Invalid date folder!");
@@ -72,10 +72,14 @@ function unc_date_folder_delete($date_str) {
     $out = "";
     $date_folder = date_format($date_obj, "Y{$fstr}m{$fstr}d");
 
-    $path_arr = array($WPG_CONFIG['photos'], $WPG_CONFIG['thumbnails']);
+    // we have 2 paths, images adn thumbs
+    $path_arr = array($UNC_GALLERY['photos'], $UNC_GALLERY['thumbnails']);
+    // iterate both
     foreach ($path_arr as $img_folder) {
+        // now let's get the path of that date
         $base_folder = $dirPath . $img_folder . DIRECTORY_SEPARATOR . $date_folder;
         if (!file_exists($base_folder)) {
+            // the folder does not exist, so let's not delete anything
             return unc_tools_errormsg("Folder $base_folder could not be deleted!");
         }
         $out .= "Deleting folder $img_folder/$date_folder:<br>";
@@ -92,26 +96,45 @@ function unc_date_folder_delete($date_str) {
         }
         // $out .= " /$base_folder... <br>";
         rmdir($base_folder);
+        // now we iterate the tree and make sure we delete all leftover empty months & year folders.
+        unc_tools_folder_delete_empty($dirPath . $img_folder);
     }
     return $out;
+}
+
+/**
+ * Take a folder and delete all empty subfolders
+ *
+ * @param type $path
+ * @return type
+ */
+function unc_tools_folder_delete_empty($path) {
+    $empty = true;
+    foreach (glob($path . DIRECTORY_SEPARATOR . "*") as $file) {
+        if (!is_dir($file)) {
+            XMPP_ERROR_trigger("$file is not a directory!");
+        }
+        $empty &= is_dir($file) && unc_tools_folder_delete_empty($file);
+    }
+    return $empty && rmdir($path);
 }
 
 /**
  * returns a date-time object with todays timezone
  * get a MySQL timestamp with $now = $date_now->format("Y-m-d H:i:s");
  *
- * @global type $WPG_CONFIG
+ * @global type $UNC_GALLERY
  * @param type $date
  * @return \DateTime
  */
 function unc_datetime($date = NULL) {
-    global $WPG_CONFIG;
+    global $UNC_GALLERY;
 
     //if ($date != NULL) {
     //    $date .= "+08:00"; // incoming timezones are already HKT
     //}
     $date_new = new DateTime($date);
-    $date_new->setTimezone(new DateTimeZone($WPG_CONFIG['timezone']));
+    $date_new->setTimezone(new DateTimeZone($UNC_GALLERY['timezone']));
     return $date_new;
 }
 
@@ -209,14 +232,13 @@ function unc_tools_recurse_folders($base_folder) {
 /**
  * returns the latest date
  *
- * @global type $WPG_CONFIG
+ * @global type $UNC_GALLERY
  * @return type
  */
 function unc_tools_date_latest() {
-    global $WPG_CONFIG;
-    $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
+    global $UNC_GALLERY;
+    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
     $folders = unc_tools_recurse_folders($photo_folder);
-    XMPP_ERROR_trigger($folders);
     if (count($folders) == 1 && $folders[0] == $photo_folder) {
         return false;
     }
@@ -230,12 +252,12 @@ function unc_tools_date_latest() {
 /**
  * returns a random date
  *
- * @global type $WPG_CONFIG
+ * @global type $UNC_GALLERY
  * @return type
  */
 function unc_tools_date_random() {
-    global $WPG_CONFIG;
-    $photo_folder =  WP_CONTENT_DIR . $WPG_CONFIG['upload'] . $WPG_CONFIG['photos'];
+    global $UNC_GALLERY;
+    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
     $folders = unc_tools_recurse_folders($photo_folder);
     if (count($folders) == 0) {
         return false;
