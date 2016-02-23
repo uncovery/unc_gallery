@@ -193,8 +193,8 @@ function unc_display_single_image($date_str, $file_name) {
     global $UNC_GALLERY;
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
     $curr_photo_file = $photo_folder . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name;
+    $file_url = $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$curr_photo_file");
     if (file_exists($curr_photo_file)) {
-        $file_url = $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$curr_photo_file");
         $out = "<img class=\"featured_image\" alt=\"$file_name\" src=\"$file_url\">\n";
         return $out;
     } else {
