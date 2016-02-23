@@ -21,9 +21,17 @@ function unc_gallery_admin_upload() {
                     var max_files = <?php echo ini_get('max_file_uploads'); ?>;
                     var max_size = <?php echo unc_tools_bytes_get(ini_get('post_max_size')); ?>;
                     
-                    var fileInput = jQuery("input[type='file']");
-                    var actual_size = parseInt(fileInput.get(0).files.size);
-                    var actual_count = parseInt(fileInput.get(0).files.length);
+                    var fileInput = jQuery("input[type='file']").get(0);
+                    var actual_count = parseInt(fileInput.files.length);
+                    var actual_size = 0;
+                    
+                    for (var i = 0; i < fileInput.files.length; i++) {
+                        var file = fileInput.files[i];
+                        if ('size' in file) {
+                            actual_size = actual_size +file.size;
+                        }
+                    }                    
+                    
                     // check for max file number
                     
                     if (actual_count > max_files) {
