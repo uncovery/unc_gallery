@@ -165,7 +165,7 @@ function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_imag
     }
     $single_photo = '';
     if ($featured_image) {
-        $single_photo = unc_display_single_image($date, $featured_image);
+        $single_photo = unc_display_single_image($date_str, $featured_image);
     }
     $out .= "
         <div class=\"photopage\">
