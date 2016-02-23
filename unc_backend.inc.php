@@ -95,7 +95,7 @@ function unc_gallery_admin_init() {
     // check if the upload folder exists:
     $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
     if (!file_exists($dirPath)) {
-        echo unc_tools_errormsg("There was an error creating the upload folder $dirPath!");
+        echo unc_tools_errormsg("The upload folder $dirPath does not exist!");
     }
     wp_register_script('jquery-form', '/wp-includes/js/jquery/jquery.form.js');
     wp_register_script('jquery-ui-datepicker', '/wp-includes/js/jquery/ui/jquery.ui.datepicker.min.js');
@@ -115,29 +115,27 @@ function unc_gallery_settings_section_callback(  ) {
  */
 function unc_gallery_admin_settings() {
     echo '<div class="wrap">';
-    echo unc_gallery_user_options();
-    echo unc_gallery_admin_upload();
-    echo "</div>";
-}
-
-function unc_gallery_user_options() {
-    global $UNC_GALLERY;
     echo '<form method="post" action="options.php">'. "\n";
     settings_fields('unc_gallery_settings_page');
     do_settings_sections( 'unc_gallery_settings_page');
-    /*
-    echo "\n<table>\n";
-
-    foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
-        $default = $D['default'];
-        $help = $D['help'];
-        $set_value = esc_attr(get_option($setting, $default));
-        $description = ucwords(str_replace("_", " ", $setting));
-        echo "<tr><td><label>$description:</label></td><td><input type=\"text\" name=\"$setting\" value=\"$set_value\"></td><td>$help <strong>Default:</strong> '$default'.</td></tr>\n";
-    }
-    echo "</table>\n";
- *
- */
     submit_button();
     echo "</form>\n";
+    echo unc_gallery_admin_upload();
+    echo unc_gallery_admin_rebuild_thumbs();
+    echo unc_gallery_admin_delete_everything();
+    echo "</div>";
+}
+
+function unc_gallery_admin_rebuild_thumbs() {
+    // delete all thumbnails
+
+    // iterate all image folders
+
+    // create thumbnaisl
+
+
+}
+
+function unc_gallery_admin_delete_everything() {
+    
 }
