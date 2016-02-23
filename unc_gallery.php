@@ -48,9 +48,10 @@ add_action('wp_ajax_unc_gallery_datepicker', 'unc_display_folder_images');
 // this iterates the user settings that are supposed to be in the wordpress config
 // and gets them from there, setting the default if not available
 // inserts them into the global
+global $UNC_GALLERY;
 foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
     $default = $D['default'];
-    $UNC_GALLERY[$setting] = get_option($setting, $default);
+    $UNC_GALLERY[$setting] = get_option('unc_gallery_' . $setting, $default);
 }
 
 /**
