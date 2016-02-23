@@ -206,10 +206,9 @@ function unc_display_single_image($date_str, $file_name) {
  * 
  * @global type $UNC_GALLERY
  * @param type $base_folder
-  * @param type $skip_file
  * @return type
  */
-function unc_display_folder_list($base_folder, $skip_file) {
+function unc_display_folder_list($base_folder) {
     global $UNC_GALLERY;
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
     $base_length = strlen($photo_folder) + 1;
@@ -217,9 +216,6 @@ function unc_display_folder_list($base_folder, $skip_file) {
     $dates = array();
     foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $current_path) {
         $file = basename($current_path);
-        if ($skip_file == $file) {
-            continue;
-        }
         // get current date from subfolder
         if (is_dir($current_path)) { // we have a directory
             $cur_date = str_replace(DIRECTORY_SEPARATOR, "-", substr($current_path, $base_length));
@@ -244,9 +240,10 @@ function unc_display_folder_list($base_folder, $skip_file) {
  *
  * @global type $UNC_GALLERY
  * @param type $date_str
+ * @param type $skip_file
  * @return string
  */
-function unc_display_folder_images($date_str = false) {
+function unc_display_folder_images($date_str = false, $skip_file = false) {
     global $UNC_GALLERY;
     $echo = false;
     if (!$date_str) {
@@ -263,6 +260,9 @@ function unc_display_folder_images($date_str = false) {
     $out = '';
     foreach (glob($curr_thumb_folder.DIRECTORY_SEPARATOR."*") as $file) {
         $filename = basename($file);
+        if ($skip_file == $file) {
+            continue;
+        }        
         if ($file != '.' && $file != '..') {
             $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$filename");
             $thumb_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['thumbnails'] . "/$date_str/$filename");
