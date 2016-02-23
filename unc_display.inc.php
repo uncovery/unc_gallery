@@ -197,7 +197,7 @@ function unc_display_single_image($date_str, $file_name) {
         $out = "<img class=\"featured_image\" alt=\"$curr_photo_file\" src=\"$curr_photo_file\">\n";
         return $out;
     } else {
-        return "File $date_str not found";
+        return "File $curr_photo_file not found";
     }
     return false;
 }
