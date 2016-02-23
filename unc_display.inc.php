@@ -167,8 +167,8 @@ function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_imag
         <div class=\"photopage\">
             $datepicker_div
             <div id=\"photobox\">
-                $single_photo
-                $images
+    $single_photo
+    $images
             </div>
         </div>
         <span style=\"clear:both;\"></span>";
