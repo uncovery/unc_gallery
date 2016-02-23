@@ -39,10 +39,10 @@ function unc_gallery_admin_upload() {
                         return false;
                     }
 
-                    //if (actual_size > max_size){
+                    if (actual_size > max_size){
                         alert("Your webserver allows only a maximum of " + max_size + " Bytes, you tried " + actual_size);
                         return false;
-                    //}
+                    }
                     jQuery(this).ajaxSubmit(options);  // do ajaxSubmit with the obtions above
                     return false; // needs to be false so that the HTML is not actually submitted & reloaded
                 });
