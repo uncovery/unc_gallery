@@ -107,7 +107,7 @@ datepicker #ui-datepicker-div {
     display:block;
 }
 
-.featured_image img{
+img.featured_image {
     float:left;
     width: 30%;
 }
