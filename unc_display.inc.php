@@ -25,12 +25,14 @@ function unc_gallery_apply($atts = array()) {
         'type' => 'day',
         'date' => 'latest',
         'file' => 'latest',
+        'featured' => false,
         'options' => array(),
     ), $atts );
 
     $type = $a['type'];
     $date = $a['date'];
-    $file = $a['file'];
+    $file = sanitize_file_name($a['file']); // wp function to sanitze filnames
+    $featured = $a['featured'];
     // there can be several options, separated by space
     $options = explode(" ", $a['options']);
 
@@ -108,14 +110,14 @@ function unc_gallery_apply($atts = array()) {
             $date_path = implode(DIRECTORY_SEPARATOR, $date_split);
             $out .= " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_path\">Delete Date: $date</a>";
         }
-        $out .= unc_gallery_display_page($date, $datepicker, $date_desc);
+        $out .= unc_gallery_display_page($date, $datepicker, $date_desc, $featured);
     } else {
-        $out .= unc_gallery_display_image($date, $datepicker, $date_desc);
+        $out .= unc_gallery_display_image($date, $datepicker, $date_desc, $featured);
     }
     return $out;
 }
 
-function unc_gallery_display_page($date, $datepicker = false, $date_desc = false) {
+function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_image) {
     global $UNC_GALLERY;
 
     // do not let wp manipulate linebreaks
@@ -161,10 +163,15 @@ function unc_gallery_display_page($date, $datepicker = false, $date_desc = false
         </script>";
         $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"$date\">";
     }
+    $single_photo = '';
+    if ($featured_image) {
+        $single_photo = unc_display_single_image($date, $featured_image);
+    }
     $out .= "
         <div class=\"photopage\">
             $datepicker_div
             <div id=\"photobox\">
+                $single_photo
                 $images
             </div>
         </div>
@@ -174,6 +181,32 @@ function unc_gallery_display_page($date, $datepicker = false, $date_desc = false
     return $out;
 }
 
+/**
+ * return a single file from a date
+ * 
+ * @global type $UNC_GALLERY
+ * @param type $date_str
+ * @param type $file_name
+ * @return boolean
+ */
+function unc_display_single_image($date_str, $file_name) {
+    global $UNC_GALLERY;
+    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
+    $curr_photo_file = $photo_folder . DIRECTORY_SEPARATOR . $date_str. DIRECTORY_SEPARATOR . $file_name;
+    if (file_exists($curr_photo_file)) {
+        $out = "<img class=\"featured_image\" alt=\"$curr_photo_file\" src=\"$curr_photo_file\">\n";
+        return $out;
+    }
+    return false;
+}
+
+/**
+ * 
+ * 
+ * @global type $UNC_GALLERY
+ * @param type $base_folder
+ * @return type
+ */
 function unc_display_folder_list($base_folder) {
     global $UNC_GALLERY;
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
