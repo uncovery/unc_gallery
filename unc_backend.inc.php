@@ -96,6 +96,7 @@ function unc_gallery_admin_init() {
     $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
     if (!file_exists($dirPath)) {
         echo unc_tools_errormsg("The upload folder $dirPath does not exist!");
+        unc_gallery_plugin_activate();
     }
     wp_register_script('jquery-form', '/wp-includes/js/jquery/jquery.form.js');
     wp_register_script('jquery-ui-datepicker', '/wp-includes/js/jquery/ui/jquery.ui.datepicker.min.js');
