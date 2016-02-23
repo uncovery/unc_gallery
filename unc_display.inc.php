@@ -66,11 +66,13 @@ function unc_gallery_apply($atts = array()) {
     }
 
     // get the latest or a random date if required
+    $date_desc = true;
     if ($date == 'latest') {
         $date = unc_tools_date_latest();
     } elseif ($date == 'random') {
         $date = unc_tools_date_random();
     } else {
+        $date_desc = false;
         $date = unc_tools_date_validate($date);
     }
 
@@ -106,14 +108,14 @@ function unc_gallery_apply($atts = array()) {
             $date_path = implode(DIRECTORY_SEPARATOR, $date_split);
             $out .= " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_path\">Delete Date: $date</a>";
         }
-        $out .= unc_gallery_display_page($date, $datepicker);
+        $out .= unc_gallery_display_page($date, $datepicker, $date_desc);
     } else {
-        $out .= unc_gallery_display_image($date, $datepicker, $thumb, $link, $file);
+        $out .= unc_gallery_display_image($date, $datepicker, $date_desc);
     }
     return $out;
 }
 
-function unc_gallery_display_page($date, $datepicker = false, $thumb = false, $link = false, $file = false) {
+function unc_gallery_display_page($date, $datepicker = false, $date_desc = false) {
     global $UNC_GALLERY;
 
     // do not let wp manipulate linebreaks
@@ -145,7 +147,10 @@ function unc_gallery_display_page($date, $datepicker = false, $thumb = false, $l
     }
 
     // get a json datepicker
-    $datepicker_div = "<span id=\"photodate\">Showing $date</span>";
+    $datepicker_div = '';
+    if ($date_desc) {
+        $datepicker_div = "<span id=\"photodate\">Showing $date</span>";
+    }
     if ($datepicker) {
         $out .= "\n     <script type=\"text/javascript\">
         $date_json
