@@ -24,7 +24,7 @@ function unc_date_folder_create($date_str) {
     $date_obj = unc_datetime($date_str);
     // substract 12 hours to get the correct date
     $date_obj->modify($UNC_GALLERY['offset']);
-    echo "Date after adjustment: {$UNC_GALLERY['offset']} " . $date_obj->format("Y-m-d") . "<br>";
+    echo "Date after adjustment ({$UNC_GALLERY['offset']}): " . $date_obj->format("Y-m-d") . "<br>";
 
     // both folders, photo and thumbnail are created together
     $path_arr = array($UNC_GALLERY['photos'], $UNC_GALLERY['thumbnails']);
