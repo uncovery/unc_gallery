@@ -18,9 +18,16 @@ function unc_gallery_admin_upload() {
                 };
                 jQuery('#uploadForm').submit(function() { // once the form us submitted
                     var fileUpload = jQuery("input[type='file']");
+                    // check for max file number
                     var max_files = <?php echo ini_get('max_file_uploads'); ?>;
                     if (parseInt(fileUpload.get(0).files.length) > max_files){
                         alert("Your webserver allows only a maximum of " + max_files + " files");
+                        return false;
+                    }
+                    // check for max filesize
+                    var max_size = <?php echo ini_get('post_max_size'); ?>;
+                    if (parseInt(fileUpload.get(0).files.size) > max_size){
+                        alert("Your webserver allows only a maximum of " + max_size + " MB");
                         return false;
                     }
                     jQuery(this).ajaxSubmit(options);  // do ajaxSubmit with the obtions above
