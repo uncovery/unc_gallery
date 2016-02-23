@@ -135,7 +135,7 @@ function unc_datetime($date = NULL) {
     //    $date .= "+08:00"; // incoming timezones are already HKT
     //}
     $date_new = new DateTime($date);
-    // $date_new->setTimezone(new DateTimeZone($UNC_GALLERY['timezone']));
+    $date_new->setTimezone(new DateTimeZone($UNC_GALLERY['timezone']));
     return $date_new;
 }
 
