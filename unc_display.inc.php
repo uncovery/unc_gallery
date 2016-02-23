@@ -191,7 +191,7 @@ function unc_display_single_image($date_str, $file_name) {
     $curr_photo_file = $photo_folder . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name;
     $file_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$file_name");
     if (file_exists($curr_photo_file)) {
-        $out = "        <a href=\"$file_url\" class=\"thickbox\" rel=\"gallery\">\n"
+        $out = "        <a href=\"$file_url\" rel=\"gallery\">\n"
             . "            <img class=\"featured_image\" alt=\"$file_name\" src=\"$file_url\">\n"
             . "        </a>\n";        
         return $out;
