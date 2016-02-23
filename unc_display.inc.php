@@ -192,10 +192,12 @@ function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_imag
 function unc_display_single_image($date_str, $file_name) {
     global $UNC_GALLERY;
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
-    $curr_photo_file = $photo_folder . DIRECTORY_SEPARATOR . $date_str. DIRECTORY_SEPARATOR . $file_name;
+    $curr_photo_file = $photo_folder . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name;
     if (file_exists($curr_photo_file)) {
         $out = "<img class=\"featured_image\" alt=\"$curr_photo_file\" src=\"$curr_photo_file\">\n";
         return $out;
+    } else {
+        return "File $date_str not found";
     }
     return false;
 }
