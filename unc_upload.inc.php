@@ -65,10 +65,19 @@ function unc_gallery_admin_upload() {
 function unc_uploads_iterate_files() {
     // get the amount of files
     $count = count($_FILES["userImage"]["name"]);
+    
+    $ini_max = ini_get('max_file_uploads');
+    
     if ($count < 1) {
         $out = "No images found to upload";
         return $out;
     }
+    
+    if ($count >= $ini_max) {
+        $out = "Your server does not allow you to upload more than $ini_max files, you picked $count!";
+        return $out;
+    }
+    
     $out = "Processing $count image(s)....<br>";
 
     // overwrite files?
