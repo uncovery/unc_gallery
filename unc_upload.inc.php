@@ -21,9 +21,9 @@ function unc_gallery_admin_upload() {
                     var max_files = <?php echo ini_get('max_file_uploads'); ?>;
                     var max_size = <?php echo unc_tools_bytes_get(ini_get('post_max_size')); ?>;
                     
-                    var f = this.files[0];
-                    var actual_size =  f.fileSize;
-                    var actual_count = f.length;
+                    var fileInput = $("#userImage")[0];
+                    var actual_size =  fileInput.fileSize;
+                    var actual_count = fileInput.length;
                     // check for max file number
                     
                     if (actual_count > max_files) {
