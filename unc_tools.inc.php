@@ -301,3 +301,24 @@ function unc_tools_folder_date($folder) {
 function unc_tools_errormsg($error) {
     return "<div class=\"unc_gallery_error\">ERROR: $error</div>";
 }
+
+/**
+ * convert ini_get values in M/G values to bytes for JS comparison
+ * 
+ * @param type $ini_val
+ * @return int
+ */
+function unc_tools_bytes_get($ini_val) {
+    $val = trim($ini_val);
+    $last = strtolower($val[strlen($val)-1]);
+    switch($last) {
+        // The 'G' modifier is available since PHP 5.1.0
+        case 'g':
+            $val *= 1024;
+        case 'm':
+            $val *= 1024;
+        case 'k':
+            $val *= 1024;
+    }
+    return $val;
+}
