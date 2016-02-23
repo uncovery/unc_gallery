@@ -20,20 +20,20 @@ function unc_gallery_admin_upload() {
                     // server limits:
                     var max_files = <?php echo ini_get('max_file_uploads'); ?>;
                     var max_size = <?php echo unc_tools_bytes_get(ini_get('post_max_size')); ?>;
-                    
+
                     var fileInput = jQuery("input[type='file']").get(0);
                     var actual_count = parseInt(fileInput.files.length);
                     var actual_size = 0;
-                    
+
                     for (var i = 0; i < fileInput.files.length; i++) {
                         var file = fileInput.files[i];
                         if ('size' in file) {
-                            actual_size = actual_size +file.size;
+                            actual_size = actual_size + +file.size;
                         }
                     }
-                    
+
                     // check for max file number
-                    
+
                     if (actual_count > max_files) {
                         alert("Your webserver allows only a maximum of " + max_files + " files");
                         return false;
@@ -91,19 +91,19 @@ function unc_gallery_admin_upload() {
 function unc_uploads_iterate_files() {
     // get the amount of files
     $count = count($_FILES["userImage"]["name"]);
-    
+
     $ini_max = ini_get('max_file_uploads');
-    
+
     if ($count < 1) {
         $out = "No images found to upload";
         return $out;
     }
-    
+
     if ($count >= $ini_max) {
         $out = "Your server does not allow you to upload more than $ini_max files, you picked $count!";
         return $out;
     }
-    
+
     $out = "Processing $count image(s)....<br>";
 
     // overwrite files?
@@ -239,7 +239,7 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // let's make the path with system-specific dir. separators
     $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
-    
+
     $date_str_folder = $date_obj->format($format);
     echo "Folder date is $date_str_folder<br>";
 
