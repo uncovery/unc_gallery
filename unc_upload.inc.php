@@ -26,7 +26,7 @@ function unc_gallery_admin_upload() {
                     var actual_count = f.length;
                     // check for max file number
                     
-                    if (actual_count) > max_files){
+                    if (actual_count > max_files) {
                         alert("Your webserver allows only a maximum of " + max_files + " files");
                         return false;
                     }
