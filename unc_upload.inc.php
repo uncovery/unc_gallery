@@ -91,9 +91,10 @@ function unc_uploads_iterate_files() {
             continue;
         }
     }
-    var_Export($out_arr, true);
     $out .= "All images processed!";
+    ob_clean();
     echo $out;
+    wp_die();
 }
 
 /**
