@@ -17,6 +17,11 @@ function unc_gallery_admin_upload() {
                     beforeSubmit: beforeSubmit // what happens before we start submitting
                 };
                 jQuery('#uploadForm').submit(function() { // once the form us submitted
+                    var fileUpload = jQuery("input[type='file']");
+                    var max_files = <?php echo ini_get('max_file_uploads'); ?>;
+                    if (parseInt(fileUpload.get(0).files.length)>){
+                        alert("Your webserver allows only a maximum of " + max_files + " files");
+                    }                    
                     jQuery(this).ajaxSubmit(options);  // do ajaxSubmit with the obtions above
                     return false; // needs to be false so that the HTML is not actually submitted & reloaded
                 });
