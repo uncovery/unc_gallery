@@ -205,7 +205,7 @@ function unc_uploads_process_file($i, $overwrite) {
     $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
     
     $date_str_folder = $date_obj->format($format);
-    echo "Folder date is $format<br>";
+    echo "Folder date is $date_str_folder<br>";
 
     $target_subfolder = $dirPath . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_str_folder;
     $thumb_subfolder = $dirPath . $UNC_GALLERY['thumbnails'] . DIRECTORY_SEPARATOR . $date_str_folder;
