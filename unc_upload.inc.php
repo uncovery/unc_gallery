@@ -26,7 +26,7 @@ function unc_gallery_admin_upload() {
                     }
                     // check for max filesize
                     var max_size = <?php echo unc_tools_bytes_get(ini_get('post_max_size')); ?>;
-                    var actual_size = parseInt(fileUpload.get(0).files.size;
+                    var actual_size = parseInt(fileUpload.get(0).files.size);
                     // if (parseInt(fileUpload.get(0).files.size) > max_size){
                         alert("Your webserver allows only a maximum of " + max_size + " Bytes, you tried " + actual_size);
                         return false;
