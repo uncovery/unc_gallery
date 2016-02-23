@@ -31,7 +31,7 @@ function unc_gallery_apply($atts = array()) {
 
     $type = $a['type'];
     $date = $a['date'];
-    $featured_image = sanitize_file_name($a['featured']); // wp function to sanitze filnames
+    $featured_image = $a['featured']; // wp function to sanitze filnames
     $file = sanitize_file_name($a['file']);
     // there can be several options, separated by space
     $options = explode(" ", $a['options']);
