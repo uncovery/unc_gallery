@@ -50,8 +50,7 @@ add_action('wp_ajax_unc_gallery_datepicker', 'unc_display_folder_images');
 // inserts them into the global
 global $UNC_GALLERY;
 foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
-    $default = $D['default'];
-    $UNC_GALLERY[$setting] = get_option('unc_gallery_' . $setting, $default);
+    $UNC_GALLERY[$setting] = get_option($UNC_GALLERY['settings_prefix'] . $setting, $D['default']);
 }
 
 /**
