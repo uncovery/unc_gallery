@@ -30,7 +30,7 @@ function unc_gallery_admin_upload() {
                         if ('size' in file) {
                             actual_size = actual_size +file.size;
                         }
-                    }                    
+                    }
                     
                     // check for max file number
                     
