@@ -25,7 +25,7 @@ function unc_gallery_admin_upload() {
                         return false;
                     }
                     // check for max filesize
-                    var max_size = <?php echo ini_get('post_max_size'); ?>;
+                    var max_size = <?php echo unc_tools_bytes_get(ini_get('post_max_size')); ?>;
                     if (parseInt(fileUpload.get(0).files.size) > max_size){
                         alert("Your webserver allows only a maximum of " + max_size + " MB");
                         return false;
