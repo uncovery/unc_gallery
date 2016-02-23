@@ -22,7 +22,7 @@ function unc_gallery_admin_upload() {
                     var max_size = <?php echo unc_tools_bytes_get(ini_get('post_max_size')); ?>;
                     
                     var fileInput = jQuery("input[type='file']");
-                    var actual_size = parseInt(fileInput.get(0).files.fileSize);
+                    var actual_size = parseInt(fileInput.get(0).files.size);
                     var actual_count = parseInt(fileInput.get(0).files.length);
                     // check for max file number
                     
