@@ -125,16 +125,6 @@ function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_imag
 
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
 
-    $folder_list = unc_display_folder_list($photo_folder);
-
-    krsort($folder_list);
-    // the above dates are local timezone, we need the same date in UTC
-    $all_dates = unc_display_fix_timezones($folder_list);
-
-    $new_dates = array_keys($all_dates);
-
-    $date_json = 'var availableDates = ["' . implode("\",\"", $new_dates) . '"];';
-
     $date_obj = unc_datetime($date . " 00:00:00");
     if ($date_obj) {
         $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
@@ -154,9 +144,15 @@ function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_imag
         $datepicker_div = "<span id=\"photodate\">Showing $date</span>";
     }
     if ($datepicker) {
+        $folder_list = unc_display_folder_list($photo_folder);
+        krsort($folder_list);
+        // the above dates are local timezone, we need the same date in UTC
+        $all_dates = unc_display_fix_timezones($folder_list);
+        $new_dates = array_keys($all_dates);  
+        
         $out .= "\n     <script type=\"text/javascript\">
-        $date_json
-        var ajaxurl = '" . admin_url('admin-ajax.php') . "';
+        var availableDates = [\"" . implode("\",\"", $new_dates) . "\"];
+        var ajaxurl = \"" . admin_url('admin-ajax.php') . "\";
         jQuery(document).ready(function($) {
             datepicker_ready('$date');
         });
@@ -204,7 +200,7 @@ function unc_display_single_image($date_str, $file_name) {
 }
 
 /**
- * 
+ * Enumerate the fodlers with images to display the datepicker properly.
  * 
  * @global type $UNC_GALLERY
  * @param type $base_folder
