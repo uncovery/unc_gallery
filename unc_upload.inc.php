@@ -63,7 +63,6 @@ function unc_gallery_admin_upload() {
  * @return boolean
  */
 function unc_uploads_iterate_files() {
-
     // get the amount of files
     $count = count($_FILES["userImage"]["name"]);
     if ($count < 1) {
@@ -80,9 +79,11 @@ function unc_uploads_iterate_files() {
     }
 
     // count up
+    $out_arr = array();
     for ($i=0; $i<$count; $i++){
         // process one file
         $date_str = unc_uploads_process_file($i, $overwrite);
+        $out_arr[$date_str]++;
         // did we get a valid result?
         if (!$date_str) {
             // something went wrong with this file, take the next
@@ -90,6 +91,7 @@ function unc_uploads_iterate_files() {
             continue;
         }
     }
+    var_Export($out_arr, true);
     $out .= "All images processed!";
     echo $out;
 }
@@ -187,6 +189,7 @@ function unc_uploads_process_file($i, $overwrite) {
         echo unc_tools_errormsg("'$date_str' is invalid date in EXIF");
         return false;
     }
+    echo "File date is $date_str";
 
     // create all the by-day folders
     $date_obj = unc_date_folder_create($date_str);
