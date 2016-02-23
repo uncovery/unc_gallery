@@ -130,7 +130,7 @@ function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_imag
         $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
         $date_str = $date_obj->format($format);
         if (file_exists($photo_folder . DIRECTORY_SEPARATOR . $date_str)) {
-            $images = unc_display_folder_images($date_str);
+            $images = unc_display_folder_images($date_str, $featured_image);
         } else {
             return unc_tools_errormsg("Date not found (folder error) $photo_folder/$date_str");
         }
@@ -206,9 +206,10 @@ function unc_display_single_image($date_str, $file_name) {
  * 
  * @global type $UNC_GALLERY
  * @param type $base_folder
+  * @param type $skip_file
  * @return type
  */
-function unc_display_folder_list($base_folder) {
+function unc_display_folder_list($base_folder, $skip_file) {
     global $UNC_GALLERY;
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
     $base_length = strlen($photo_folder) + 1;
@@ -216,6 +217,9 @@ function unc_display_folder_list($base_folder) {
     $dates = array();
     foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $current_path) {
         $file = basename($current_path);
+        if ($skip_file == $file) {
+            continue;
+        }
         // get current date from subfolder
         if (is_dir($current_path)) { // we have a directory
             $cur_date = str_replace(DIRECTORY_SEPARATOR, "-", substr($current_path, $base_length));
