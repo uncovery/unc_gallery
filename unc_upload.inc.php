@@ -23,8 +23,8 @@ function unc_gallery_admin_upload() {
 
                     var fileInput = jQuery("input[type='file']").get(0);
                     var actual_count = parseInt(fileInput.files.length);
-                    var actual_size = 0;
 
+                    var actual_size = 0;
                     for (var i = 0; i < fileInput.files.length; i++) {
                         var file = fileInput.files[i];
                         if ('size' in file) {
