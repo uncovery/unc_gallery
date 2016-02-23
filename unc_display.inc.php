@@ -260,7 +260,7 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
     $out = '';
     foreach (glob($curr_thumb_folder.DIRECTORY_SEPARATOR."*") as $file) {
         $filename = basename($file);
-        if ($skip_file == $file) {
+        if ($skip_file == $filename) {
             continue;
         }        
         if ($file != '.' && $file != '..') {
