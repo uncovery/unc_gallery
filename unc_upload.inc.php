@@ -90,6 +90,11 @@ function unc_gallery_admin_upload() {
  */
 function unc_uploads_iterate_files() {
     // get the amount of files
+    if (empty($_FILES) && empty($_POST) && isset($_SERVER['REQUEST_METHOD']) && strtolower($_SERVER['REQUEST_METHOD']) == 'post'){ //catch file overload error...
+            $postMax = ini_get('post_max_size'); //grab the size limits...
+            echo "<p style=\"color: #F00;\">\nPlease note files larger than {$postMax} will result in this error!<br>Please be advised this is not a limitation in the CMS, This is a limitation of the hosting server.<br>For various reasons they limit the max size of uploaded files, if you have access to the php ini file you can fix this by changing the post_max_size setting.<br> If you can't then please ask your host to increase the size limits, or use the FTP uploaded form</p>"; // echo out error and solutions...
+            wp_die(); //bounce back to the just filled out form.
+    }
     $count = count($_FILES["userImage"]["name"]);
 
     $ini_max = ini_get('max_file_uploads');
