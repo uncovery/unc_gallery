@@ -31,8 +31,8 @@ function unc_gallery_apply($atts = array()) {
 
     $type = $a['type'];
     $date = $a['date'];
-    $file = sanitize_file_name($a['file']); // wp function to sanitze filnames
-    $featured = $a['featured'];
+    $featured_image = sanitize_file_name($a['featured']); // wp function to sanitze filnames
+    $file = sanitize_file_name($a['file']);
     // there can be several options, separated by space
     $options = explode(" ", $a['options']);
 
@@ -110,9 +110,9 @@ function unc_gallery_apply($atts = array()) {
             $date_path = implode(DIRECTORY_SEPARATOR, $date_split);
             $out .= " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_path\">Delete Date: $date</a>";
         }
-        $out .= unc_gallery_display_page($date, $datepicker, $date_desc, $featured);
+        $out .= unc_gallery_display_page($date, $datepicker, $date_desc, $featured_image);
     } else {
-        $out .= unc_gallery_display_image($date, $datepicker, $date_desc, $featured);
+        $out .= unc_gallery_display_image($date, $datepicker, $date_desc, $featured_image);
     }
     return $out;
 }
