@@ -94,7 +94,7 @@ function unc_gallery_apply($atts = array()) {
     $range = array('start_time' => false, 'end_time' => false);
     foreach ($range as $key => $value) {
         if ($a[$key]) {
-            $dtime = DateTime::createFromFormat("Y-m-d G:H:s", $a[$key]);
+            $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $a[$key]);
             $range[$key] = $dtime->getTimestamp();
         }
     }
@@ -233,7 +233,7 @@ function unc_display_folder_images($date_str, $skip_file, $range) {
         }
         if ($file_name != '.' && $file_name != '..') {
             $file_date = unc_tools_image_exif_date($date_str, $file_name);
-            $dtime = DateTime::createFromFormat("Y:m:d G:H:s", $file_date);
+            $dtime = DateTime::createFromFormat("Y:m:d G:i:s", $file_date);
             $file_stamp = $dtime->getTimestamp();
             // range
             if (($range['start_time'] && $range['start_time'] >= $file_stamp) ||
