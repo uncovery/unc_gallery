@@ -94,6 +94,7 @@ function unc_gallery_apply($atts = array()) {
     $range = array('start_time' => false, 'end_time' => false);
     foreach ($range as $key => $value) {
         if ($a[$key]) {
+             XMPP_ERROR_trace($key, $a[$key]);
             $dtime = DateTime::createFromFormat("Y-d-m G:H:s", $a[$key]);
             $range[$key] = $dtime->getTimestamp();
         }
