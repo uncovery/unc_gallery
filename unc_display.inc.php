@@ -234,8 +234,8 @@ function unc_display_folder_images($date_str, $skip_file, $range) {
             $file_date = unc_tools_image_exif_date($date_str, $file_name);
 
             // range
-            if (($range['start_time'] && $range['start_time'] < $file_date) ||
-                ($range['end_time'] && $range['end_time'] > $file_date)) {
+            if (($range['start_time'] && "$date_str {$range['start_time']}" < $file_date) ||
+                ($range['end_time'] && "$date_str {$range['end_time']}" > $file_date)) {
                 continue;
             }
             $files[$file_date] = $file_name;
