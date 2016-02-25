@@ -43,15 +43,6 @@ function unc_gallery_apply($atts = array()) {
         $options = explode(" ", $a['options']);
     }
 
-    // range
-    $range = array('start_time' => false, 'end_time' => false);
-    foreach ($range as $key => $value) {
-        if ($a[$key]) {
-            $range[$key] = $a[$key];
-        }
-    }
-
-
     // options for displays
     $keywords = array(
         'type' => array(
@@ -97,6 +88,15 @@ function unc_gallery_apply($atts = array()) {
     if (!$date) {
         // there are no pictures
         return unc_tools_errormsg("No pictures found, please upload some images first!");
+    }
+
+    // range
+    $range = array('start_time' => false, 'end_time' => false);
+    foreach ($range as $key => $value) {
+        if ($a[$key]) {
+            $dtime = DateTime::createFromFormat("Y-d-m G:H:s", "$date {$range['start_time']}");
+            $range[$key]  = $dtime->getTimestamp();
+        }
     }
 
     // options
@@ -232,10 +232,10 @@ function unc_display_folder_images($date_str, $skip_file, $range) {
         }
         if ($file_name != '.' && $file_name != '..') {
             $file_date = unc_tools_image_exif_date($date_str, $file_name);
-
+            $file_stamp = DateTime::createFromFormat("Y/d/m G:H:s", "$date_str $file_date");
             // range
-            if (($range['start_time'] && "$date_str {$range['start_time']}" < $file_date) ||
-                ($range['end_time'] && "$date_str {$range['end_time']}" > $file_date)) {
+            if (($range['start_time'] && "$date_str {$range['start_time']}" < $file_stamp) ||
+                ($range['end_time'] && "$date_str {$range['end_time']}" > $file_stamp)) {
                 continue;
             }
             $files[$file_date] = $file_name;
