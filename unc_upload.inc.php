@@ -123,6 +123,9 @@ function unc_uploads_iterate_files() {
     for ($i=0; $i<$count; $i++){
         // process one file
         $date_str = unc_uploads_process_file($i, $overwrite);
+        if (!isset($out_arr[$date_str])) {
+            $out_arr[$date_str] = 0;
+        }
         $out_arr[$date_str]++;
         // did we get a valid result?
         if (!$date_str) {
