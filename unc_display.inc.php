@@ -148,8 +148,8 @@ function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_imag
         krsort($folder_list);
         // the above dates are local timezone, we need the same date in UTC
         $all_dates = unc_display_fix_timezones($folder_list);
-        $new_dates = array_keys($all_dates);  
-        
+        $new_dates = array_keys($all_dates);
+
         $out .= "\n     <script type=\"text/javascript\">
         var availableDates = [\"" . implode("\",\"", $new_dates) . "\"];
         var ajaxurl = \"" . admin_url('admin-ajax.php') . "\";
@@ -179,7 +179,7 @@ function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_imag
 
 /**
  * return a single file from a date
- * 
+ *
  * @global type $UNC_GALLERY
  * @param type $date_str
  * @param type $file_name
@@ -193,7 +193,7 @@ function unc_display_single_image($date_str, $file_name) {
     if (file_exists($curr_photo_file)) {
         $out = "        <a href=\"$file_url\" class=\"featured_image thickbox\"rel=\"gallery\">\n"
             . "            <img alt=\"$file_name\" src=\"$file_url\">\n"
-            . "        </a>\n";        
+            . "        </a>\n";
         return $out;
     } else {
         return "File $curr_photo_file not found";
@@ -203,7 +203,7 @@ function unc_display_single_image($date_str, $file_name) {
 
 /**
  * Enumerate the fodlers with images to display the datepicker properly.
- * 
+ *
  * @global type $UNC_GALLERY
  * @param type $base_folder
  * @return type
@@ -262,12 +262,12 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
         $filename = basename($file);
         if ($skip_file == $filename) {
             continue;
-        }        
+        }
         if ($file != '.' && $file != '..') {
             $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$filename");
             $thumb_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['thumbnails'] . "/$date_str/$filename");
             $out .= "        <a href=\"$photo_url\" class=\"thickbox\" rel=\"gallery\">\n"
-                . "            <img alt=\"$filename\" src=\"$thumb_url\">\n"
+                . "            <img alt=\"$filename\" src=\"$thumb_url\" title=\"$filename, taken $date_str\" >\n"
                 . "        </a>\n";
         }
     }
