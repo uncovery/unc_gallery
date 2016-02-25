@@ -21,6 +21,7 @@ function unc_images_display() {
  */
 function unc_gallery_apply($atts = array()) {
     unc_gallery_add_css_and_js();
+
     $a = shortcode_atts( array(
         'type' => 'day',
         'date' => 'latest',
@@ -276,6 +277,7 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
  * @param type $date_str
  * @param type $file_name
  * @param bool $show_thumb
+ * @param string $file_date
  * @return boolean
  */
 function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date) {
@@ -296,6 +298,6 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date
     $description = "$file_name, taken $file_date";
     $out = "        <a href=\"$photo_url\" title=\"$description\" class=\"$class\" rel=\"gallery_$rel_date\">\n"
         . "            <img alt=\"$file_name\" src=\"$shown_image\">\n"
-        . "        </a>\n";
+        . "         </a>\n";
     return $out;
 }
