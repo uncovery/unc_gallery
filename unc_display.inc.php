@@ -190,8 +190,10 @@ function unc_display_single_image($date_str, $file_name) {
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
     $curr_photo_file = $photo_folder . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name;
     $file_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$file_name");
+
+    $rel_date = str_replace(DIRECTORY_SEPARATOR, "_" . $date_str);
     if (file_exists($curr_photo_file)) {
-        $out = "        <a href=\"$file_url\" class=\"featured_image thickbox\"rel=\"gallery\">\n"
+        $out = "        <a href=\"$file_url\" class=\"featured_image thickbox\" rel=\"gallery_$rel_date\">\n"
             . "            <img alt=\"$file_name\" src=\"$file_url\">\n"
             . "        </a>\n";
         return $out;
@@ -258,6 +260,9 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
     // $curr_photo_folder = $photo_folder . "/" . $date_str;
     $curr_thumb_folder = $thumb_folder . DIRECTORY_SEPARATOR . $date_str;
     $out = '';
+
+    $rel_date = str_replace(DIRECTORY_SEPARATOR, "_" . $date_str);
+
     foreach (glob($curr_thumb_folder.DIRECTORY_SEPARATOR."*") as $file) {
         $filename = basename($file);
         if ($skip_file == $filename) {
@@ -266,7 +271,7 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
         if ($file != '.' && $file != '..') {
             $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$filename");
             $thumb_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['thumbnails'] . "/$date_str/$filename");
-            $out .= "        <a href=\"$photo_url\" title=\"$filename, taken $date_str\" class=\"thickbox\" rel=\"gallery_$date_str\">\n"
+            $out .= "        <a href=\"$photo_url\" title=\"$filename, taken $date_str\" class=\"thickbox\" rel=\"gallery_$rel_date\">\n"
                 . "            <img alt=\"$filename\" src=\"$thumb_url\">\n"
                 . "        </a>\n";
         }
