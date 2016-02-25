@@ -235,7 +235,6 @@ function unc_display_folder_images($date_str, $skip_file, $range) {
             $dtime = DateTime::createFromFormat("Y:d:m G:H:s", $file_date);
             $file_stamp = $dtime->getTimestamp();
             // range
-            XMPP_ERROR_trace("$file_date", "{$range['start_time']} < $file_stamp");
             if (($range['start_time'] && $range['start_time'] >= $file_stamp) ||
                 ($range['end_time'] && $range['end_time'] <= $file_stamp)) {
                 continue;
@@ -251,7 +250,6 @@ function unc_display_folder_images($date_str, $skip_file, $range) {
         $out .= unc_display_single_image($date_str, $file_name, true, $file_date);
     }
 
-    XMPP_ERROR_trigger("x");
     if ($echo) {
         ob_clean();
         echo $out;
