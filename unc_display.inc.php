@@ -268,16 +268,6 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
     }
 }
 
-function unc_tools_image_exif_date($date_str, $file_name) {
-    global $UNC_GALLERY;
-    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['photos'] ;
-    $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_str;
-    $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
-    $exif_data = exif_read_data($file_path);
-    $file_date = $exif_data['DateTimeOriginal'];
-    return $file_date;
-}
-
 /**
  * return a single file from a date & filename
  * assumes the file exists
