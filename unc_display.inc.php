@@ -253,7 +253,7 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
             $exif_data = exif_read_data($file_path);
             // XMPP_ERROR_send_msg($file_path);
             $file_date = $exif_data['DateTimeOriginal'];
-            $files[$exif_data] = $file_name;
+            $files[$file_date] = $file_name;
         }
     }
 
