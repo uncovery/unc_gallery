@@ -241,7 +241,8 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
     $out = '';
 
     $files = array();
-    foreach (glob($curr_thumb_folder.DIRECTORY_SEPARATOR."*") as $file_name) {
+    foreach (glob($curr_thumb_folder.DIRECTORY_SEPARATOR."*") as $file_path) {
+        $file_name = basename($file_path);
         if ($skip_file == $file_name) {
             continue;
         }
