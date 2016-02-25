@@ -184,7 +184,7 @@ function unc_uploads_process_file($i, $overwrite) {
     }
 
     // let's shrink only if we need to
-    if ($original_width == $UNC_GALLERY['thumbnail_size'] && $original_height == $UNC_GALLERY['thumbnail_size']) {
+    if ($original_width == $UNC_GALLERY['thumbnail_height'] && $original_height == $UNC_GALLERY['thumbnail_height']) {
         echo unc_tools_errormsg("Image size {$F['name'][$i]} is smaller than thumbnail!");
         return false;
     }
