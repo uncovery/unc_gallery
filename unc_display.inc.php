@@ -286,7 +286,6 @@ function unc_tools_image_exif_date($date_str, $file_name) {
  * @param type $date_str
  * @param type $file_name
  * @param bool $show_thumb
- * @param string $description
  * @return boolean
  */
 function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date) {
