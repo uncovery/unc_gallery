@@ -24,13 +24,13 @@ $UNC_GALLERY['valid_filetypes'] = array(
 );
 
 $UNC_GALLERY['user_settings'] = array(
-    'timezone' => array(
-        'help' => 'Your local timezone, must be a value from the <a href="http://php.net/manual/en/timezones.php">this list</a>.',
-        'default' => 'Asia/Hong_Kong',
-    ),
     'thumbnail_height' => array(
         'help' => 'The desired thumbnail height in pixels. Applies only for new uploads',
         'default' => '120',
+    ),
+    'picture_long_edge' => array(
+        'help' => 'Shrink the images so that the long edge will be this long (in pixels, 0 for disable)',
+        'default' => '0',
     ),
     'time_offset' => array(
         'help' => 'If you take photos after midnight and don\'t want them show on the next day,
