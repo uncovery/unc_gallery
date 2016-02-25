@@ -26,7 +26,7 @@ function unc_gallery_apply($atts = array()) {
         'date' => 'latest',
         'file' => 'latest',
         'featured' => false,
-        'options' => '', // we cannot set it to an array here
+        'options' => false, // we cannot set it to an array here
     ), $atts );
 
     $type = $a['type'];
