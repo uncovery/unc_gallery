@@ -145,6 +145,7 @@ function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_imag
 
     // get a json datepicker
     $datepicker_div = '';
+    $out = '';
     if ($date_desc) {
         $datepicker_div = "<span id=\"photodate\">Showing $date</span>";
     }
