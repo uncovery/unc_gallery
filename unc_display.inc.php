@@ -55,7 +55,7 @@ function unc_gallery_apply($atts = array()) {
     // options for displays
     $keywords = array(
         'type' => array(
-            'day' => array('datepicker'), // shows a single date's gallery, optional date picker
+            'day' => array('datepicker', 'datelist'), // shows a single date's gallery, optional date picker
             'image' => array('link'), // only one image, requires file addon unless random or latest
             'icon' => array('link'), // only the icon of one image, requires file addon unless random or latest
         ),
@@ -114,9 +114,11 @@ function unc_gallery_apply($atts = array()) {
         $link = true;
     }
 
-    $datepicker = false;
+    $date_selector = false;
     if (in_array('datepicker', $options)) {
-        $datepicker = true;
+        $date_selector = 'datepicker';
+    } else if (in_array('datelist', $options)) {
+        $date_selector = 'datelist';
     }
 
     $out = '';
@@ -125,11 +127,11 @@ function unc_gallery_apply($atts = array()) {
         $date_path = implode(DIRECTORY_SEPARATOR, $date_split);
         $out .= " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_path\">Delete Date: $date</a>";
     }
-    $out .= unc_gallery_display_page($date, $datepicker, $date_desc, $featured_image, $range);
+    $out .= unc_gallery_display_page($date, $date_selector, $date_desc, $featured_image, $range);
     return $out;
 }
 
-function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_image, $range) {
+function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_image, $range) {
     global $UNC_GALLERY;
 
     // do not let wp manipulate linebreaks
@@ -156,21 +158,25 @@ function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_imag
     if ($date_desc) {
         $datepicker_div = "<span id=\"photodate\">Showing $date</span>";
     }
-    if ($datepicker) {
-        $folder_list = unc_tools_folder_list($photo_folder);
-        krsort($folder_list);
-        // the above dates are local timezone, we need the same date in UTC
-        $all_dates = unc_display_fix_timezones($folder_list);
-        $new_dates = array_keys($all_dates);
+    if ($date_selector == 'datepicker') {
+        $avail_dates = unc_tools_folder_list($photo_folder);
 
         $out .= "\n     <script type=\"text/javascript\">
-        var availableDates = [\"" . implode("\",\"", $new_dates) . "\"];
+        var availableDates = [\"" . implode("\",\"", array_keys($avail_dates)) . "\"];
         var ajaxurl = \"" . admin_url('admin-ajax.php') . "\";
         jQuery(document).ready(function($) {
             datepicker_ready('$date');
         });
         </script>";
         $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"$date\">";
+    } else if ($date_selector == 'dateselector') {
+        $folder_list = unc_tools_folder_list($photo_folder);
+        $out .= "<select name=\"date_select\">";
+        foreach ($folder_list as $date => $files) {
+            $counter = count($files);
+            $out .= "<option value=\"\">$date ($counter)</option";
+        }
+        $out .="</select>";
     }
     $single_photo = '';
     if ($featured_image) {
