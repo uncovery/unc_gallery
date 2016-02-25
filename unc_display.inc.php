@@ -250,11 +250,10 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
         }
         if ($file_name != '.' && $file_name != '..') {
             $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
-            XMPP_ERROR_send_msg($file_path);
             $exif_data = exif_read_data($file_path);
             // XMPP_ERROR_send_msg($file_path);
             $file_date = $exif_data['DateTimeOriginal'];
-            $files[] = $file_name;
+            $files[$exif_data] = $file_name;
         }
     }
 
@@ -262,7 +261,7 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
     ksort($files);
 
     foreach ($files as $file_date => $file_name) {
-        $out .= unc_display_single_image($date_str, $file_name, true, "$file_name, taken $file_date");
+        $out .= unc_display_single_image($date_str, $file_name, true, $file_date);
     }
 
     if ($echo) {
@@ -285,7 +284,7 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
  * @param string $description
  * @return boolean
  */
-function unc_display_single_image($date_str, $file_name, $show_thumb, $description) {
+function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date) {
     global $UNC_GALLERY;
 
     $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$file_name");
@@ -298,6 +297,7 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $descripti
     }
 
     $rel_date = str_replace(DIRECTORY_SEPARATOR, "_", $date_str);
+    $description = "$file_name, taken $file_date";
     $out = "        <a href=\"$photo_url\" title=\"$description\" class=\"featured_image thickbox\" rel=\"gallery_$rel_date\">\n"
         . "            <img alt=\"$file_name\" src=\"$shown_image\">\n"
         . "        </a>\n";
