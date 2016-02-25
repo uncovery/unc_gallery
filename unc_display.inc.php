@@ -241,14 +241,13 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
     $out = '';
 
     $files = array();
-    foreach (glob($curr_thumb_folder.DIRECTORY_SEPARATOR."*") as $file_path) {
-        $file_name = basename($file_path);
+    foreach (glob($curr_thumb_folder.DIRECTORY_SEPARATOR."*") as $file_name) {
         if ($skip_file == $file_name) {
             continue;
         }
         if ($file_name != '.' && $file_name != '..') {
-            $exif_data = exif_read_data($file_path);
-            XMPP_ERROR_send_msg($file_path);
+            $exif_data = exif_read_data($curr_thumb_folder.DIRECTORY_SEPARATOR . $file_name);
+            // XMPP_ERROR_send_msg($file_path);
             $file_date = $exif_data['DateTimeOriginal'];
             $files[$file_date] = $file_name;
         }
