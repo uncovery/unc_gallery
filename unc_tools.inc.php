@@ -304,7 +304,7 @@ function unc_tools_errormsg($error) {
 
 /**
  * convert ini_get values in M/G values to bytes for JS comparison
- * 
+ *
  * @param type $ini_val
  * @return int
  */
@@ -321,4 +321,22 @@ function unc_tools_bytes_get($ini_val) {
             $val *= 1024;
     }
     return $val;
+}
+
+/**
+ * Get the EXIF date of a file based on date & filename only
+ *
+ * @global type $UNC_GALLERY
+ * @param type $date_str
+ * @param type $file_name
+ * @return type
+ */
+function unc_tools_image_exif_date($date_str, $file_name) {
+    global $UNC_GALLERY;
+    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['photos'] ;
+    $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_str;
+    $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
+    $exif_data = exif_read_data($file_path);
+    $file_date = $exif_data['DateTimeOriginal'];
+    return $file_date;
 }
