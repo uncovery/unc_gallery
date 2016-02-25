@@ -233,7 +233,7 @@ function unc_uploads_process_file($i, $overwrite) {
         echo unc_tools_errormsg("'$date_str' is invalid date in EXIF");
         return false;
     }
-    echo "File date is $date_str";
+    // echo "File date is $date_str";
 
     // create all the by-day folders
     $date_obj = unc_date_folder_create($date_str);
@@ -287,7 +287,7 @@ function unc_uploads_process_file($i, $overwrite) {
     // now make the thumbnail
     $check = unc_import_make_thumbnail($new_path, $new_thumb_path);
     if ($check) {
-        echo $F['name'][$i] . ",";
+        echo $F['name'][$i] . "($date_str), ";
     }
     return true;
 }
@@ -334,6 +334,6 @@ function unc_import_make_thumbnail($image_file_path, $target_file_path) {
     $new_image = imagecreatetruecolor($new_width, $new_height);
     imagecopyresized($new_image, $old_image, 0, 0, 0, 0, $new_width, $new_height, $original_width, $original_height);
     $img_generator($new_image, $target_file_path);
-    echo "Thumbnail created!<br>";
+    // echo "Thumbnail created!<br>";
     return true;
 }
