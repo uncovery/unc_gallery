@@ -288,7 +288,7 @@ function unc_uploads_process_file($i, $overwrite) {
     // now make the thumbnail
     $check = unc_import_make_thumbnail($new_path, $new_thumb_path);
     if ($check) {
-        echo $F['name'][$i] . "($date_str), ";
+        echo $F['name'][$i] . " ($date_str), ";
     }
     return true;
 }
