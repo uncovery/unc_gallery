@@ -297,13 +297,15 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date
 
     if ($show_thumb) {
         $shown_image = $thumb_url;
+        $class = 'thickbox';
     } else {
         $shown_image = $photo_url;
+        $class = 'featured_image thickbox'
     }
 
     $rel_date = str_replace(DIRECTORY_SEPARATOR, "_", $date_str);
     $description = "$file_name, taken $file_date";
-    $out = "        <a href=\"$photo_url\" title=\"$description\" class=\"featured_image thickbox\" rel=\"gallery_$rel_date\">\n"
+    $out = "        <a href=\"$photo_url\" title=\"$description\" class=\"$class\" rel=\"gallery_$rel_date\">\n"
         . "            <img alt=\"$file_name\" src=\"$shown_image\">\n"
         . "        </a>\n";
     return $out;
