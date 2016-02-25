@@ -300,7 +300,7 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date
         $class = 'thickbox';
     } else {
         $shown_image = $photo_url;
-        $class = 'featured_image thickbox'
+        $class = 'featured_image thickbox';
     }
 
     $rel_date = str_replace(DIRECTORY_SEPARATOR, "_", $date_str);
