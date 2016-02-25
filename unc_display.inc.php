@@ -235,7 +235,7 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
 
     // $photo_folder = $UNC_GALLERY['gallery_path'] . $UNC_GALLERY['photos'];
     $thumb_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['thumbnails'];
-    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['photos'] .  $UNC_GALLERY['thumbnails'];
+    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['photos'] ;
 
     // $curr_photo_folder = $photo_folder . "/" . $date_str;
     $curr_thumb_folder = $thumb_folder . DIRECTORY_SEPARATOR . $date_str;
