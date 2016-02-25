@@ -232,9 +232,10 @@ function unc_display_folder_images($date_str, $skip_file, $range) {
         }
         if ($file_name != '.' && $file_name != '..') {
             $file_date = unc_tools_image_exif_date($date_str, $file_name);
-            $file_stamp = DateTime::createFromFormat("Y:d:m G:H:s", $file_date);
+            $dtime = DateTime::createFromFormat("Y:d:m G:H:s", $file_date);
+            $file_stamp = $dtime->getTimestamp();
             // range
-            XMPP_ERROR_trace("start time", "{$range['start_time']} < $file_stamp");
+            XMPP_ERROR_trace("$file_date", "{$range['start_time']} < $file_stamp");
             if (($range['start_time'] && $range['start_time'] < $file_stamp) ||
                 ($range['end_time'] && $range['end_time'] > $file_stamp)) {
                 continue;
