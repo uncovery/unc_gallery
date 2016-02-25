@@ -244,7 +244,7 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
         if ($file_name != '.' && $file_name != '..') {
             $exif_data = exif_read_data($file_path);
             $file_date = $exif_data['DateTimeOriginal'];
-            $files[] = $file_date;
+            $files[$file_date] = $file_name;
 
         }
     }
