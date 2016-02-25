@@ -297,7 +297,7 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date
     $rel_date = str_replace(DIRECTORY_SEPARATOR, "_", $date_str);
     $description_full = "$description ($file_name / $file_date)";
     $out = "        <a href=\"$photo_url\" title=\"$description_full\" class=\"$class\" rel=\"gallery_$rel_date\">\n"
-        . "            <img alt=\"$file_name\" src=\"$shown_image\">\n"
+        . "            <img alt=\"$description_full\" src=\"$shown_image\">\n"
         . "         </a>\n";
     return $out;
 }
