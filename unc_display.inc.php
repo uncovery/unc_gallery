@@ -28,6 +28,8 @@ function unc_gallery_apply($atts = array()) {
         'file' => 'latest',
         'featured' => false,
         'options' => false, // we cannot set it to an array here
+        'start_time' => false,
+        'end_time' => false,
     ), $atts );
 
     $type = $a['type'];
@@ -39,6 +41,14 @@ function unc_gallery_apply($atts = array()) {
         $options = array();
     } else {
         $options = explode(" ", $a['options']);
+    }
+
+    // range
+    $range = array('start_time' => false, 'end_time' => false);
+    foreach ($range as $key => $value) {
+        if ($a[$key]) {
+            $range[$key] = $a[$key];
+        }
     }
 
 
@@ -110,20 +120,16 @@ function unc_gallery_apply($atts = array()) {
     }
 
     $out = '';
-    if ($type == 'day') {
-        if (is_admin()) {
-            $date_split = explode("-", $date);
-            $date_path = implode(DIRECTORY_SEPARATOR, $date_split);
-            $out .= " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_path\">Delete Date: $date</a>";
-        }
-        $out .= unc_gallery_display_page($date, $datepicker, $date_desc, $featured_image);
-    } else {
-        $out .= unc_gallery_display_image($date, $datepicker, $date_desc, $featured_image);
+    if ($type == 'day' && is_admin()) {
+        $date_split = explode("-", $date);
+        $date_path = implode(DIRECTORY_SEPARATOR, $date_split);
+        $out .= " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_path\">Delete Date: $date</a>";
     }
+    $out .= unc_gallery_display_page($date, $datepicker, $date_desc, $featured_image, $range);
     return $out;
 }
 
-function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_image) {
+function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_image, $range) {
     global $UNC_GALLERY;
 
     // do not let wp manipulate linebreaks
@@ -136,7 +142,7 @@ function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_imag
         $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
         $date_str = $date_obj->format($format);
         if (file_exists($photo_folder . DIRECTORY_SEPARATOR . $date_str)) {
-            $images = unc_display_folder_images($date_str, $featured_image);
+            $images = unc_display_folder_images($date_str, $featured_image, $range);
         } else {
             return unc_tools_errormsg("Date not found (folder error) $photo_folder/$date_str");
         }
@@ -227,7 +233,7 @@ function unc_display_folder_list($base_folder) {
  * @param type $skip_file
  * @return string
  */
-function unc_display_folder_images($date_str = false, $skip_file = false) {
+function unc_display_folder_images($date_str, $skip_file, $range) {
     global $UNC_GALLERY;
     $echo = false;
     if (!$date_str) {
@@ -242,13 +248,22 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
     $out = '';
 
     $files = array();
+
+    $skip_files = array($skip_file, '.', '..');
+
     foreach (glob($curr_photo_folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
         $file_name = basename($file_path);
-        if ($skip_file == $file_name) {
+        if (in_array($file_name, $skip_files)) {
             continue;
         }
         if ($file_name != '.' && $file_name != '..') {
             $file_date = unc_tools_image_exif_date($date_str, $file_name);
+
+            // range
+            if (($range['start_time'] && $range['start_time'] < $file_date) ||
+                ($range['end_time'] && $range['end_time'] > $file_date)) {
+                continue;
+            }
             $files[$file_date] = $file_name;
         }
     }
