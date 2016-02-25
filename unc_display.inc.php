@@ -267,6 +267,7 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
 
 /**
  * return a single file from a date & filename
+ * assumes the file exists
  *
  * @global type $UNC_GALLERY
  * @param type $date_str
@@ -287,13 +288,8 @@ function unc_display_single_image($date_str, $file_name, $show_thumb) {
     }
 
     $rel_date = str_replace(DIRECTORY_SEPARATOR, "_", $date_str);
-    if (file_exists($photo_url)) {
-        $out = "        <a href=\"$photo_url\" title=\"$file_name, taken $date_str\" class=\"featured_image thickbox\" rel=\"gallery_$rel_date\">\n"
-            . "            <img alt=\"$file_name\" src=\"$shown_image\">\n"
-            . "        </a>\n";
-        return $out;
-    } else {
-        return "File $photo_url not found";
-    }
-    return false;
+    $out = "        <a href=\"$photo_url\" title=\"$file_name, taken $date_str\" class=\"featured_image thickbox\" rel=\"gallery_$rel_date\">\n"
+        . "            <img alt=\"$file_name\" src=\"$shown_image\">\n"
+        . "        </a>\n";
+    return $out;
 }
