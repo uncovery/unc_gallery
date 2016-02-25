@@ -161,7 +161,7 @@ function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_imag
     }
     $single_photo = '';
     if ($featured_image) {
-        $single_photo = unc_display_single_image($date_str, $featured_image);
+        $single_photo = unc_display_single_image($date_str, $featured_image, false);
     }
     $out .= "
         <div class=\"photopage\">
@@ -175,32 +175,6 @@ function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_imag
 
     // remove the page tag from the original content and insert the new content
     return $out;
-}
-
-/**
- * return a single file from a date
- *
- * @global type $UNC_GALLERY
- * @param type $date_str
- * @param type $file_name
- * @return boolean
- */
-function unc_display_single_image($date_str, $file_name) {
-    global $UNC_GALLERY;
-    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
-    $curr_photo_file = $photo_folder . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name;
-    $file_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$file_name");
-
-    $rel_date = str_replace(DIRECTORY_SEPARATOR, "_", $date_str);
-    if (file_exists($curr_photo_file)) {
-        $out = "        <a href=\"$file_url\" title=\"$file_name, taken $date_str\" class=\"featured_image thickbox\" rel=\"gallery_$rel_date\">\n"
-            . "            <img alt=\"$file_name\" src=\"$file_url\">\n"
-            . "        </a>\n";
-        return $out;
-    } else {
-        return "File $curr_photo_file not found";
-    }
-    return false;
 }
 
 /**
@@ -261,19 +235,13 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
     $curr_thumb_folder = $thumb_folder . DIRECTORY_SEPARATOR . $date_str;
     $out = '';
 
-    $rel_date = str_replace(DIRECTORY_SEPARATOR, "_", $date_str);
-
     foreach (glob($curr_thumb_folder.DIRECTORY_SEPARATOR."*") as $file) {
-        $filename = basename($file);
-        if ($skip_file == $filename) {
+        $file_name = basename($file);
+        if ($skip_file == $file_name) {
             continue;
         }
         if ($file != '.' && $file != '..') {
-            $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$filename");
-            $thumb_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['thumbnails'] . "/$date_str/$filename");
-            $out .= "        <a href=\"$photo_url\" title=\"$filename, taken $date_str\" class=\"thickbox\" rel=\"gallery_$rel_date\">\n"
-                . "            <img alt=\"$filename\" src=\"$thumb_url\">\n"
-                . "        </a>\n";
+            unc_display_single_image($date_str, $file_name, true);
         }
     }
     if ($echo) {
@@ -283,4 +251,37 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
     } else {
         return $out;
     }
+}
+
+/**
+ * return a single file from a date & filename
+ *
+ * @global type $UNC_GALLERY
+ * @param type $date_str
+ * @param type $file_name
+ * @param type $show_thumb
+ * @return boolean
+ */
+function unc_display_single_image($date_str, $file_name, $show_thumb) {
+    global $UNC_GALLERY;
+
+    $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$file_name");
+    $thumb_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['thumbnails'] . "/$date_str/$file_name");
+
+    if ($show_thumb) {
+        $shown_image = $thumb_url;
+    } else {
+        $shown_image = $photo_url;
+    }
+
+    $rel_date = str_replace(DIRECTORY_SEPARATOR, "_", $date_str);
+    if (file_exists($photo_url)) {
+        $out = "        <a href=\"$photo_url\" title=\"$file_name, taken $date_str\" class=\"featured_image thickbox\" rel=\"gallery_$rel_date\">\n"
+            . "            <img alt=\"$file_name\" src=\"$shown_image\">\n"
+            . "        </a>\n";
+        return $out;
+    } else {
+        return "File $photo_url not found";
+    }
+    return false;
 }
