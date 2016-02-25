@@ -30,6 +30,7 @@ function unc_gallery_apply($atts = array()) {
         'options' => false, // we cannot set it to an array here
         'start_time' => false,
         'end_time' => false,
+        'description' => false,
     ), $atts );
 
     $type = $a['type'];
@@ -59,6 +60,8 @@ function unc_gallery_apply($atts = array()) {
     if ($type == 'icon') {
         $thumb = true;
     }
+
+    $description = $a['description'];
 
     if (!in_array($date, $keywords['date'])) {
         // lets REGEX
@@ -127,30 +130,17 @@ function unc_gallery_apply($atts = array()) {
         $date_path = implode(DIRECTORY_SEPARATOR, $date_split);
         $out .= " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_path\">Delete Date: $date</a>";
     }
-    $out .= unc_gallery_display_page($date, $date_selector, $date_desc, $featured_image, $range);
+    $out .= unc_gallery_display_page($date, $date_selector, $date_desc, $featured_image, $range, $description);
     return $out;
 }
 
-function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_image, $range) {
+function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_image, $range, $description) {
     global $UNC_GALLERY;
 
     // do not let wp manipulate linebreaks
     remove_filter('the_content', 'wpautop');
 
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
-
-    $date_obj = unc_datetime($date . " 00:00:00");
-    if ($date_obj) {
-        $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
-        $date_str = $date_obj->format($format);
-        if (file_exists($photo_folder . DIRECTORY_SEPARATOR . $date_str)) {
-            $images = unc_display_folder_images($date_str, $featured_image, $range);
-        } else {
-            return unc_tools_errormsg("Date not found (folder error) $photo_folder/$date_str");
-        }
-    } else {
-        return unc_tools_errormsg("Date not found (object error)");
-    }
 
     // get a json datepicker
     $datepicker_div = '';
@@ -171,17 +161,37 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
         $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"$date\">";
     } else if ($date_selector == 'dateselector') {
         $folder_list = unc_tools_folder_list($photo_folder);
+        $out .= "\n     <script type=\"text/javascript\">
+        jQuery(document).ready(function($) {
+            datelist_ready();
+        });
+        </script>";
         $out .= "<select name=\"date_select\">";
-        foreach ($folder_list as $date => $files) {
-            $counter = count($files);
-            $out .= "<option value=\"\">$date ($counter)</option";
+        foreach ($folder_list as $folder_date => $folder_files) {
+            $counter = count($folder_files);
+            $out .= "<option value=\"$folder_date\">$folder_date ($counter)</option";
         }
         $out .="</select>";
     }
+
+    $date_obj = unc_datetime($date . " 00:00:00");
+    if ($date_obj) {
+        $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
+        $date_str = $date_obj->format($format);
+        if (file_exists($photo_folder . DIRECTORY_SEPARATOR . $date_str)) {
+            $images = unc_display_folder_images($date_str, $featured_image, $range, $description);
+        } else {
+            return unc_tools_errormsg("Date not found (folder error) $photo_folder/$date_str");
+        }
+    } else {
+        return unc_tools_errormsg("Date not found (object error)");
+    }
+
+
     $single_photo = '';
     if ($featured_image) {
         $file_date = unc_tools_image_exif_date($date_str, $featured_image);
-        $single_photo = unc_display_single_image($date_str, $featured_image, false, $file_date);
+        $single_photo = unc_display_single_image($date_str, $featured_image, false, $file_date, $description);
     }
     $out .= "
         <div class=\"photopage\">
@@ -198,7 +208,6 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
 }
 
 
-
 /**
  * Open a folder of a certain date and display all the images in there
  *
@@ -208,7 +217,7 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
  * @param array range
  * @return string
  */
-function unc_display_folder_images($date_str, $skip_file, $range) {
+function unc_display_folder_images($date_str, $skip_file, $range, $description) {
     global $UNC_GALLERY;
     $echo = false;
     if (!$date_str) {
@@ -248,7 +257,7 @@ function unc_display_folder_images($date_str, $skip_file, $range) {
     ksort($files);
 
     foreach ($files as $file_date => $file_name) {
-        $out .= unc_display_single_image($date_str, $file_name, true, $file_date);
+        $out .= unc_display_single_image($date_str, $file_name, true, $file_date, $description);
     }
 
     if ($echo) {
@@ -271,7 +280,7 @@ function unc_display_folder_images($date_str, $skip_file, $range) {
  * @param string $file_date
  * @return boolean
  */
-function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date) {
+function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date, $description) {
     global $UNC_GALLERY;
 
     $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$file_name");
@@ -286,8 +295,8 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date
     }
 
     $rel_date = str_replace(DIRECTORY_SEPARATOR, "_", $date_str);
-    $description = "$file_name, taken $file_date";
-    $out = "        <a href=\"$photo_url\" title=\"$description\" class=\"$class\" rel=\"gallery_$rel_date\">\n"
+    $description_full = "$description ($file_name / $file_date)";
+    $out = "        <a href=\"$photo_url\" title=\"$description_full\" class=\"$class\" rel=\"gallery_$rel_date\">\n"
         . "            <img alt=\"$file_name\" src=\"$shown_image\">\n"
         . "         </a>\n";
     return $out;
