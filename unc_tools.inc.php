@@ -372,5 +372,8 @@ function unc_tools_folder_list($base_folder) {
             $dates[$cur_date][] = $file;
         }
     }
-    return $dates;
+    krsort($dates);
+    // the above dates are local timezone, we need the same date in UTC
+    $all_dates = unc_display_fix_timezones($dates);
+    return $all_dates;
 }
