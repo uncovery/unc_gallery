@@ -252,8 +252,8 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
     // sort the files by date / time
     ksort($files);
 
-    foreach ($files as $file) {
-        $out .= unc_display_single_image($date_str, $file, true);
+    foreach ($files as $file_date => $file_name) {
+        $out .= unc_display_single_image($date_str, $file_name, true, "$file_name, taken $file_date");
     }
 
     if ($echo) {
@@ -272,10 +272,11 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
  * @global type $UNC_GALLERY
  * @param type $date_str
  * @param type $file_name
- * @param type $show_thumb
+ * @param bool $show_thumb
+ * @param string $description
  * @return boolean
  */
-function unc_display_single_image($date_str, $file_name, $show_thumb) {
+function unc_display_single_image($date_str, $file_name, $show_thumb, $description) {
     global $UNC_GALLERY;
 
     $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$file_name");
@@ -288,7 +289,7 @@ function unc_display_single_image($date_str, $file_name, $show_thumb) {
     }
 
     $rel_date = str_replace(DIRECTORY_SEPARATOR, "_", $date_str);
-    $out = "        <a href=\"$photo_url\" title=\"$file_name, taken $date_str\" class=\"featured_image thickbox\" rel=\"gallery_$rel_date\">\n"
+    $out = "        <a href=\"$photo_url\" title=\"$description\" class=\"featured_image thickbox\" rel=\"gallery_$rel_date\">\n"
         . "            <img alt=\"$file_name\" src=\"$shown_image\">\n"
         . "        </a>\n";
     return $out;
