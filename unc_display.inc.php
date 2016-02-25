@@ -98,6 +98,7 @@ function unc_gallery_apply($atts = array()) {
             $range[$key] = $dtime->getTimestamp();
         }
     }
+    XMPP_ERROR_trace('range', $range);
 
     // options
     $possible_type_options = $keywords['type'][$type];
