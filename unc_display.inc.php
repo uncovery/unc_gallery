@@ -166,7 +166,8 @@ function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_imag
     }
     $single_photo = '';
     if ($featured_image) {
-        $single_photo = unc_display_single_image($date_str, $featured_image, false);
+        $file_date = unc_tools_image_exif_date($date_str, $featured_image);
+        $single_photo = unc_display_single_image($date_str, $featured_image, false, $file_date);
     }
     $out .= "
         <div class=\"photopage\">
@@ -233,26 +234,19 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
         $date_str = str_replace("-", DIRECTORY_SEPARATOR, $date_wrong);
     }
 
-    // $photo_folder = $UNC_GALLERY['gallery_path'] . $UNC_GALLERY['photos'];
-    $thumb_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['thumbnails'];
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['photos'] ;
-
-    // $curr_photo_folder = $photo_folder . "/" . $date_str;
-    $curr_thumb_folder = $thumb_folder . DIRECTORY_SEPARATOR . $date_str;
     $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_str;
+
     $out = '';
 
     $files = array();
-    foreach (glob($curr_thumb_folder.DIRECTORY_SEPARATOR."*") as $file_path) {
+    foreach (glob($curr_photo_folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
         $file_name = basename($file_path);
         if ($skip_file == $file_name) {
             continue;
         }
         if ($file_name != '.' && $file_name != '..') {
-            $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
-            $exif_data = exif_read_data($file_path);
-            // XMPP_ERROR_send_msg($file_path);
-            $file_date = $exif_data['DateTimeOriginal'];
+            $file_date = unc_tools_image_exif_date($date_str, $file_name);
             $files[$file_date] = $file_name;
         }
     }
@@ -271,6 +265,16 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
     } else {
         return $out;
     }
+}
+
+function unc_tools_image_exif_date($date_str, $file_name) {
+    global $UNC_GALLERY;
+    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['photos'] ;
+    $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_str;
+    $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
+    $exif_data = exif_read_data($file_path);
+    $file_date = $exif_data['DateTimeOriginal'];
+    return $file_date;
 }
 
 /**
