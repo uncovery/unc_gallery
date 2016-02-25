@@ -74,11 +74,12 @@ function unc_gallery_admin_upload() {
         </div>
         <div id="progress-div">
             <div id="progress-bar"></div>
+            <div id="targetLayer"></div>
         </div>
         <div class="image_upload_submit">
             <?php submit_button("Upload", "primary", "btnSubmit", false); ?>
         </div>
-        <div id="targetLayer"></div>
+
     </form>
     <?php
 }
