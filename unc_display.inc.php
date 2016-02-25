@@ -34,7 +34,11 @@ function unc_gallery_apply($atts = array()) {
     $featured_image = $a['featured']; // wp function to sanitze filnames
     $file = sanitize_file_name($a['file']);
     // there can be several options, separated by space
-    $options = explode(" ", $a['options']);
+    XMPP_ERROR_trace($a['options']);
+    if (!is_array($options)) {
+        $options = explode(" ", $a['options']);
+    }
+
 
     // options for displays
     $keywords = array(
