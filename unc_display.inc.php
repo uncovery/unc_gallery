@@ -245,15 +245,17 @@ function unc_display_folder_images($date_str, $skip_file, $range, $description) 
             $dtime = DateTime::createFromFormat("Y:m:d G:i:s", $file_date);
             $file_stamp = $dtime->getTimestamp();
             // range
-            if ($range['start_time'] < $range['end_time']) {
-                if (($range['start_time'] && $range['start_time'] >= $file_stamp) ||
-                    ($range['end_time'] && $file_stamp > $range['end_time'])) {
-                    continue;
-                }
-            } else if ($range['start_time'] > $range['end_time']) {
-                if (($range['start_time'] && $range['start_time'] > $file_stamp) &&
-                    ($range['end_time'] && $range['end_time'] < $file_stamp )) {
-                    continue;
+            if ($range['end_time'] && $range['start_time']) {
+                if ($range['start_time'] < $range['end_time']) {
+                    if (($range['start_time'] >= $file_stamp) ||
+                        ($file_stamp > $range['end_time'])) {
+                        continue;
+                    }
+                } else if ($range['start_time'] > $range['end_time']) {
+                    if (($range['start_time'] > $file_stamp) &&
+                        ($range['end_time'] < $file_stamp )) {
+                        continue;
+                    }
                 }
             }
             $files[$file_date] = $file_name;
