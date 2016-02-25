@@ -205,6 +205,7 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
  * @global type $UNC_GALLERY
  * @param type $date_str
  * @param type $skip_file
+ * @param array range
  * @return string
  */
 function unc_display_folder_images($date_str, $skip_file, $range) {
