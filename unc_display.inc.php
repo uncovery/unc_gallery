@@ -251,8 +251,8 @@ function unc_display_folder_images($date_str, $skip_file, $range, $description) 
                     continue;
                 }
             } else if ($range['start_time'] > $range['end_time']) {
-                if (($range['start_time'] && $range['start_time'] <= $file_stamp) ||
-                    ($range['end_time'] && $file_stamp < $range['end_time'])) {
+                if (($range['start_time'] && $range['start_time'] > $file_stamp) &&
+                    ($range['end_time'] && $range['end_time'] < $file_stamp )) {
                     continue;
                 }
             }
