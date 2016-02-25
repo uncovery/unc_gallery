@@ -134,7 +134,7 @@ function unc_uploads_iterate_files() {
             continue;
         }
     }
-    $out .= "All images processed!";
+    $out .= "<br>All images processed!";
     // ob_clean();
     echo $out;
     wp_die();
