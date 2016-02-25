@@ -106,11 +106,12 @@ function unc_gallery_plugin_uninstall() {
  *
  */
 function unc_gallery_add_css_and_js() {
+    add_thickbox();
     wp_enqueue_script('jquery-ui');
     wp_enqueue_script('jquery-ui-datepicker');
     wp_enqueue_script('jquery-form');
     wp_enqueue_script('thickbox', null, array('jquery'));
-    wp_enqueue_style('thickbox.css', '/'.WPINC.'/js/thickbox/thickbox.css', null, '1.0');
+//    wp_enqueue_style('thickbox.css', '/'.WPINC.'/js/thickbox/thickbox.css', null, '1.0');
     wp_enqueue_script('unc_gallery_js', plugin_dir_url( __FILE__ ) . 'js/unc_gallery.js');
     wp_enqueue_style('unc_gallery_css', plugin_dir_url( __FILE__ ) . 'css/gallery.css');
     wp_enqueue_style('jquery_ui_css', plugin_dir_url( __FILE__ ) . 'css/jquery-ui.css');
