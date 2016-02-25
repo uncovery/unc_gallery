@@ -20,6 +20,8 @@ function unc_images_display() {
  * @return string
  */
 function unc_gallery_apply($atts = array()) {
+    global $XMPP_ERROR;
+    echo var_export($XMPP_ERROR, true);
     unc_gallery_add_css_and_js();
     $a = shortcode_atts( array(
         'type' => 'day',
@@ -246,7 +248,6 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
             XMPP_ERROR_trigger($exif_data);
             $file_date = $exif_data['DateTimeOriginal'];
             $files[$file_date] = $file_name;
-
         }
     }
 
