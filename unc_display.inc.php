@@ -34,7 +34,9 @@ function unc_gallery_apply($atts = array()) {
     $featured_image = $a['featured']; // wp function to sanitze filnames
     $file = sanitize_file_name($a['file']);
     // there can be several options, separated by space
-    if (!is_array($a['options'])) {
+    if (!$a['options']) {
+        $options = array();
+    } else {
         $options = explode(" ", $a['options']);
     }
 
@@ -90,7 +92,7 @@ function unc_gallery_apply($atts = array()) {
     $possible_type_options = $keywords['type'][$type];
     foreach ($options as $option) {
         if (!in_array($option, $possible_type_options)) {
-            $error = unc_tools_errormsg("You have an invalid option for the display type \"$type\" in your tag."
+            $error = unc_tools_errormsg("You have an invalid option for the display type \"option\" in your tag."
                 . "<br>Valid options are: " . implode(",", $keywords['type'][$type]));
             return $error;
         }
