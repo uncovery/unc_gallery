@@ -148,7 +148,7 @@ function unc_uploads_iterate_files() {
 function unc_uploads_process_file($i, $overwrite) {
     global $UNC_GALLERY;
 
-    //array(1) {
+    //$_FILES(1) {
     //    ["userImage"]=> array(5) {
     //        ["name"]=> array(1) { [0]=> string(23) "2013-11-02 21.00.38.jpg" }
     //        ["type"]=> array(1) { [0]=> string(10) "image/jpeg" }
