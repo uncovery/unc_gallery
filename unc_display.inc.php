@@ -240,7 +240,7 @@ function unc_display_folder_images($date_str, $skip_file, $range) {
                 ($range['end_time'] && $file_stamp > $range['end_time'])) {
                 continue;
             }
-            XMPP_ERROR_trace("time check", "$file_stamp > " . $range['end_time']);
+            XMPP_ERROR_trace("time check", "$file_date > $file_stamp > " . $range['end_time']);
             $files[$file_date] = $file_name;
         }
     }
