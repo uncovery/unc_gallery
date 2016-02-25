@@ -236,8 +236,8 @@ function unc_display_folder_images($date_str, $skip_file, $range) {
             $file_stamp = $dtime->getTimestamp();
             // range
             XMPP_ERROR_trace("$file_date", "{$range['start_time']} < $file_stamp");
-            if (($range['start_time'] && $range['start_time'] < $file_stamp) ||
-                ($range['end_time'] && $range['end_time'] > $file_stamp)) {
+            if (($range['start_time'] && $range['start_time'] >= $file_stamp) ||
+                ($range['end_time'] && $range['end_time'] <= $file_stamp)) {
                 continue;
             }
             $files[$file_date] = $file_name;
