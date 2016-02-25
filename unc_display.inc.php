@@ -191,7 +191,7 @@ function unc_display_single_image($date_str, $file_name) {
     $curr_photo_file = $photo_folder . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name;
     $file_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$file_name");
 
-    $rel_date = str_replace(DIRECTORY_SEPARATOR, "_" . $date_str);
+    $rel_date = str_replace(DIRECTORY_SEPARATOR, "_", $date_str);
     if (file_exists($curr_photo_file)) {
         $out = "        <a href=\"$file_url\" title=\"$file_name, taken $date_str\" class=\"featured_image thickbox\" rel=\"gallery_$rel_date\">\n"
             . "            <img alt=\"$file_name\" src=\"$file_url\">\n"
@@ -261,7 +261,7 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
     $curr_thumb_folder = $thumb_folder . DIRECTORY_SEPARATOR . $date_str;
     $out = '';
 
-    $rel_date = str_replace(DIRECTORY_SEPARATOR, "_" . $date_str);
+    $rel_date = str_replace(DIRECTORY_SEPARATOR, "_", $date_str);
 
     foreach (glob($curr_thumb_folder.DIRECTORY_SEPARATOR."*") as $file) {
         $filename = basename($file);
