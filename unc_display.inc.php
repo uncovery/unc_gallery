@@ -236,7 +236,7 @@ function unc_display_folder_images($date_str, $skip_file, $range) {
             // range
             if (($range['start_time'] && "$date_str {$range['start_time']}" < $file_stamp) ||
                 ($range['end_time'] && "$date_str {$range['end_time']}" > $file_stamp)) {
-                // continue;
+                continue;
             }
             $files[$file_date] = $file_name;
         }
