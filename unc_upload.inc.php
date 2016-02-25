@@ -249,7 +249,7 @@ function unc_uploads_process_file($i, $overwrite) {
     $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
 
     $date_str_folder = $date_obj->format($format);
-    echo "Folder date is $date_str_folder<br>";
+    // echo "Folder date is $date_str_folder<br>";
 
     $target_subfolder = $dirPath . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_str_folder;
     $thumb_subfolder = $dirPath . $UNC_GALLERY['thumbnails'] . DIRECTORY_SEPARATOR . $date_str_folder;
@@ -258,12 +258,12 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // let's check that file already exists
     if (!$overwrite && file_exists($new_path)) {
-        echo "$new_path Filename already exists, skipping!<br>";
+        // echo "$new_path Filename already exists, skipping!<br>";
         return false;
     } else if ($overwrite && file_exists($new_path)) {
         unlink($new_path);
         unlink($new_thumb_path);
-        echo "$new_path Filename already exists, overwriting!<br>";
+        // echo "$new_path Filename already exists, overwriting!<br>";
     }
 
     // finally, move the file
@@ -272,7 +272,7 @@ function unc_uploads_process_file($i, $overwrite) {
         echo unc_tools_errormsg("Could not move {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path");
         return false;
     } else {
-        echo "Moving file from {$F['tmp_name'][$i]} to $new_path<br>";
+        // echo "Moving file from {$F['tmp_name'][$i]} to $new_path<br>";
     }
 
     // chmod file to make sure it cannot be executed
@@ -281,13 +281,13 @@ function unc_uploads_process_file($i, $overwrite) {
         echo unc_tools_errormsg("Could not chmod 644 file $new_path");
         return false;
     } else {
-        echo "Chmod successful!<br>";
+        // echo "Chmod successful!<br>";
     }
 
     // now make the thumbnail
     $check = unc_import_make_thumbnail($new_path, $new_thumb_path);
     if ($check) {
-        echo "Done!<br>";
+        echo $F['name'][$i] . ",";
     }
     return true;
 }
