@@ -157,7 +157,7 @@ function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_imag
         $datepicker_div = "<span id=\"photodate\">Showing $date</span>";
     }
     if ($datepicker) {
-        $folder_list = unc_display_folder_list($photo_folder);
+        $folder_list = unc_tools_folder_list($photo_folder);
         krsort($folder_list);
         // the above dates are local timezone, we need the same date in UTC
         $all_dates = unc_display_fix_timezones($folder_list);
@@ -191,39 +191,7 @@ function unc_gallery_display_page($date, $datepicker, $date_desc, $featured_imag
     return $out;
 }
 
-/**
- * Enumerate the fodlers with images to display the datepicker properly.
- *
- * @global type $UNC_GALLERY
- * @param type $base_folder
- * @return type
- */
-function unc_display_folder_list($base_folder) {
-    global $UNC_GALLERY;
-    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
-    $base_length = strlen($photo_folder) + 1;
 
-    $dates = array();
-    foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $current_path) {
-        $file = basename($current_path);
-        // get current date from subfolder
-        if (is_dir($current_path)) { // we have a directory
-            $cur_date = str_replace(DIRECTORY_SEPARATOR, "-", substr($current_path, $base_length));
-            if (strlen($cur_date) == 10) { // we have a full date, add to array
-                $dates[$cur_date] = 0;
-            }
-            // go one deeper
-            $new_dates = unc_display_folder_list($current_path);
-            if (count($new_dates) > 0) {
-                $dates = array_merge($dates, $new_dates);
-            }
-        } else { // we have a file
-            $cur_date = str_replace(DIRECTORY_SEPARATOR, "-", substr($base_folder, $base_length));
-            $dates[$cur_date][] = $file;
-        }
-    }
-    return $dates;
-}
 
 /**
  * Open a folder of a certain date and display all the images in there
