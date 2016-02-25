@@ -235,15 +235,27 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
     $curr_thumb_folder = $thumb_folder . DIRECTORY_SEPARATOR . $date_str;
     $out = '';
 
-    foreach (glob($curr_thumb_folder.DIRECTORY_SEPARATOR."*") as $file) {
-        $file_name = basename($file);
+    $files = aray();
+    foreach (glob($curr_thumb_folder.DIRECTORY_SEPARATOR."*") as $file_path) {
+        $file_name = basename($file_path);
         if ($skip_file == $file_name) {
             continue;
         }
-        if ($file != '.' && $file != '..') {
-            unc_display_single_image($date_str, $file_name, true);
+        if ($file_name != '.' && $file_name != '..') {
+            $exif_data = exif_read_data($file_path);
+            $file_date = $exif_data['DateTimeOriginal'];
+            $files[] = $file_date;
+
         }
     }
+
+    // sort the files by date / time
+    ksort($files);
+
+    foreach ($files as $file) {
+        $out .= unc_display_single_image($date_str, $file, true);
+    }
+
     if ($echo) {
         ob_clean();
         echo $out;
