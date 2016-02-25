@@ -95,7 +95,7 @@ function unc_gallery_apply($atts = array()) {
     foreach ($range as $key => $value) {
         if ($a[$key]) {
             $dtime = DateTime::createFromFormat("Y-d-m G:H:s", $a[$key]);
-            $a[$key] = $dtime->getTimestamp();
+            $range[$key] = $dtime->getTimestamp();
         }
     }
 
