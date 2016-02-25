@@ -266,8 +266,8 @@ function unc_display_folder_images($date_str = false, $skip_file = false) {
         if ($file != '.' && $file != '..') {
             $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$filename");
             $thumb_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['thumbnails'] . "/$date_str/$filename");
-            $out .= "        <a href=\"$photo_url\" class=\"thickbox\" rel=\"gallery\">\n"
-                . "            <img alt=\"$filename\" src=\"$thumb_url\" title=\"$filename, taken $date_str\" >\n"
+            $out .= "        <a href=\"$photo_url\" title=\"$filename, taken $date_str\" class=\"thickbox\" rel=\"gallery\">\n"
+                . "            <img alt=\"$filename\" src=\"$thumb_url\">\n"
                 . "        </a>\n";
         }
     }
