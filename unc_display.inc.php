@@ -159,7 +159,7 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
         });
         </script>";
         $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"$date\">";
-    } else if ($date_selector == 'dateselector') {
+    } else if ($date_selector == 'datelist') {
         $folder_list = unc_tools_folder_list($photo_folder);
         $out .= "\n     <script type=\"text/javascript\">
         jQuery(document).ready(function($) {
