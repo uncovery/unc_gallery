@@ -311,7 +311,7 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date
         $class = 'featured_image';
     }
 
-    $rel_date = str_replace(DIRECTORY_SEPARATOR, "_", $date_str);
+    $rel_date = str_replace(DIRECTORY_SEPARATOR, "-", $date_str);
     if ($description) {
         $description_full = "$description ($file_name / $file_date)";
     } else {
