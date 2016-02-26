@@ -223,7 +223,7 @@ function unc_display_folder_images($date_str = false, $skip_file = false, $range
 
     $out = '';
     if (is_admin()) {
-        $out .= " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_str\">Delete Date: $date_str</a>";
+        $out .= "<div class=\"delete_link\"><a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_str\">Delete Date: $date_str</a></div>\n";
     }
 
     $files = array();
