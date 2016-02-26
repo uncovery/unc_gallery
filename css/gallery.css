@@ -102,3 +102,7 @@ datepicker #ui-datepicker-div {
     right: 5px;
     top: 5px;
 }
+
+.unc_gallery #datepicker {
+    margin-bottom: 5px;
+}
