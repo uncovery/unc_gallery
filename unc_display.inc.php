@@ -298,10 +298,10 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date
 
     if ($show_thumb) {
         $shown_image = $thumb_url;
-        $class = 'thickbox';
+        $class = '';
     } else {
         $shown_image = $photo_url;
-        $class = 'featured_image thickbox';
+        $class = 'featured_image';
     }
 
     $rel_date = str_replace(DIRECTORY_SEPARATOR, "_", $date_str);
@@ -311,7 +311,7 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date
         $description_full = "File Name: $file_name Date: $file_date";
     }
     $out =  "    <div class=\"$class\">\n";
-    $out .= "        <a href=\"$photo_url\" title=\"$description_full\" rel=\"gallery_$rel_date\">\n"
+    $out .= "        <a href=\"$photo_url\" class=\"thickbox\" title=\"$description_full\" rel=\"gallery_$rel_date\">\n"
          . "            <img alt=\"$description_full\" src=\"$shown_image\">\n"
          . "        </a>\n";
     if (is_admin()) {
