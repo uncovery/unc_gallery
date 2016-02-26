@@ -338,7 +338,10 @@ function unc_tools_image_exif_date($date_str, $file_name) {
     $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
     $exif_data = exif_read_data($file_path);
     $file_date = $exif_data['DateTimeOriginal'];
-    return $file_date;
+    $search_pattern = '/(\d\d\d\d):(\d\d):(\d\d \d\d:\d\d:\d\d)/';
+    $replace_pattern = '$1-$2-$3';
+    $fixed_date = preg_replace($search_pattern, $replace_pattern, $file_date);
+    return $fixed_date;
 }
 
 /**
