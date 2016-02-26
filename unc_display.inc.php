@@ -228,9 +228,11 @@ function unc_display_folder_images($date_str = false, $skip_file = array(), $ran
 
     $files = array();
 
-    $dirs = array( '.', '..');
+    $dirs = array('.', '..');
     $skip_files = array_merge($skip_file, $dirs);
-    XMPP_ERROR_trace("skip", $skip_files);
+    XMPP_ERROR_trace("skip1", $skip_file);
+    XMPP_ERROR_trace("skip2", $dirs);
+    XMPP_ERROR_trace("skip2", $skip_files);
 
     foreach (glob($curr_photo_folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
         $file_name = basename($file_path);
