@@ -263,6 +263,9 @@ function unc_display_folder_images($date_str = false, $skip_file = false, $range
     ksort($files);
 
     foreach ($files as $file_date => $file_name) {
+        if (is_admin()) {
+            $description .= "<a class=\"delete_image_link\" href=\"?page=unc_gallery_admin_view&amp;image_del=$date_str&amp;filename=$file_name\">Delete Image</a></div>\n";
+        }
         $out .= unc_display_single_image($date_str, $file_name, true, $file_date, $description);
     }
 
