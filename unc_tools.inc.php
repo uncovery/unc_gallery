@@ -408,8 +408,8 @@ function unc_tools_image_delete() {
     $date_str = str_replace("_", DIRECTORY_SEPARATOR, $date_wrong);
 
     $paths = array(
-        content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name),
-        content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['thumbnails'] . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name),
+        WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name,
+        WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name,
     );
     foreach ($paths as $path) {
         if (file_exists($path)) {
