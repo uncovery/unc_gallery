@@ -183,11 +183,6 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
         $single_photo = unc_display_single_image($date_str, $featured_image, false, $file_date, $description);
     }
     $delete_link = '';
-    if (is_admin()) {
-        $date_split = explode("-", $date);
-        $date_path = implode(DIRECTORY_SEPARATOR, $date_split);
-        $delete_link = " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_path\">Delete Date: $date</a>";
-    }
     $out .= "
         <div class=\"photopage\">
             $datepicker_div
@@ -227,10 +222,14 @@ function unc_display_folder_images($date_str = false, $skip_file = array(), $ran
     $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_str;
 
     $out = '';
+    if (is_admin()) {
+        $out .= " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_str\">Delete Date: $date_str</a>";
+    }
 
     $files = array();
 
-    $skip_files = array_merge($skip_file, array( '.', '..'));
+    $dirs = array( '.', '..');
+    $skip_files = array_merge($skip_file, $dirs);
     XMPP_ERROR_trace("skip", $skip_files);
 
     foreach (glob($curr_photo_folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
