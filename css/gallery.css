@@ -1,25 +1,5 @@
-.photopage * {
-    margin: 0px;
-    padding:0px;
-}
-
-.photopage {
-    overflow:auto;
-}
-
 .dateShown a.ui-state-default {
     font-weight: bold;
-}
-
-.photopage .gallery_menu li{
-    float:left;
-    list-style:none;
-}
-
-#photobox .thickbox {
-    float:left;
-    margin-left:5px;
-    margin-bottom: 5px;
 }
 
 #TB_window {
@@ -39,20 +19,6 @@
 
 .adminpage .delete_folder_link {
     font-size: 0.9em;
-}
-
-.photopage #datepicker {
-    margin:5px;
-    width: auto;
-}
-
-.photopage input.ui-datepicker{
-    font-size:13px;
-}
-.photopage .ui-icon {
-    width: 16px;
-    height: 16px;
-    background-image: url(../media/ui-icons_222222_256x240.png);
 }
 
 #uploadForm label {
@@ -110,4 +76,30 @@ datepicker #ui-datepicker-div {
 .featured_image img{
     float:left;
     height: 495px;
+}
+
+.unc_gallery {
+    overflow:auto;
+    border: 1px solid grey;
+    position: relative;
+}
+
+.unc_gallery .one_photo {
+    float:left;
+    position: relative;
+    overflow: auto;
+    margin-left: 5px;
+    margin-bottom: 2px;
+}
+
+.unc_gallery .delete_image_link {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
+.unc_gallery .delete_folder_link {
+    position: absolute;
+    right: 5px;
+    top: 5px;
 }
