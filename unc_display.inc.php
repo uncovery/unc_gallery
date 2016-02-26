@@ -285,6 +285,7 @@ function unc_display_folder_images($date_str, $skip_file, $range, $description) 
  * @param type $file_name
  * @param bool $show_thumb
  * @param string $file_date
+ * @param string $description
  * @return boolean
  */
 function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date, $description) {
