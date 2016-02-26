@@ -223,7 +223,7 @@ function unc_display_folder_images($date_str = false, $skip_file = false, $range
 
     $out = '';
     if (is_admin()) {
-        $out .= "<div class=\"delete_link\"><a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_str\">Delete Date: $date_str</a></div>\n";
+        $out .= "<span class=\"delete_link\"><a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_str\">Delete Date: $date_str</a></span>\n";
     }
 
     $files = array();
@@ -263,12 +263,10 @@ function unc_display_folder_images($date_str = false, $skip_file = false, $range
     ksort($files);
 
     foreach ($files as $file_date => $file_name) {
-        $out .= "<span class=\"img_span\">\n";
+        $out .= "<div class=\"img_span\">\n";
         $out .= unc_display_single_image($date_str, $file_name, true, $file_date, $description);
-        if (is_admin()) {
-            $out .= "        <a class=\"delete_image_link\" href=\"?page=unc_gallery_admin_view&amp;image_del=$date_str&amp;filename=$file_name\">Delete</a>\n";
-        }
-        $out .="</span>\n";
+
+        $out .="</div>\n";
     }
 
     if ($echo) {
@@ -312,9 +310,15 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date
     } else {
         $description_full = "File Name: $file_name Date: $file_date";
     }
-
-    $out = "        <a href=\"$photo_url\" title=\"$description_full\" class=\"$class\" rel=\"gallery_$rel_date\">\n"
-        . "            <img alt=\"$description_full\" src=\"$shown_image\">\n"
-        . "         </a>\n";
+    $out =  "    <div class=\"$class\">\n";
+    $out .= "        <a href=\"$photo_url\" title=\"$description_full\" rel=\"gallery_$rel_date\">\n"
+         . "            <img alt=\"$description_full\" src=\"$shown_image\">\n"
+         . "        </a>\n";
+    if (is_admin()) {
+        $out .= "         <a class=\"delete_image_link\" href=\"?page=unc_gallery_admin_view&amp;image_del=$date_str&amp;filename=$file_name\">\n"
+              . "             Delete\n"
+              . "         </a>\n";
+    }
+    $out .=  "    </div>\n";
     return $out;
 }
