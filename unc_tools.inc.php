@@ -416,7 +416,7 @@ function unc_tools_image_delete() {
             unlink($path);
         } else {
             ob_clean();
-            echo "File name $file_name could not be found!!";
+            echo "File name $path could not be found!!";
             wp_die();
         }
     }
