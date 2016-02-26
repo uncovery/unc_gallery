@@ -107,18 +107,17 @@ datepicker #ui-datepicker-div {
     -moz-border-radius:39px;
     -webkit-border-radius:39px;
     border-radius:39px;
-    border:2px solid #dcdcdc;
     display:inline-block;
+    border: 0px;
     cursor:pointer;
     color:#ff0000;
     font-family:Arial;
-    font-size:22px;
-    font-weight:bold;
+    font-size:20px;
     padding:3px 5px;
     text-decoration:none;
     position: absolute;
     right: 5px;
-    top:5px;
+    top:0px;
 }
 
 .unc_gallery .delete_image_link:hover {
