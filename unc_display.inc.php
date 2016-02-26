@@ -214,7 +214,7 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
  * @param string $description
  * @return string
  */
-function unc_display_folder_images($date_str, $skip_file, $range, $description) {
+function unc_display_folder_images($date_str = false, $skip_file = array(), $range = false, $description = false) {
     global $UNC_GALLERY;
     $echo = false;
     if (!$date_str) {
@@ -230,7 +230,7 @@ function unc_display_folder_images($date_str, $skip_file, $range, $description) 
 
     $files = array();
 
-    $skip_files = array($skip_file, '.', '..');
+    $skip_files = array_merge($skip_file, array( '.', '..'));
 
     foreach (glob($curr_photo_folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
         $file_name = basename($file_path);
