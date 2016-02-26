@@ -121,10 +121,11 @@ datepicker #ui-datepicker-div {
 }
 
 .unc_gallery .delete_image_link:hover {
-	background-color:transparent;
+    background-color:transparent;
+    color:#00ffff;
 }
 
 .unc_gallery .delete_image_link:active {
-	position:relative;
-	top:1px;
+    position:relative;
+    top:1px;
 }
