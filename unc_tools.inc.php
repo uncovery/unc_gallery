@@ -408,7 +408,7 @@ function unc_tools_image_delete() {
     $date_str = str_replace("_", DIRECTORY_SEPARATOR, $date_wrong);
 
     $paths = array(
-        WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name,
+        WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['thumbnails'] . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name,
         WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name,
     );
     foreach ($paths as $path) {
@@ -416,7 +416,7 @@ function unc_tools_image_delete() {
             unlink($path);
         } else {
             ob_clean();
-            echo "File name $path could not be found!!";
+            echo "File name $path could not be found!";
             wp_die();
         }
     }
