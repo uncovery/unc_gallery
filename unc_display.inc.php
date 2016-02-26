@@ -225,7 +225,13 @@ function unc_display_folder_images($date_str = false, $skip_file = false, $range
 
     $out = '';
     if (is_admin()) {
-        $out .= "<span class=\"delete_link\"><a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_str\">Delete Date: $date_str</a></span>\n";
+        $out .= "
+        <span class=\"delete_link\">
+            Sample shortcode for this day: <input type=\"text\" value=\"[unc_gallery date=&quot;$date_str&quot;]\">
+            <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_str\">
+                Delete Date: $date_str
+            </a>
+        </span>\n";
     }
 
     $files = array();
