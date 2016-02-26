@@ -392,12 +392,16 @@ function unc_tools_folder_list($base_folder) {
 function unc_tools_image_delete() {
     global $UNC_GALLERY;
     if (!is_admin()) {
-        return false;
+        ob_clean();
+        echo "You are not admin!";
+        wp_die();
     }
 
     $file_name_raw = filter_input(INPUT_GET, 'file_name', FILTER_SANITIZE_STRING);
     if (!$file_name = unc_tools_filename_validate($file_name_raw)) {
-        return false;
+        ob_clean();
+        echo "File name $file_name_raw is not allowed!";
+        wp_die();
     }
 
     $date_wrong = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
@@ -410,6 +414,10 @@ function unc_tools_image_delete() {
     foreach ($paths as $path) {
         if (file_exists($path)) {
             unlink($path);
+        } else {
+            ob_clean();
+            echo "File name $file_name could not be found!!";
+            wp_die();
         }
     }
     unc_display_folder_images($date_str);
