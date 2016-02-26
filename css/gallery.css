@@ -93,6 +93,7 @@ datepicker #ui-datepicker-div {
 
 .unc_gallery .delete_image_link {
     position: absolute;
+    color: red;
     right: 5px;
     top: 5px;
 }
