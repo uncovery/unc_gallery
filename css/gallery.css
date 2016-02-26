@@ -73,14 +73,8 @@ datepicker #ui-datepicker-div {
     display:block;
 }
 
-.featured_image img{
-    float:left;
-    height: 495px;
-}
-
 .unc_gallery {
     overflow:auto;
-    border: 1px solid grey;
     position: relative;
 }
 
@@ -89,7 +83,12 @@ datepicker #ui-datepicker-div {
     position: relative;
     overflow: auto;
     margin-left: 5px;
-    margin-bottom: 2px;
+    margin-bottom: 5px;
+}
+
+.unc_gallery .featured_photo img {
+    float:left;
+    height: 495px;
 }
 
 .unc_gallery .delete_image_link {
