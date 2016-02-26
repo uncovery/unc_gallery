@@ -321,9 +321,7 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date
          . "            <img alt=\"$file_name\" src=\"$shown_image\">\n"
          . "        </a>\n";
     if (is_admin()) {
-        $out .= "         <a class=\"delete_image_link\" href=\"?page=unc_gallery_admin_view&amp;image_del=$date_str&amp;filename=$file_name\">\n"
-              . "             Delete\n"
-              . "         </a>\n";
+        $out .= "         <img type=\"submit\" value=\"Delete\" onClick=\"delete_image('$file_name','$rel_date')\">\n";
     }
     return $out;
 }
