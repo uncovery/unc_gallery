@@ -39,7 +39,7 @@ function datepicker_ready(defaultdate) {
 
 function datelist_change() {
     var datelist_value = jQuery('#datepicker').val();
-    alert( datelist_value );
+    datepicker_select(datelist_value);
 }
 
 // this parses the current iterated date and checks if it's the current displayed
