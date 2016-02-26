@@ -13,6 +13,9 @@ if (!defined('WPINC')) {
  * @return type
  */
 function unc_date_folder_create($date_str) {
+    if (!is_admin()) {
+        return false;
+    }
     global $UNC_GALLERY;
 
     // these are the format strings for $date->format
@@ -61,6 +64,9 @@ function unc_date_folder_create($date_str) {
  * @param type $date_str
  */
 function unc_date_folder_delete($date_str) {
+    if (!is_admin()) {
+        return false;
+    }
     global $UNC_GALLERY;
 
     $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
@@ -110,6 +116,9 @@ function unc_date_folder_delete($date_str) {
  * @return type
  */
 function unc_tools_folder_delete_empty($path) {
+    if (!is_admin()) {
+        return false;
+    }
     $empty = true;
     foreach (glob($path . DIRECTORY_SEPARATOR . "*") as $file) {
         if (is_dir($file)) {
@@ -385,7 +394,7 @@ function unc_tools_image_delete() {
     if (!is_admin()) {
         return false;
     }
-    
+
     $file_name_raw = filter_input(INPUT_GET, 'file_name', FILTER_SANITIZE_STRING);
     if (!$file_name = unc_tools_filename_validate($file_name_raw)) {
         return false;
