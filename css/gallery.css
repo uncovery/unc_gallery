@@ -95,15 +95,20 @@ datepicker #ui-datepicker-div {
     position: absolute;
     color: red;
     right: 5px;
-    top: 5px;
+    top:5px;
 }
 
 .unc_gallery .delete_folder_link {
     position: absolute;
+    text-align:center;
     right: 5px;
     top: 5px;
+    width: 80%;
+}
+.unc_gallery .delete_folder_link input {
+    width: 250px;
 }
 
-.unc_gallery #datepicker {
-    margin-bottom: 5px;
-}
+
+
+.unc_gallery #date
