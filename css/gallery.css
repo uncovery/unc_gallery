@@ -75,7 +75,11 @@
 .unc_gallery {
     overflow:auto;
     position: relative;
-    padding-top: 10px;
+    padding-top: 5px;
+}
+
+.unc_gallery #photos {
+    padding-top: 5px;
 }
 
 .unc_gallery .one_photo {
@@ -95,7 +99,7 @@
     position: absolute;
     text-align:center;
     right: 0px;
-    top: 0px;
+    top: 5px;
     width: 80%;
 }
 .unc_gallery .delete_folder_link input {
