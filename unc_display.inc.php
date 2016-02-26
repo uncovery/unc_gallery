@@ -266,7 +266,7 @@ function unc_display_folder_images($date_str = false, $skip_file = false, $range
         $out .= "<span class=\"img_span\">\n";
         $out .= unc_display_single_image($date_str, $file_name, true, $file_date, $description);
         if (is_admin()) {
-            $out .= "<a class=\"delete_image_link\" href=\"?page=unc_gallery_admin_view&amp;image_del=$date_str&amp;filename=$file_name\">Delete</a>\n";
+            $out .= "        <a class=\"delete_image_link\" href=\"?page=unc_gallery_admin_view&amp;image_del=$date_str&amp;filename=$file_name\">Delete</a>\n";
         }
         $out .="</span>\n";
     }
