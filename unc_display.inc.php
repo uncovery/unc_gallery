@@ -209,7 +209,7 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
  * @param string $description
  * @return string
  */
-function unc_display_folder_images($date_str = false, $skip_file = array(), $range = false, $description = false) {
+function unc_display_folder_images($date_str = false, $skip_file = false, $range = false, $description = false) {
     global $UNC_GALLERY;
     $echo = false;
     if (!$date_str) {
@@ -229,10 +229,11 @@ function unc_display_folder_images($date_str = false, $skip_file = array(), $ran
     $files = array();
 
     $dirs = array('.', '..');
-    $skip_files = array_merge($skip_file, $dirs);
-    XMPP_ERROR_trace("skip1", $skip_file);
-    XMPP_ERROR_trace("skip2", $dirs);
-    XMPP_ERROR_trace("skip2", $skip_files);
+    if ($skip_file) {
+        $skip_files = array_merge($skip_file, $dirs);
+    } else {
+        $skip_files = $dirs;
+    }
 
     foreach (glob($curr_photo_folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
         $file_name = basename($file_path);
