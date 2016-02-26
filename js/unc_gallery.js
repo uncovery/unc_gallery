@@ -47,7 +47,7 @@ function delete_image(file_name, rel_date) {
         url: ajaxurl,
         method: 'GET',
         dataType: 'text',
-        data: {action: 'unc_gallery_delete_image', date: rel_date, filename: file_name},
+        data: {action: 'unc_gallery_image_delete', date: rel_date, filename: file_name},
         complete: function (response) {
             jQuery('#photos').html(response.responseText);
         },
