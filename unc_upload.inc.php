@@ -259,7 +259,7 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // let's check that file already exists
     if (!$overwrite && file_exists($new_path)) {
-        // echo "$new_path Filename already exists, skipping!<br>";
+        echo "$target_filename already exists, skipping!<br>";
         return false;
     } else if ($overwrite && file_exists($new_path)) {
         unlink($new_path);
