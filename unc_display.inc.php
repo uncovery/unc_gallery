@@ -168,7 +168,7 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
         $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
         $date_str = $date_obj->format($format);
         if (file_exists($photo_folder . DIRECTORY_SEPARATOR . $date_str)) {
-            $images = unc_display_folder_images($date_str, $featured_image, $range, $description);
+            $images = unc_display_folder_images($date_str, array($featured_image), $range, $description);
         } else {
             return unc_tools_errormsg("Date not found (folder error) $photo_folder/$date_str");
         }
