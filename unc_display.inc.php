@@ -226,6 +226,7 @@ function unc_display_folder_images($date_str, $skip_file, $range, $description) 
         $date_wrong = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
         $date_str = str_replace("-", DIRECTORY_SEPARATOR, $date_wrong);
     }
+    XMPP_ERROR_send_msg("test");
 
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['photos'] ;
     $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_str;
