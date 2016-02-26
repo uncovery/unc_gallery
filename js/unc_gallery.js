@@ -19,7 +19,7 @@ function datepicker_select(dateText, inst) {
         dataType: 'text',
         data: {action: 'unc_gallery_datepicker', date: dateText},
         complete: function (response) {
-            jQuery('#photobox').html(response.responseText);
+            jQuery('#photos').html(response.responseText);
             jQuery('#photodate').html("Showing " + dateText);
         },
         error: function () {
