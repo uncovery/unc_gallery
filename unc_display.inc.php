@@ -182,14 +182,16 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
         $file_date = unc_tools_image_exif_date($date_str, $featured_image);
         $single_photo = unc_display_single_image($date_str, $featured_image, false, $file_date, $description);
     }
+    $delete_link = '';
     if (is_admin()) {
         $date_split = explode("-", $date);
         $date_path = implode(DIRECTORY_SEPARATOR, $date_split);
-        $out .= " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_path\">Delete Date: $date</a>";
+        $delete_link = " <a class=\"delete_folder_link\" href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_path\">Delete Date: $date</a>";
     }
     $out .= "
         <div class=\"photopage\">
             $datepicker_div
+            $delete_link
             <div id=\"photobox\">
     $single_photo
     $images
