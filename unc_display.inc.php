@@ -166,12 +166,12 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
             datelist_ready();
         });
         </script>";
-        $out .= "<select name=\"date_select\">";
+        $out .= "<select name=\"date_select\">\n";
         foreach ($folder_list as $folder_date => $folder_files) {
             $counter = count($folder_files);
-            $out .= "<option value=\"$folder_date\">$folder_date ($counter)</option";
+            $out .= "<option value=\"$folder_date\">$folder_date ($counter)</option>\n";
         }
-        $out .="</select>";
+        $out .="</select>\n";
     }
 
     $date_obj = unc_datetime($date . " 00:00:00");
