@@ -189,7 +189,7 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
         <div class=\"unc_gallery\">
             $datepicker_div
             $delete_link
-            <div class=\"photos\">
+            <div id=\"photos\">
     $single_photo
     $images
             </div>
