@@ -44,6 +44,7 @@ add_shortcode('unc_gallery', 'unc_gallery_apply');
 add_action('wp_ajax_unc_gallery_uploads', 'unc_uploads_iterate_files');
 add_action('wp_ajax_nopriv_unc_gallery_datepicker', 'unc_display_folder_images');
 add_action('wp_ajax_unc_gallery_datepicker', 'unc_display_folder_images');
+add_action('wp_ajax_unc_gallery_delete_image', 'unc_tools_delete_image');
 
 // get the settings from the system and set the global variables
 // this iterates the user settings that are supposed to be in the wordpress config
@@ -112,7 +113,7 @@ function unc_gallery_add_css_and_js() {
 
     wp_enqueue_script('jquery-ui-datepicker');
     wp_enqueue_script('jquery-form');
-    
+
     wp_enqueue_script('unc_gallery_js', plugin_dir_url( __FILE__ ) . 'js/unc_gallery.js');
     wp_enqueue_style('unc_gallery_css', plugin_dir_url( __FILE__ ) . 'css/gallery.css');
 }
