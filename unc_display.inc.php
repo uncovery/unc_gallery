@@ -184,10 +184,10 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
     }
     $delete_link = '';
     $out .= "
-        <div class=\"photopage\">
+        <div class=\"unc_gallery\">
             $datepicker_div
             $delete_link
-            <div id=\"photobox\">
+            <div id=\"photos\">
     $single_photo
     $images
             </div>
@@ -263,9 +263,8 @@ function unc_display_folder_images($date_str = false, $skip_file = false, $range
     ksort($files);
 
     foreach ($files as $file_date => $file_name) {
-        $out .= "<div class=\"img_span\">\n";
+        $out .= "<div class=\"one_photo\">\n";
         $out .= unc_display_single_image($date_str, $file_name, true, $file_date, $description);
-
         $out .="</div>\n";
     }
 
@@ -310,8 +309,7 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date
     } else {
         $description_full = "File Name: $file_name Date: $file_date";
     }
-    $out =  "    <div class=\"$class\">\n";
-    $out .= "        <a href=\"$photo_url\" class=\"thickbox\" title=\"$description_full\" rel=\"gallery_$rel_date\">\n"
+    $out = "        <a href=\"$photo_url\" class=\"thickbox\" title=\"$description_full\" rel=\"gallery_$rel_date\">\n"
          . "            <img alt=\"$description_full\" src=\"$shown_image\">\n"
          . "        </a>\n";
     if (is_admin()) {
@@ -319,6 +317,5 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date
               . "             Delete\n"
               . "         </a>\n";
     }
-    $out .=  "    </div>\n";
     return $out;
 }
