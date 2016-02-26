@@ -166,7 +166,7 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
             datepicker_ready('$date');
         });
         </script>";
-        $out .= "<select name=\"date_select\" id=\"datepicker\">\n";
+        $out .= "<select id=\"datepicker\">\n";
         foreach ($folder_list as $folder_date => $folder_files) {
             $counter = count($folder_files);
             $out .= "<option value=\"$folder_date\">$folder_date ($counter)</option>\n";
@@ -302,7 +302,12 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date
     }
 
     $rel_date = str_replace(DIRECTORY_SEPARATOR, "_", $date_str);
-    $description_full = "$description ($file_name / $file_date)";
+    if ($description) {
+        $description_full = "$description ($file_name / $file_date)";
+    } else {
+        $description_full = "File Name: $file_name Date: $file_date";
+    }
+
     $out = "        <a href=\"$photo_url\" title=\"$description_full\" class=\"$class\" rel=\"gallery_$rel_date\">\n"
         . "            <img alt=\"$description_full\" src=\"$shown_image\">\n"
         . "         </a>\n";
