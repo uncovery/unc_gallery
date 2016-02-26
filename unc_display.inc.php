@@ -161,7 +161,7 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
         $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"$date\">";
     } else if ($date_selector == 'datelist') {
         $folder_list = unc_tools_folder_list($photo_folder);
-        $datepicker_div .= "<select id=\"datepicker\" onchange=\"datelist_change()\">\n";
+        $datepicker_div = "<select id=\"datepicker\" onchange=\"datelist_change()\">\n";
         foreach ($folder_list as $folder_date => $folder_files) {
             $counter = count($folder_files);
             $datepicker_div .= "<option value=\"$folder_date\">$folder_date ($counter)</option>\n";
