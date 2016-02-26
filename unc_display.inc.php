@@ -214,7 +214,8 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
  * @global type $UNC_GALLERY
  * @param type $date_str
  * @param type $skip_file
- * @param array range
+ * @param array $range
+ * @param string $description
  * @return string
  */
 function unc_display_folder_images($date_str, $skip_file, $range, $description) {
@@ -242,7 +243,7 @@ function unc_display_folder_images($date_str, $skip_file, $range, $description) 
         }
         if ($file_name != '.' && $file_name != '..') {
             $file_date = unc_tools_image_exif_date($date_str, $file_name);
-            $dtime = DateTime::createFromFormat("Y:m:d G:i:s", $file_date);
+            $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
             $file_stamp = $dtime->getTimestamp();
             // range
             if (($range['end_time'] && $range['start_time']) && // only if both are set
