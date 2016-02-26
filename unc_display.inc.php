@@ -166,7 +166,7 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
             datepicker_ready('$date');
         });
         </script>";
-        $out .= "<select name=\"date_select\">\n";
+        $out .= "<select name=\"date_select\" id=\"datepicker\">\n";
         foreach ($folder_list as $folder_date => $folder_files) {
             $counter = count($folder_files);
             $out .= "<option value=\"$folder_date\">$folder_date ($counter)</option>\n";
