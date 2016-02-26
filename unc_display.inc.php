@@ -163,7 +163,7 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
         $folder_list = unc_tools_folder_list($photo_folder);
         $out .= "\n     <script type=\"text/javascript\">
         jQuery(document).ready(function($) {
-            datelist_ready();
+            datepicker_ready('$date');
         });
         </script>";
         $out .= "<select name=\"date_select\">\n";
