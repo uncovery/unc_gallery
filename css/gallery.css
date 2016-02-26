@@ -91,13 +91,6 @@ datepicker #ui-datepicker-div {
     height: 495px;
 }
 
-.unc_gallery .delete_image_link {
-    position: absolute;
-    color: red;
-    right: 5px;
-    top:5px;
-}
-
 .unc_gallery .delete_folder_link {
     position: absolute;
     text-align:center;
@@ -107,4 +100,32 @@ datepicker #ui-datepicker-div {
 }
 .unc_gallery .delete_folder_link input {
     width: 250px;
+}
+
+.unc_gallery .delete_image_link {
+    background-color:transparent;
+    -moz-border-radius:39px;
+    -webkit-border-radius:39px;
+    border-radius:39px;
+    border:2px solid #dcdcdc;
+    display:inline-block;
+    cursor:pointer;
+    color:#ff0000;
+    font-family:Arial;
+    font-size:22px;
+    font-weight:bold;
+    padding:3px 5px;
+    text-decoration:none;
+    position: absolute;
+    right: 5px;
+    top:5px;
+}
+
+.unc_gallery .delete_image_link:hover {
+	background-color:transparent;
+}
+
+.unc_gallery .delete_image_link:active {
+	position:relative;
+	top:1px;
 }
