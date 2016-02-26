@@ -112,10 +112,9 @@ function unc_date_folder_delete($date_str) {
 function unc_tools_folder_delete_empty($path) {
     $empty = true;
     foreach (glob($path . DIRECTORY_SEPARATOR . "*") as $file) {
-        if (!is_dir($file)) {
-            XMPP_ERROR_trigger("$file is not a directory!");
+        if (is_dir($file)) {
+            $empty &= is_dir($file) && unc_tools_folder_delete_empty($file);
         }
-        $empty &= is_dir($file) && unc_tools_folder_delete_empty($file);
     }
     return $empty && rmdir($path);
 }
