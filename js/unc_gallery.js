@@ -42,6 +42,21 @@ function datelist_change() {
     datepicker_select(datelist_value);
 }
 
+function delete_image(file_name, rel_date) {
+    jQuery.ajax({
+        url: ajaxurl,
+        method: 'GET',
+        dataType: 'text',
+        data: {action: 'unc_gallery_delete_image', date: rel_date, filename: file_name},
+        complete: function (response) {
+            jQuery('#photos').html(response.responseText);
+        },
+        error: function () {
+
+        }
+    });
+}
+
 // this parses the current iterated date and checks if it's the current displayed
 function formatCurrentDate(dateYmd) {
     var query = window.location.search.substring(1);
