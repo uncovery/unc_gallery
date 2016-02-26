@@ -385,8 +385,13 @@ function unc_tools_image_delete() {
     if (!is_admin()) {
         return false;
     }
+    
+    $file_name_raw = filter_input(INPUT_GET, 'file_name', FILTER_SANITIZE_STRING);
+    if (!$file_name = unc_tools_filename_validate($file_name_raw)) {
+        return false;
+    }
+
     $date_wrong = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
-    $file_name = filter_input(INPUT_GET, 'file_name', FILTER_SANITIZE_STRING);
     $date_str = str_replace("_", DIRECTORY_SEPARATOR, $date_wrong);
 
     $paths = array(
@@ -399,4 +404,12 @@ function unc_tools_image_delete() {
         }
     }
     unc_display_folder_images($date_str);
+}
+
+function unc_tools_filename_validate($file_name) {
+    if (strpbrk($file_name, "\\/?%*:|\"<>") === FALSE) {
+        return $file_name;
+    } else {
+        return false;
+    }
 }
