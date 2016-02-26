@@ -180,7 +180,9 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
     $single_photo = '';
     if ($featured_image) {
         $file_date = unc_tools_image_exif_date($date_str, $featured_image);
-        $single_photo = unc_display_single_image($date_str, $featured_image, false, $file_date, $description);
+        $single_photo = "<div class=\"featured_photo\">\n";
+        $single_photo .= unc_display_single_image($date_str, $featured_image, false, $file_date, $description);
+        $single_photo .= "</div>\n";
     }
     $delete_link = '';
     $out .= "
