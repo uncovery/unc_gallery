@@ -27,8 +27,8 @@ function unc_gallery_admin_menu() {
     // where we list up all the images
     $view_page_hook_suffix = add_submenu_page(
         'unc_gallery_admin_menu', // $parent_slug
-        'View Images',  // $page_title
-        'View Images', // $menu_title
+        'Manage Images',  // $page_title
+        'Manage Images', // $menu_title
         'manage_options', // capability, manage_options is the default
         'unc_gallery_admin_view', // menu_slug
         'unc_gallery_admin_display_images' // function
@@ -138,5 +138,5 @@ function unc_gallery_admin_rebuild_thumbs() {
 }
 
 function unc_gallery_admin_delete_everything() {
-    
+
 }
