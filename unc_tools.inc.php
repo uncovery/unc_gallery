@@ -405,7 +405,7 @@ function unc_tools_image_delete() {
     }
 
     $date_wrong = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
-    $date_str = str_replace("_", DIRECTORY_SEPARATOR, $date_wrong);
+    $date_str = str_replace("-", DIRECTORY_SEPARATOR, $date_wrong);
 
     $paths = array(
         WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['thumbnails'] . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name,
@@ -420,7 +420,7 @@ function unc_tools_image_delete() {
             wp_die();
         }
     }
-    unc_display_folder_images($date_str);
+    unc_display_folder_images();
 }
 
 function unc_tools_filename_validate($file_name) {
