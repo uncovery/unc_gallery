@@ -379,3 +379,24 @@ function unc_tools_folder_list($base_folder) {
     $all_dates = unc_display_fix_timezones($dates);
     return $all_dates;
 }
+
+function unc_tools_image_delete() {
+    global $UNC_GALLERY;
+    if (!is_admin()) {
+        return false;
+    }
+    $date_wrong = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
+    $file_name = filter_input(INPUT_GET, 'file_name', FILTER_SANITIZE_STRING);
+    $date_str = str_replace("_", DIRECTORY_SEPARATOR, $date_wrong);
+
+    $paths = array(
+        content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$file_name"),
+        content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['thumbnails'] . "/$date_str/$file_name"),
+    );
+    foreach ($paths as $path) {
+        if (file_exists($path)) {
+            unlink($path);
+        }
+    }
+    unc_display_folder_images($date_str);
+}
