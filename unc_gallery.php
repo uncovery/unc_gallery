@@ -44,7 +44,7 @@ add_shortcode('unc_gallery', 'unc_gallery_apply');
 add_action('wp_ajax_unc_gallery_uploads', 'unc_uploads_iterate_files');
 add_action('wp_ajax_nopriv_unc_gallery_datepicker', 'unc_display_folder_images');
 add_action('wp_ajax_unc_gallery_datepicker', 'unc_display_folder_images');
-add_action('wp_ajax_unc_gallery_delete_image', 'unc_tools_delete_image');
+add_action('wp_ajax_unc_gallery_image_delete', 'unc_tools_image_delete');
 
 // get the settings from the system and set the global variables
 // this iterates the user settings that are supposed to be in the wordpress config
