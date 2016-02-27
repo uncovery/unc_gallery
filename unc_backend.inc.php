@@ -68,7 +68,6 @@ function unc_gallery_admin_display_images() {
 function unc_gallery_admin_init() {
     global $UNC_GALLERY;
 
-
     add_settings_section(
         'unc_gallery_pluginPage_section',
         __('Uncovery Gallery Settings', 'wordpress'),
