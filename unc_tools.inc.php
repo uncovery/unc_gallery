@@ -444,10 +444,10 @@ function unc_tools_date_path($date) {
         $date_str = $date_obj->format($format);
         $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
         if (!file_exists($photo_folder . DIRECTORY_SEPARATOR . $date_str)) {
-            return unc_tools_errormsg("Date not found (folder error) $photo_folder/$date_str");
+            return unc_tools_errormsg("Date not found (folder does not exist) $photo_folder/$date_str");
         }
     } else {
-        return unc_tools_errormsg("Date not found (object error)");
+        return unc_tools_errormsg("Date not found (invalid date)");
     }
     return $date_str;
 }
