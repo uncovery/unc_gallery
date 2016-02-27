@@ -428,3 +428,26 @@ function unc_tools_filename_validate($file_name) {
         return false;
     }
 }
+
+/**
+ * converts a 2013-12-12 to 2013/12/12 and checks if the file exists
+ *
+ * @global type $UNC_GALLERY
+ * @param type $date
+ * @return type
+ */
+function unc_tools_date_path($date) {
+    global $UNC_GALLERY;
+    $date_obj = unc_datetime($date . " 00:00:00");
+    if ($date_obj) {
+        $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
+        $date_str = $date_obj->format($format);
+        $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
+        if (!file_exists($photo_folder . DIRECTORY_SEPARATOR . $date_str)) {
+            return unc_tools_errormsg("Date not found (folder error) $photo_folder/$date_str");
+        }
+    } else {
+        return unc_tools_errormsg("Date not found (object error)");
+    }
+    return $date_str;
+}
