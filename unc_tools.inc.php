@@ -335,14 +335,14 @@ function unc_tools_bytes_get($ini_val) {
  * Get the EXIF date of a file based on date & filename only
  *
  * @global type $UNC_GALLERY
- * @param type $date_str
+ * @param type $date_path
  * @param type $file_name
  * @return type
  */
-function unc_tools_image_exif_date($date_str, $file_name) {
+function unc_tools_image_exif_date($date_path, $file_name) {
     global $UNC_GALLERY;
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['photos'] ;
-    $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_str;
+    $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
     $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
     $exif_data = exif_read_data($file_path);
     $file_date = $exif_data['DateTimeOriginal'];
