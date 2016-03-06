@@ -20,22 +20,24 @@ function unc_images_display() {
  * @return string
  */
 function unc_gallery_apply($atts = array()) {
+    global $UNC_GALLERY;
     unc_gallery_add_css_and_js();
 
     $a = shortcode_atts( array(
-        'type' => 'day',
-        'date' => 'latest',
-        'file' => 'latest',
-        'featured' => false,
+        'type' => 'day',    // display type
+        'date' => 'latest', // which date?
+        'file' => false,    // specifix file?
+        'featured' => false,  // is there a featured file?
         'options' => false, // we cannot set it to an array here
-        'start_time' => false,
-        'end_time' => false,
-        'description' => false,
+        'start_time' => false, // time of the day when we start displaying this date
+        'end_time' => false, // time of the day when we stop displaying this date
+        'description' => false, // description for the whole day
+        'details' => false, // description for individual files
     ), $atts );
 
     $type = $a['type'];
     $date = $a['date'];
-    $featured_image = $a['featured']; // wp function to sanitze filnames
+    $UNC_GALLERY['display']['featured_image'] = $a['featured']; // TODO: Sanitize & verify filename
 
     // there can be several options, separated by space
     if (!$a['options']) {
@@ -61,7 +63,7 @@ function unc_gallery_apply($atts = array()) {
         $thumb = true;
     }
 
-    $description = $a['description'];
+    $UNC_GALLERY['display']['description'] = $a['description'];
 
     if (!in_array($date, $keywords['date'])) {
         // lets REGEX
@@ -78,13 +80,13 @@ function unc_gallery_apply($atts = array()) {
     }
 
     // get the latest or a random date if required
-    $date_desc = true;
+    $UNC_GALLERY['display']['date_description'] = true;
     if ($date == 'latest') {
         $date = unc_tools_date_latest();
     } elseif ($date == 'random') {
         $date = unc_tools_date_random();
     } else {
-        $date_desc = false;
+        $UNC_GALLERY['display']['date_description'] = false;
         $date = unc_tools_date_validate($date);
     }
 
@@ -92,16 +94,47 @@ function unc_gallery_apply($atts = array()) {
         // there are no pictures
         return unc_tools_errormsg("No pictures found, please upload some images first!");
     }
+    $UNC_GALLERY['display']['date'] = $date;
 
     // range
-    $range = array('start_time' => false, 'end_time' => false);
-    foreach ($range as $key => $value) {
+    $UNC_GALLERY['display']['range'] = array('start_time' => false, 'end_time' => false);
+    foreach ($UNC_GALLERY['display']['range'] as $key => $value) {
         if ($a[$key]) {
             $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $a[$key]);
-            $range[$key] = $dtime->getTimestamp();
+            $UNC_GALLERY['display']['range'][$key] = $dtime->getTimestamp();
+        }
+    }
+    
+    $details_raw = $a['details'];    
+    $UNC_GALLERY['display']['details'] = false;
+    if ($details_raw) {
+        // explode by colon
+        $file_details = explode(";", $details_raw);
+        if (count($file_details) == 0) {
+            return unc_tools_errormsg("File details are invalid!");
+        }
+        foreach ($file_details as $file_detail) {
+            $tmp_arr = explode(":", $file_detail);
+            if (count($tmp_arr) !== 2) {
+                return unc_tools_errormsg("File details are invalid!");
+            }
+            $UNC_GALLERY['display']['details'][$tmp_arr[0]] = $tmp_arr[1];
         }
     }
 
+    $file = $a['file'];
+    if ($file) {
+        if ($file == 'latest') {
+            $out = unc_display_single_image($date, $file, false);
+            return $out;
+        } else if ($file == 'random') {
+            // get a random filename for the date
+            
+        } else { // we should have a date
+            $file = unc_tools_filename_validate($a['file']);
+        }
+    }
+    
     // options
     $possible_type_options = $keywords['type'][$type];
     foreach ($options as $option) {
@@ -117,19 +150,20 @@ function unc_gallery_apply($atts = array()) {
         $link = true;
     }
 
-    $date_selector = false;
+    $UNC_GALLERY['display']['date_selector'] = false;
     if (in_array('datepicker', $options)) {
-        $date_selector = 'datepicker';
+        $UNC_GALLERY['display']['date_selector'] = 'datepicker';
     } else if (in_array('datelist', $options)) {
-        $date_selector = 'datelist';
+        $UNC_GALLERY['display']['date_selector'] = 'datelist';
     }
 
-    $out = unc_gallery_display_page($date, $date_selector, $date_desc, $featured_image, $range, $description);
+    $out = unc_gallery_display_page();
     return $out;
 }
 
-function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_image, $range, $description) {
+function unc_gallery_display_page() {
     global $UNC_GALLERY;
+    $D = $UNC_GALLERY['display'];
 
     // do not let wp manipulate linebreaks
     remove_filter('the_content', 'wpautop');
@@ -139,21 +173,21 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
     // get a json datepicker
     $datepicker_div = '';
     $out = '';
-    if ($date_desc) {
-        $datepicker_div = "<span id=\"photodate\">Showing $date</span>";
+    if ($D['date_description']) {
+        $datepicker_div = "<span id=\"photodate\">Showing {$D['date']}</span>";
     }
-    if ($date_selector == 'datepicker') {
+    if ($D['date_selector'] == 'datepicker') {
         $avail_dates = unc_tools_folder_list($photo_folder);
 
         $out .= "\n     <script type=\"text/javascript\">
         var availableDates = [\"" . implode("\",\"", array_keys($avail_dates)) . "\"];
         var ajaxurl = \"" . admin_url('admin-ajax.php') . "\";
         jQuery(document).ready(function($) {
-            datepicker_ready('$date');
+            datepicker_ready('{$D['date']}');
         });
         </script>";
-        $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"$date\">";
-    } else if ($date_selector == 'datelist') {
+        $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"{$D['date']}\">";
+    } else if ($D['date_selector'] == 'datelist') {
         $folder_list = unc_tools_folder_list($photo_folder);
         $datepicker_div = "<select id=\"datepicker\" onchange=\"datelist_change()\">\n";
         foreach ($folder_list as $folder_date => $folder_files) {
@@ -163,26 +197,15 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
         $datepicker_div .="</select>\n";
     }
 
-    $date_obj = unc_datetime($date . " 00:00:00");
-    if ($date_obj) {
-        $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
-        $date_str = $date_obj->format($format);
-        if (file_exists($photo_folder . DIRECTORY_SEPARATOR . $date_str)) {
-            $images = unc_display_folder_images($date_str, array($featured_image), $range, $description);
-        } else {
-            return unc_tools_errormsg("Date not found (folder error) $photo_folder/$date_str");
-        }
-    } else {
-        return unc_tools_errormsg("Date not found (object error)");
-    }
+    $date_str = unc_tools_date_path($D['date']);
+    $images = unc_display_folder_images();
 
 
     $single_photo = '';
-    if ($featured_image) {
-        $file_date = unc_tools_image_exif_date($date_str, $featured_image);
-        $single_photo = "<div class=\"featured_photo\">\n";
-        $single_photo .= unc_display_single_image($date_str, $featured_image, false, $file_date, $description);
-        $single_photo .= "</div>\n";
+    if ($D['featured_image']) {
+        $single_photo = "<div class=\"featured_photo\">\n"
+            . unc_display_single_image($date_str, $D['featured_image'], false)
+            . "</div>\n";
     }
     $delete_link = '';
     $out .= "
@@ -205,19 +228,18 @@ function unc_gallery_display_page($date, $date_selector, $date_desc, $featured_i
  * Open a folder of a certain date and display all the images in there
  *
  * @global type $UNC_GALLERY
- * @param type $date_str
- * @param type $skip_file
- * @param array $range
- * @param string $description
  * @return string
  */
-function unc_display_folder_images($date_str = false, $skip_file = false, $range = false, $description = false) {
+function unc_display_folder_images() {
     global $UNC_GALLERY;
+    $D = $UNC_GALLERY['display'];
     $echo = false;
-    if (!$date_str) {
+    if (!$D['date']) {
         $echo = true;
         $date_wrong = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
         $date_str = str_replace("-", DIRECTORY_SEPARATOR, $date_wrong);
+    } else {
+        $date_str = $D['date'];
     }
 
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['photos'] ;
@@ -237,8 +259,8 @@ function unc_display_folder_images($date_str = false, $skip_file = false, $range
     $files = array();
 
     $dirs = array('.', '..');
-    if ($skip_file) {
-        $skip_files = array_merge($skip_file, $dirs);
+    if ($D['featured_image']) {
+        $skip_files = array_merge(array($D['featured_image']), $dirs); // TODO: skip images array
     } else {
         $skip_files = $dirs;
     }
@@ -253,14 +275,14 @@ function unc_display_folder_images($date_str = false, $skip_file = false, $range
             $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
             $file_stamp = $dtime->getTimestamp();
             // range
-            if (($range['end_time'] && $range['start_time']) && // only if both are set
-                    ($range['end_time'] < $range['start_time'])) { // AND the end is before the start
-                if (($range['end_time'] < $file_stamp)
-                        && ($file_stamp < $range['start_time'])) {  // then skip over the files inbetween end and start
+            if (($D['range']['end_time'] && $D['range']['start_time']) && // only if both are set
+                    ($D['range']['end_time'] < $D['range']['start_time'])) { // AND the end is before the start
+                if (($D['range']['end_time'] < $file_stamp)
+                        && ($file_stamp < $D['range']['start_time'])) {  // then skip over the files inbetween end and start
                     continue;
                 }
-            } else if (($range['start_time'] && ($file_stamp < $range['start_time'])) || // if there is a start and the file is earlier
-                ($range['end_time'] && ($range['end_time'] < $file_stamp))) { // or if there is an end and the file is later then skip
+            } else if (($D['range']['start_time'] && ($file_stamp < $D['range']['start_time'])) || // if there is a start and the file is earlier
+                ($D['range']['end_time'] && ($D['range']['end_time'] < $file_stamp))) { // or if there is an end and the file is later then skip
                 continue;
             }
             $files[$file_date] = $file_name;
@@ -271,9 +293,9 @@ function unc_display_folder_images($date_str = false, $skip_file = false, $range
     ksort($files);
 
     foreach ($files as $file_date => $file_name) {
-        $out .= "<div class=\"one_photo\">\n";
-        $out .= unc_display_single_image($date_str, $file_name, true, $file_date, $description);
-        $out .="</div>\n";
+        $out .= "<div class=\"one_photo\">\n"
+            . unc_display_single_image($date_str, $file_name, true, $file_date)
+            . "</div>\n";
     }
 
     if ($echo) {
@@ -292,13 +314,11 @@ function unc_display_folder_images($date_str = false, $skip_file = false, $range
  * @global type $UNC_GALLERY
  * @param type $date_str
  * @param type $file_name
- * @param bool $show_thumb
- * @param string $file_date
- * @param string $description
  * @return boolean
  */
-function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date, $description) {
+function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date = false) {
     global $UNC_GALLERY;
+    $D = $UNC_GALLERY['display'];
 
     $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$file_name");
     $thumb_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['thumbnails'] . "/$date_str/$file_name");
@@ -310,10 +330,16 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date
         $shown_image = $photo_url;
         $class = 'featured_image';
     }
+    
+    if (!$file_date) {
+        $file_date = unc_tools_image_exif_date($date_str, $file_name);
+    }
 
     $rel_date = str_replace(DIRECTORY_SEPARATOR, "-", $date_str);
-    if ($description) {
-        $description_full = "$description ($file_name / $file_date)";
+    if (isset($D['details'][$file_name])) {
+        $description_full = $D['details'][$file_name] . " ($file_name / $file_date)";
+    } else if ($D['description']) {
+        $description_full = $D['description'] . " ($file_name / $file_date)";
     } else {
         $description_full = "File Name: $file_name Date: $file_date";
     }
