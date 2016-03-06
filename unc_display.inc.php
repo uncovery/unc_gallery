@@ -118,7 +118,9 @@ function unc_gallery_apply($atts = array()) {
             if (count($tmp_arr) !== 2) {
                 return unc_tools_errormsg("File details are invalid!");
             }
-            $UNC_GALLERY['display']['details'][trim($tmp_arr[0])] = trim($tmp_arr[1]);
+            $details_filename = trim($tmp_arr[0]);
+            $details_description = trim($tmp_arr[1]);
+            $UNC_GALLERY['display']['details'][$details_filename] = $details_description;
         }
     }
 
