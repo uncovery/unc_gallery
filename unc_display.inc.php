@@ -242,7 +242,7 @@ function unc_display_folder_images() {
     } else {
         $date_str = $D['date'];
     }
-    $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_wrong);
+    $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
 
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
     $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
