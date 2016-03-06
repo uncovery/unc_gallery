@@ -238,14 +238,14 @@ function unc_display_folder_images() {
     $echo = false;
     if (!$D['date']) {
         $echo = true;
-        $date_wrong = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
-        $date_str = str_replace("-", DIRECTORY_SEPARATOR, $date_wrong);
+        $date_str = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
     } else {
         $date_str = $D['date'];
     }
+    $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_wrong);
 
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
-    $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_str;
+    $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
 
     $out = '';
     if (is_admin()) { // TODO: full shorttag construction interactive menu
@@ -267,14 +267,13 @@ function unc_display_folder_images() {
         $skip_files = $dirs;
     }
 
-    XMPP_ERROR_trigger($curr_photo_folder);
     foreach (glob($curr_photo_folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
         $file_name = basename($file_path);
         if (in_array($file_name, $skip_files)) {
             continue;
         }
         if ($file_name != '.' && $file_name != '..') {
-            $file_date = unc_tools_image_exif_date($date_str, $file_name);
+            $file_date = unc_tools_image_exif_date($date_path, $file_name);
             $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
             $file_stamp = $dtime->getTimestamp();
             // range
@@ -294,11 +293,10 @@ function unc_display_folder_images() {
 
     // sort the files by date / time
     ksort($files);
-    XMPP_ERROR_trace("file list", $files);
 
     foreach ($files as $file_date => $file_name) {
         $out .= "<div class=\"one_photo\">\n"
-            . unc_display_single_image($date_str, $file_name, true, $file_date)
+            . unc_display_single_image($date_path, $file_name, true, $file_date)
             . "</div>\n";
     }
 
@@ -320,12 +318,12 @@ function unc_display_folder_images() {
  * @param type $file_name
  * @return boolean
  */
-function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date = false) {
+function unc_display_single_image($date_path, $file_name, $show_thumb, $file_date = false) {
     global $UNC_GALLERY;
     $D = $UNC_GALLERY['display'];
 
-    $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_str/$file_name");
-    $thumb_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['thumbnails'] . "/$date_str/$file_name");
+    $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
+    $thumb_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
 
     if ($show_thumb) {
         $shown_image = $thumb_url;
@@ -336,10 +334,10 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date
     }
     
     if (!$file_date) {
-        $file_date = unc_tools_image_exif_date($date_str, $file_name);
+        $file_date = unc_tools_image_exif_date($date_path, $file_name);
     }
 
-    $rel_date = str_replace(DIRECTORY_SEPARATOR, "-", $date_str);
+    $date_str = str_replace(DIRECTORY_SEPARATOR, "-", $date_path);
     if (isset($D['details'][$file_name])) {
         $description_full = $D['details'][$file_name] . " ($file_name / $file_date)";
     } else if ($D['description']) {
@@ -347,11 +345,11 @@ function unc_display_single_image($date_str, $file_name, $show_thumb, $file_date
     } else {
         $description_full = "File Name: $file_name Date: $file_date";
     }
-    $out = "        <a href=\"$photo_url\" class=\"thickbox\" title=\"$description_full\" rel=\"gallery_$rel_date\">\n"
+    $out = "        <a href=\"$photo_url\" class=\"thickbox\" title=\"$description_full\" rel=\"gallery_$date_str\">\n"
          . "            <img alt=\"$file_name\" src=\"$shown_image\">\n"
          . "        </a>\n";
     if (is_admin()) {
-        $out .= "         <input type=\"submit\" class=\"delete_image_link\" value=\"&#9851;\" onClick=\"delete_image('$file_name','$rel_date')\">\n";
+        $out .= "         <input type=\"submit\" class=\"delete_image_link\" value=\"&#9851;\" onClick=\"delete_image('$file_name','$date_str')\">\n";
     }
     return $out;
 }
