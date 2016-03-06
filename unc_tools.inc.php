@@ -344,6 +344,7 @@ function unc_tools_image_exif_date($date_path, $file_name) {
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['photos'] ;
     $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
     $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
+    XMPP_ERROR_trace('unc_tools_image_exif_date', $curr_photo_folder);
     $exif_data = exif_read_data($file_path);
     $file_date = $exif_data['DateTimeOriginal'];
     $search_pattern = '/(\d\d\d\d):(\d\d):(\d\d \d\d:\d\d:\d\d)/';
