@@ -244,11 +244,11 @@ function unc_display_folder_images() {
         $date_str = $D['date'];
     }
 
-    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['photos'] ;
+    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
     $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_str;
 
     $out = '';
-    if (is_admin()) {
+    if (is_admin()) { // TODO: full shorttag construction interactive menu
         $out .= "
         <span class=\"delete_folder_link\">
             Sample shortcode for this day: <input type=\"text\" value=\"[unc_gallery date=&quot;$date_str&quot;]\">
@@ -293,6 +293,7 @@ function unc_display_folder_images() {
 
     // sort the files by date / time
     ksort($files);
+    XMPP_ERROR_trace("file list", $files);
 
     foreach ($files as $file_date => $file_name) {
         $out .= "<div class=\"one_photo\">\n"
