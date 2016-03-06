@@ -267,7 +267,7 @@ function unc_display_folder_images() {
         $skip_files = $dirs;
     }
 
-    XMPP_ERROR_trace("photo folder", $curr_photo_folder);
+    XMPP_ERROR_trigger($curr_photo_folder);
     foreach (glob($curr_photo_folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
         $file_name = basename($file_path);
         if (in_array($file_name, $skip_files)) {
