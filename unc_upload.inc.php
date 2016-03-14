@@ -205,6 +205,8 @@ function unc_uploads_process_file($i, $overwrite) {
     if (!isset($mime_type, $UNC_GALLERY['valid_filetypes'])){
         echo unc_tools_errormsg("Invalid file type :" . $F["type"][$i]);
         return false;
+    } else { // get extension for optional resize
+        $extension = $UNC_GALLERY['valid_filetypes'][$mime_type];
     }
 
     // we set the new filename of the image including extension so there is no guessing
@@ -268,12 +270,18 @@ function unc_uploads_process_file($i, $overwrite) {
     }
 
     // finally, move the file
-    $rename_chk = move_uploaded_file($F['tmp_name'][$i], $new_path);
-    if (!$rename_chk) {
-        echo unc_tools_errormsg("Could not move {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path");
-        return false;
+    if ($UNC_GALLERY['picture_long_edge'] > 0) {
+        $resize_check = unc_import_image_resize($F['tmp_name'][$i], $new_path, $UNC_GALLERY['picture_long_edge'], 'long', $extension);
+        if (!$resize_check) {
+            echo unc_tools_errormsg("Could not resize {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path");
+            return false;
+        }
     } else {
-        // echo "Moving file from {$F['tmp_name'][$i]} to $new_path<br>";
+        $rename_chk = move_uploaded_file($F['tmp_name'][$i], $new_path);
+        if (!$rename_chk) {
+            echo unc_tools_errormsg("Could not move {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path");
+            return false;
+        }
     }
 
     // chmod file to make sure it cannot be executed
@@ -286,7 +294,7 @@ function unc_uploads_process_file($i, $overwrite) {
     }
 
     // now make the thumbnail
-    $check = unc_import_make_thumbnail($new_path, $new_thumb_path);
+    $check = unc_import_image_resize($new_path, $new_thumb_path, $UNC_GALLERY['thumbnail_height'], 'height', $UNC_GALLERY['thumbnail_ext']);
     if ($check) {
         echo $F['name'][$i] . " ($date_str), ";
     }
@@ -294,18 +302,17 @@ function unc_uploads_process_file($i, $overwrite) {
 }
 
 /**
- * Creates image thumbnails
+ * Resize an image
  *
- * @global type $UNC_GALLERY
- * @param type $image_file_path
- * @param type $target_file_path
+ * @global array $UNC_GALLERY
+ * @param string $image_file_path
+ * @param string $target_file_path
+ * @param int $size target size of the image
+ * @param string $edge one of the following: 'height', 'width', 'long'
+ * @param string $extension the file extension
  * @return boolean
  */
-function unc_import_make_thumbnail($image_file_path, $target_file_path) {
-    global $UNC_GALLERY;
-
-    $out = $image_file_path;
-    $thumbnail_height = $UNC_GALLERY['thumbnail_height'];
+function unc_import_image_resize($image_file_path, $target_file_path, $size, $edge, $extension) {
 
     $img_types = array(1 => 'GIF', 2 => 'JPEG', 3 => 'PNG');
 
@@ -318,23 +325,35 @@ function unc_import_make_thumbnail($image_file_path, $target_file_path) {
     }
     $original_width = $arr_image_details[0];
     $original_height = $arr_image_details[1];
-    $out .= " | Size: $original_width / $original_height | ";
+
+    // for long-edge fitting, check which one is longer
+    if ($edge == 'long') { // resize so that the long edge fits
+        if ($original_height > $original_width) {
+            $edge = 'height';
+        } else {
+            $edge = 'width';
+        }
+    }
 
     // we try to get the same height for all images
-    $new_height = $thumbnail_height;
-    $new_width = intval($original_width * ($thumbnail_height / $original_height));
+    if ($edge == 'height') {
+        $new_height = $size;
+        $new_width = intval($original_width * ($size / $original_height));
+    } else if ($edge == 'width') {
+        $new_width = $size;
+        $new_height = intval($original_height * ($size / $original_width));
+    }
 
-    // get image extension
+    // get image extension from MIME type
     $image_ext = $img_types[$arr_image_details[2]];
 
     // set the function names for processing
-    $img_generator = "Image" . $UNC_GALLERY['thumbnail_ext'];
+    $img_generator = "Image" . $extension;
     $imgcreatefrom = "ImageCreateFrom" . $image_ext;
 
     $old_image = $imgcreatefrom($image_file_path);
     $new_image = imagecreatetruecolor($new_width, $new_height);
     imagecopyresized($new_image, $old_image, 0, 0, 0, 0, $new_width, $new_height, $original_width, $original_height);
     $img_generator($new_image, $target_file_path);
-    // echo "Thumbnail created!<br>";
     return true;
 }
