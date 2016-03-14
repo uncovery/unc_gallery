@@ -12,8 +12,9 @@ Creates date-based photo galleries.
 
 == Description ==
 
-Uncovery Gallery allows you to bulk-upload photos and will automatically group them by date.
-The gallery requires an EXIF data in the photo file to determine the date of the photo.
+This Plugin specializes in photo series that are shot at a certain date or time.
+It allows bulk upload and automatic chronological display of photos so that not
+every photo needs to be handled individually.
 
 Uncovery Gallery allows various ways to display galleries on your wordpress site via shortcodes in the format of
 [unc_gallery ... ]
