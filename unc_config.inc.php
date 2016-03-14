@@ -29,7 +29,7 @@ $UNC_GALLERY['user_settings'] = array(
         'default' => '120',
     ),
     'picture_long_edge' => array(
-        'help' => 'Shrink the images so that the long edge will be this long (in pixels, 0 for disable)',
+        'help' => 'Shrink the full-size images so that the long edge will be this long (in pixels, 0 for disable)',
         'default' => '0',
     ),
     'time_offset' => array(
