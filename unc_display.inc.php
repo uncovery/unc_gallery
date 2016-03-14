@@ -104,8 +104,8 @@ function unc_gallery_apply($atts = array()) {
             $UNC_GALLERY['display']['range'][$key] = $dtime->getTimestamp();
         }
     }
-    
-    $details_raw = $a['details'];    
+
+    $details_raw = $a['details'];
     $UNC_GALLERY['display']['details'] = false;
     if ($details_raw) {
         // explode by colon
@@ -131,12 +131,12 @@ function unc_gallery_apply($atts = array()) {
             return $out;
         } else if ($file == 'random') {
             // get a random filename for the date
-            
+
         } else { // we should have a date
             $file = unc_tools_filename_validate($a['file']);
         }
     }
-    
+
     // options
     $possible_type_options = $keywords['type'][$type];
     foreach ($options as $option) {
@@ -332,7 +332,7 @@ function unc_display_single_image($date_path, $file_name, $show_thumb, $file_dat
         $shown_image = $photo_url;
         $class = 'featured_image';
     }
-    
+
     if (!$file_date) {
         $file_date = unc_tools_image_exif_date($date_path, $file_name);
     }
