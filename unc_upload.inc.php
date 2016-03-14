@@ -355,5 +355,6 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     $new_image = imagecreatetruecolor($new_width, $new_height);
     imagecopyresized($new_image, $old_image, 0, 0, 0, 0, $new_width, $new_height, $original_width, $original_height);
     $img_generator($new_image, $target_file_path);
+    imagedestroy($new_image); // free up the memory
     return true;
 }
