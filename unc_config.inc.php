@@ -19,7 +19,7 @@ $UNC_GALLERY['settings_prefix'] = 'unc_gallery_';
 $UNC_GALLERY['thumbnail_ext'] = 'PNG';
 $UNC_GALLERY['valid_filetypes'] = array(
     "image/gif" => 'gif',
-    "image/jpeg" => 'jpg',
+    "image/jpeg" => 'jpeg',
     "image/png" => 'png',
 );
 
