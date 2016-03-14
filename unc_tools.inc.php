@@ -24,7 +24,7 @@ function unc_date_folder_create($date_str) {
     // we get the base folder from config
     $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
     // let's create a date object for the given date
-    $date_obj = unc_datetime($date_str);
+    $date_obj = new DateTime($date_str);
     // substract 12 hours to get the correct date
     $date_obj->modify($UNC_GALLERY['time_offset']);
     // echo "Date after adjustment ({$UNC_GALLERY['time_offset']}): " . $date_obj->format("Y-m-d") . "<br>";
@@ -70,7 +70,7 @@ function unc_date_folder_delete($date_str) {
     global $UNC_GALLERY;
 
     $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
-    $date_obj = unc_datetime($date_str);
+    $date_obj = new DateTime($date_str);
     if (!$date_obj) {
         return unc_tools_errormsg("Invalid date folder!");
     }
@@ -129,25 +129,6 @@ function unc_tools_folder_delete_empty($path) {
 }
 
 /**
- * returns a date-time object with todays timezone
- * get a MySQL timestamp with $now = $date_now->format("Y-m-d H:i:s");
- *
- * @global type $UNC_GALLERY
- * @param type $date
- * @return \DateTime
- */
-function unc_datetime($date = NULL) {
-    global $UNC_GALLERY;
-
-    //if ($date != NULL) {
-    //    $date .= "+08:00"; // incoming timezones are already HKT
-    //}
-    $date_new = new DateTime($date);
-    // $date_new->setTimezone(new DateTimeZone($UNC_GALLERY['timezone']));
-    return $date_new;
-}
-
-/**
  * this converts an array of dates to UTC
  *
  * @param type $dates
@@ -156,7 +137,7 @@ function unc_datetime($date = NULL) {
 function unc_display_fix_timezones($dates) {
     $new_dates = array();
     foreach ($dates as $date => $details) {
-        $date_obj = unc_datetime($date);
+        $date_obj = new DateTime($date);
         // change timezone to UTC
         $date_obj->setTimezone(new DateTimeZone('UTC'));
         $date_str = $date_obj->format("Y-m-d");
@@ -438,7 +419,7 @@ function unc_tools_filename_validate($file_name) {
  */
 function unc_tools_date_path($date) {
     global $UNC_GALLERY;
-    $date_obj = unc_datetime($date . " 00:00:00");
+    $date_obj = new DateTime($date . " 00:00:00");
     if ($date_obj) {
         $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
         $date_str = $date_obj->format($format);
