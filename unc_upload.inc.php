@@ -352,7 +352,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
 
     // get original file date
     $file_date = unc_tools_image_date($image_file_path);
-    $UNC_GALLERY['debug'][]["Read IPCT"] = $file_date;
+    $UNC_GALLERY['debug'][]["Read IPCT result"] = $file_date;
 
     $old_image = $imgcreatefrom($image_file_path);
     $new_image = imagecreatetruecolor($new_width, $new_height);
@@ -363,7 +363,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     if ($file_date) {
         unc_tools_image_ipct_date_write($target_file_path, $file_date);
         $new_file_date = unc_tools_image_date($target_file_path);
-        $UNC_GALLERY['debug'][]["check IPCT"] = $new_file_date;
+        $UNC_GALLERY['debug'][]["check IPCT result"] = $new_file_date;
     }
     XMPP_ERROR_trigger("check");
 
