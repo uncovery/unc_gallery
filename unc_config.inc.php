@@ -53,9 +53,9 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'text',
     ),
     'admin_date_selector' => array(
-        'help' => 'Chose if you want to have a "datepicker" or a "datelist" for the Manage Images Admin page',
+        'help' => 'Chose if you want to have a calendar or a dropdown list for the Manage Images Admin page',
         'default' => 'datepicker',
         'type' => 'dropdown',
-        'options' => array('datepicker', "datelist"),
+        'options' => array('datepicker' => 'Calendar', 'Date List'),
     ),
 );
