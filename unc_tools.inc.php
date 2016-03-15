@@ -521,7 +521,7 @@ class iptc {
         getimagesize($filename, $info);
         $this->hasmeta = isset($info["APP13"]);
         if ($this->hasmeta) {
-            $this->meta = iptcparse ($info["APP13"]);
+            $this->meta = iptcparse($info["APP13"]);
         }
         $this->file = $filename;
     }
