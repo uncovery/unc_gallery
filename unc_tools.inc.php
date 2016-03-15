@@ -535,7 +535,7 @@ class iptc {
     }
 
     function dump() {
-        print_r($this->meta);
+        return var_export($this->meta, true);
     }
 
     function binary() {
