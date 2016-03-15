@@ -36,25 +36,9 @@ function unc_gallery_apply($atts = array()) {
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
 
     unc_gallery_add_css_and_js();
-
     unc_gallery_display_var_init($atts);
 
-    $D = $UNC_GALLERY['display'];
-
-    if ($D['file']) {
-        $date_path = unc_tools_date_path($D['date']);
-        if ($D['file'] == 'random') {
-            $file = unc_tools_file_random($date_path);
-        } else if ($D['file'] == 'latest') {
-            $file = unc_tools_file_latest($date_path);
-        } else {
-            $file = $D['file'];
-        }
-        $out = unc_display_single_image($date_path, $file, false);
-    } else {
-        $out = unc_gallery_display_page();
-    }
-    return $out;
+    return unc_gallery_display_page();
 }
 
 /**
@@ -223,28 +207,39 @@ function unc_gallery_display_page() {
         $datepicker_div .="</select>\n";
     }
 
-    $date_str = unc_tools_date_path($D['date']);
-    $images = unc_display_folder_images();
+    $date_path = unc_tools_date_path($D['date']);
+
+    if ($D['type'] == 'image') {
+        if ($D['file'] == 'random') {
+            $file = unc_tools_file_random($date_path);
+        } else if ($D['file'] == 'latest') {
+            $file = unc_tools_file_latest($date_path);
+        } else {
+            $file = $D['file'];
+        }
+        $out = unc_display_single_image($date_path, $file, false);
+    } else {
+        $images = unc_display_folder_images();
 
 
-    $single_photo = '';
-    if ($D['featured_image']) {
-        $single_photo = "<div class=\"featured_photo\">\n"
-            . unc_display_single_image($date_str, $D['featured_image'], false)
-            . "</div>\n";
-    }
-    $delete_link = '';
-    $out .= "
-        <div class=\"unc_gallery\">
-            $datepicker_div
-            $delete_link
-            <div id=\"photos\">
-    $single_photo
-    $images
+        $single_photo = '';
+        if ($D['featured_image']) {
+            $single_photo = "<div class=\"featured_photo\">\n"
+                . unc_display_single_image($date_path, $D['featured_image'], false)
+                . "</div>\n";
+        }
+        $delete_link = '';
+        $out .= "
+            <div class=\"unc_gallery\">
+                $datepicker_div
+                $delete_link
+                <div id=\"photos\">
+        $single_photo
+        $images
+                </div>
             </div>
-        </div>
-        <span style=\"clear:both;\"></span>";
-
+            <span style=\"clear:both;\"></span>";
+    }
     // remove the page tag from the original content and insert the new content
     return $out;
 }
