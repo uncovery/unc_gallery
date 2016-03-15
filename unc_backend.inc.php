@@ -44,8 +44,10 @@ function unc_gallery_admin_menu() {
  * @global type $UNC_GALLERY
  */
 function unc_gallery_admin_display_images() {
-    $out = "<h2>Uncovery Gallery: All Images</h2>\n";
+    global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
 
+    $out = "<h2>Uncovery Gallery: All Images</h2>\n";
     // we do not want to convert linebreaks
     remove_filter('the_content', 'wpautop');
     // check first if there is a folder to delete:
@@ -56,7 +58,8 @@ function unc_gallery_admin_display_images() {
     }
 
     // get a standard short-tag output for latest date with datepicker
-    $out .= unc_gallery_apply(array('options'=> 'datelist'));
+    $UNC_GALLERY['display']['options'] = 'datelist';
+    $out .= unc_gallery_apply();
     echo $out;
 }
 
@@ -128,10 +131,20 @@ function unc_gallery_admin_settings() {
 
 function unc_gallery_admin_rebuild_thumbs() {
     // delete all thumbnails
+    unc_gallery_recurse_files($thumb_folder, 'unlink', 'rmdir');
 
     // iterate all image folders
-
+    unc_tools_recurse_folders($photo_folder);
     // create thumbnaisl
+    foreach ($photo_folder as $folder) {
+        // list all files in folder
+
+        foreach ($files as $file) {
+            unc_import_make_thumbnail($image_file_path, $target_file_path);
+        }
+
+    }
+
 
 
 }
