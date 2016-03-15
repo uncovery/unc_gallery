@@ -153,6 +153,7 @@ function unc_gallery_display_var_init($atts = array()) {
             return $error;
         }
     }
+    $UNC_GALLERY['display']['type'] = $a['type'];
 
     $UNC_GALLERY['display']['link'] = false;
     if (in_array('link', $UNC_GALLERY['options'])) {
