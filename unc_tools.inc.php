@@ -333,6 +333,21 @@ function unc_tools_image_exif_date($date_path, $file_name) {
     return $fixed_date;
 }
 
+function unc_tools_image_ipct_date($date_path, $file_name) {
+    global $UNC_GALLERY;
+    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['photos'] ;
+    $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
+    $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
+    $ipct_obj = new IPTC($file_path);
+    $ipict_text = $ipct_obj->dump();
+    XMPP_ERROR_trace("IPICT", $ipict_text);
+    XMPP_ERROR_trigger('test');
+    // $search_pattern = '/(\d\d\d\d):(\d\d):(\d\d \d\d:\d\d:\d\d)/';
+    // $replace_pattern = '$1-$2-$3';
+    // $fixed_date = preg_replace($search_pattern, $replace_pattern, $file_date);
+    return $fixed_date;
+}
+
 /**
  * Enumerate the fodlers with images to display the datepicker properly.
  *
@@ -516,9 +531,7 @@ class IPTC {
     }
 
     function dump() {
-        echo "<pre>";
-        print_r($this->meta);
-        echo "</pre>";
+        return var_export($this->meta, true);
     }
 
     #requires GD library installed
