@@ -558,7 +558,8 @@ class IPTC {
             $tag = str_replace("2#", "", $key);
             $data .= $this->iptc_maketag(2, $tag, $this->meta[$key][0]);
         }
-
+        global $UNC_GALLERY;
+        $UNC_GALLERY['debug'][]["binary ipict data"] = $data;
         return $data;
     }
 
