@@ -27,7 +27,7 @@ if (file_exists('/home/includes/xmpp_error/xmpp_error.php')) {
     $XMPP_ERROR['config']['project_name'] = 'unc_gallery';
     $XMPP_ERROR['config']['enabled'] = true;
     $XMPP_ERROR['config']['ignore_warnings'] = array('jaxl');
-    $XMPP_ERROR['config']['track_globals'] = 'UNC_GALLERY';
+    $XMPP_ERROR['config']['track_globals'] = array('UNC_GALLERY');
 }
 // actions on activating and deactivating the plugin
 register_activation_hook( __FILE__, 'unc_gallery_plugin_activate');
