@@ -289,9 +289,9 @@ function unc_tools_file_latest($date_path) {
             $files[$file_date] = $file;
         }
     }
-    
+
     krsort($files);
-    $latest_file = $files[0];
+    $latest_file = array_shift($files);
     return $latest_file;
 }
 
