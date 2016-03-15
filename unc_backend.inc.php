@@ -98,10 +98,7 @@ function unc_gallery_settings_section_callback(  ) {
  */
 function unc_gallery_admin_settings() {
     echo '<div class="wrap">'
-        . "<link id=\"webui-popover\" rel=\"stylesheet\" href=\"http://www.f85.net/jquery.webui-popover.min.css\">\n"
-        . "<script src=\"http://www.f85.net/jquery.webui-popover.min.js\"></script>\n"
-        . "<link id=\"jqueryui\" rel=\"stylesheet\" href=\"https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css\">\n"
-        . "<div class='umc_jquery_tabs umc_fade_in'>\n"
+        . "<div class='unc_jquery_tabs unc_fade_in'>\n"
         . "<ul>\n";
 
     # Set up tab titles
