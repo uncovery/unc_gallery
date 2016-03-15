@@ -21,6 +21,8 @@ function unc_images_display() {
  */
 function unc_gallery_apply($atts = array()) {
     global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+
     unc_gallery_add_css_and_js();
 
     $a = shortcode_atts( array(
@@ -37,6 +39,7 @@ function unc_gallery_apply($atts = array()) {
 
     $type = $a['type'];
     $date = $a['date'];
+    $UNC_GALLERY['display'] = array();
     $UNC_GALLERY['display']['featured_image'] = $a['featured']; // TODO: Sanitize & verify filename
 
     // there can be several options, separated by space
@@ -165,6 +168,8 @@ function unc_gallery_apply($atts = array()) {
 
 function unc_gallery_display_page() {
     global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+
     $D = $UNC_GALLERY['display'];
 
     // do not let wp manipulate linebreaks
@@ -234,6 +239,8 @@ function unc_gallery_display_page() {
  */
 function unc_display_folder_images() {
     global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+
     $D = $UNC_GALLERY['display'];
     $echo = false;
     if (!$D['date']) {
@@ -321,6 +328,8 @@ function unc_display_folder_images() {
  */
 function unc_display_single_image($date_path, $file_name, $show_thumb, $file_date = false) {
     global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+
     $D = $UNC_GALLERY['display'];
 
     $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
