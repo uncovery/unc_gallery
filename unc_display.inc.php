@@ -138,7 +138,8 @@ function unc_gallery_display_var_init($atts = array()) {
         // explode by colon
         $file_details = explode(";", $details_raw);
         if (count($file_details) == 0) {
-            return unc_tools_errormsg("File details are invalid!");
+            echo unc_tools_errormsg("File details are invalid!");
+            return;
         }
         foreach ($file_details as $file_detail) {
             $tmp_arr = explode(":", $file_detail);
