@@ -3,7 +3,6 @@
 if (!defined('WPINC')) {
     die;
 }
-global $UNC_GALLERY;
 
 function unc_images_display() {
     echo "<h2>Uncovery Gallery: All Images</h2>\n";
@@ -37,9 +36,10 @@ function unc_gallery_apply($atts = array()) {
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
 
     unc_gallery_add_css_and_js();
-    unc_gallery_display_var_init($atts);
-
-    return unc_gallery_display_page();
+    $check = unc_gallery_display_var_init($atts);
+    if ($check) {
+        return unc_gallery_display_page();
+    }
 }
 
 /**
@@ -92,7 +92,8 @@ function unc_gallery_display_var_init($atts = array()) {
         // lets REGEX
         $pattern = '/[\d]{4}-[\d]{2}-[\d\d]{2}/';
         if (preg_match($pattern, $date) == 0) {
-            return unc_tools_errormsg("Your date needs to be in the format '2016-01-31'");
+            echo unc_tools_errormsg("Your date needs to be in the format '2016-01-31'");
+            return false;
         }
         $datetime = new DateTime($date);
         if (!$datetime) { // invalid date, fallback to latest
@@ -115,7 +116,8 @@ function unc_gallery_display_var_init($atts = array()) {
 
     if (!$date) {
         // there are no pictures
-        return unc_tools_errormsg("No pictures found, please upload some images first!");
+        echo unc_tools_errormsg("No pictures found, please upload some images first!");
+        return false;
     }
     $UNC_GALLERY['display']['date'] = $date;
 
@@ -151,9 +153,9 @@ function unc_gallery_display_var_init($atts = array()) {
     $possible_type_options = $keywords['type'][$type];
     foreach ($UNC_GALLERY['options'] as $option) {
         if (!in_array($option, $possible_type_options)) {
-            $error = unc_tools_errormsg("You have an invalid option for the display type \"option\" in your tag."
+            echo $error = unc_tools_errormsg("You have an invalid option for the display type \"option\" in your tag."
                 . "<br>Valid options are: " . implode(", ", $keywords['type'][$type]));
-            return $error;
+            return false;
         }
     }
     $UNC_GALLERY['display']['type'] = $a['type'];
