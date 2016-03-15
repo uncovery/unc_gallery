@@ -11,6 +11,18 @@ function unc_images_display() {
 }
 
 /**
+ * displays folder images while getting values from AJAX
+ *
+ * @return type
+ */
+function unc_display_ajax_folder() {
+    // we get the date from the GET value
+    $date_str = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
+    unc_gallery_display_var_init(array('date' => $date_str, 'echo' => true));
+    return unc_display_folder_images();
+}
+
+/**
  * Displays content through keyword replacement
  * Checks for the keyword in the content and switches that define
  * the content further. Then calls the function that creates the actual content
@@ -232,18 +244,6 @@ function unc_gallery_display_page() {
 
     // remove the page tag from the original content and insert the new content
     return $out;
-}
-
-/**
- * displays folder images while getting values from AJAX
- *
- * @return type
- */
-function unc_display_ajax_folder() {
-    // we get the date from the GET value
-    $date_str = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
-    unc_gallery_display_var_init(array('date' => $date_str, 'echo' => true));
-    return unc_display_folder_images();
 }
 
 /**
