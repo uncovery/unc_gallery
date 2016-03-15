@@ -314,6 +314,7 @@ function unc_tools_bytes_get($ini_val) {
 
 function unc_tools_image_path($date_path, $file_name) {
     global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['photos'] ;
     $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
     $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
@@ -321,6 +322,8 @@ function unc_tools_image_path($date_path, $file_name) {
 }
 
 function unc_tools_image_date($file_path) {
+    global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     $exif = unc_tools_image_exif_date($file_path);
     if (!$exif) {
         XMPP_ERROR_trace("image date check", "exif failed, getting ipct");
@@ -345,6 +348,8 @@ function unc_tools_image_date($file_path) {
  * @return type
  */
 function unc_tools_image_exif_date($file_path) {
+    global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     $exif_data = exif_read_data($file_path);
     // if EXIF Invalid, try IPICT
     if (!$exif_data || !isset($exif_data['DateTimeOriginal'])) {
@@ -360,6 +365,8 @@ function unc_tools_image_exif_date($file_path) {
 
 
 function unc_tools_image_ipct_date($file_path) {
+    global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     $ipct_obj = new IPTC($file_path);
     $ipct_date = $ipct_obj->getValue(IPTC_CREATED_DATE); //  '20160220',
     $ipct_time = $ipct_obj->getValue(IPTC_CREATED_TIME); //  '235834',
@@ -373,6 +380,8 @@ function unc_tools_image_ipct_date($file_path) {
 }
 
 function unc_tools_image_ipct_date_write($file_path, $date_str) {
+    global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     // convert date_str to IPCT
     $search_pattern = '/(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)/';
     $date_pattern = '$1$2$3';
@@ -396,6 +405,7 @@ function unc_tools_image_ipct_date_write($file_path, $date_str) {
  */
 function unc_tools_folder_list($base_folder) {
     global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
     $base_length = strlen($photo_folder) + 1;
 
@@ -426,6 +436,7 @@ function unc_tools_folder_list($base_folder) {
 
 function unc_tools_image_delete() {
     global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     if (!is_admin()) {
         ob_clean();
         echo "You are not admin!";
@@ -457,6 +468,8 @@ function unc_tools_image_delete() {
 }
 
 function unc_tools_filename_validate($file_name) {
+    global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     if (strpbrk($file_name, "\\/?%*:|\"<>") === FALSE) {
         return $file_name;
     } else {
@@ -473,6 +486,7 @@ function unc_tools_filename_validate($file_name) {
  */
 function unc_tools_date_path($date) {
     global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     $date_obj = new DateTime($date . " 00:00:00");
     if ($date_obj) {
         $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
