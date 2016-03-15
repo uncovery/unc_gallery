@@ -39,6 +39,8 @@ function unc_gallery_apply($atts = array()) {
     $check = unc_gallery_display_var_init($atts);
     if ($check) {
         return unc_gallery_display_page();
+    } else {
+        echo "error!";
     }
 }
 
