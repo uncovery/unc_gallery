@@ -3,6 +3,7 @@
 if (!defined('WPINC')) {
     die;
 }
+global $UNC_GALLERY;
 
 function unc_images_display() {
     echo "<h2>Uncovery Gallery: All Images</h2>\n";
@@ -51,7 +52,7 @@ function unc_gallery_apply($atts = array()) {
 function unc_gallery_display_var_init($atts = array()) {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
-    
+
     $a = shortcode_atts( array(
         'type' => 'day',    // display type
         'date' => 'latest', // which date?
