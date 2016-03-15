@@ -42,6 +42,7 @@ function unc_gallery_apply($atts = array()) {
     } else {
         echo "error!";
     }
+    XMPP_ERROR_trigger('check');
 }
 
 /**
