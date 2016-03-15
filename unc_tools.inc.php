@@ -290,7 +290,8 @@ function unc_tools_file_random($date_path) {
     // get random file
     $count = count($files);
     $rnd = random_int(0, $count - 1);
-    $rnd_file = $files[$rnd];
+    $rnd_path = $files[$rnd];
+    $rnd_file = basename($rnd_path);
     return $rnd_file;
 }
 
