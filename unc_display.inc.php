@@ -336,7 +336,6 @@ function unc_display_single_image($date_path, $file_name, $show_thumb, $file_dat
     if (!$file_date) {
         $file_date = unc_tools_image_exif_date($date_path, $file_name);
     }
-    $file_date2 = unc_tools_image_ipct_date($date_path, $file_name);
 
     $date_str = str_replace(DIRECTORY_SEPARATOR, "-", $date_path);
     if (isset($D['details'][$file_name])) {
