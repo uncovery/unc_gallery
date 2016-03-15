@@ -225,8 +225,8 @@ function unc_gallery_display_page() {
     return $out;
 }
 
-function unc_display_ajax_folder($atts = array()) {
-    unc_gallery_display_var_init($atts);
+function unc_display_ajax_folder() {
+    unc_gallery_display_var_init();
     return unc_display_folder_images();
 }
 
