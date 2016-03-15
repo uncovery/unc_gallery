@@ -62,11 +62,18 @@ function unc_gallery_admin_init() {
         $prefix = $UNC_GALLERY['settings_prefix'];
         register_setting('unc_gallery_settings_page', $prefix . $setting);
         $setting_value = get_option($prefix . $setting, $D['default']);
-        $args = array('setting' => $prefix . $setting, 'value'=> $setting_value, 'help'=> $D['help']);
+        if ($D['type'] == 'text') {
+            $callback = 'unc_gallery_setting_text_field_render';
+            $args = array('setting' => $prefix . $setting, 'value'=> $setting_value, 'help'=> $D['help']);
+        } else {
+            $callback = 'unc_gallery_setting_drodown_render';
+            $args = array('setting' => $prefix . $setting, 'value'=> $setting_value, 'help'=> $D['help'], 'options' => $D['options']);
+        }
+
         add_settings_field(
             $prefix . $setting,
             __(ucwords(str_replace("_", " ", $setting)), 'wordpress'),
-            'unc_gallery_setting_text_field_render',
+            $callback,
             'unc_gallery_settings_page',
             'unc_gallery_pluginPage_section',
             $args
@@ -84,6 +91,19 @@ function unc_gallery_admin_init() {
 
 function unc_gallery_setting_text_field_render($A) {
     $out = "<input type='text' name='{$A['setting']}' value='{$A['value']}'> {$A['help']}\n";
+    echo $out;
+}
+
+function unc_gallery_setting_drodown_render($A) {
+    $out = "<select name=\"{$A['setting']}\">\n";
+    foreach ($A['options'] as $option => $text) {
+        $sel = '';
+        if ($option == $A['value']) {
+            $sel = 'selected';
+        }
+        $out .= "<option value=\"$option\" $sel>$text</option>\n";
+    }
+    $out .= "</select> {$A['help']}\n";
     echo $out;
 }
 
