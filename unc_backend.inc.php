@@ -15,25 +15,6 @@ function unc_gallery_admin_menu() {
         'unc_gallery_admin_settings' // $function, $icon_url, $position
     );
     add_action('admin_print_scripts-' . $main_options_page_hook_suffix, 'unc_gallery_add_css_and_js');
-    // let's rename that
-    add_submenu_page(
-        'unc_gallery_admin_menu',
-        'Uncovery Gallery Settings',
-        'Settings & Upload',
-        'read',
-        'unc_gallery_admin_menu',
-        'unc_gallery_admin_settings'
-    );
-    // where we list up all the images
-    $view_page_hook_suffix = add_submenu_page(
-        'unc_gallery_admin_menu', // $parent_slug
-        'Manage Images',  // $page_title
-        'Manage Images', // $menu_title
-        'manage_options', // capability, manage_options is the default
-        'unc_gallery_admin_view', // menu_slug
-        'unc_gallery_admin_display_images' // function
-    );
-    add_action('admin_print_scripts-' . $view_page_hook_suffix, 'unc_gallery_add_css_and_js');
 }
 
 /**
@@ -116,15 +97,32 @@ function unc_gallery_settings_section_callback(  ) {
  * this will manage the settings
  */
 function unc_gallery_admin_settings() {
-    echo '<div class="wrap">';
+    echo '<div class="wrap">'
+        . "<link id=\"webui-popover\" rel=\"stylesheet\" href=\"http://www.f85.net/jquery.webui-popover.min.css\">\n"
+        . "<script src=\"http://www.f85.net/jquery.webui-popover.min.js\"></script>\n"
+        . "<link id=\"jqueryui\" rel=\"stylesheet\" href=\"https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css\">\n"
+        . "<div class='umc_jquery_tabs umc_fade_in'>\n"
+        . "<ul>\n";
+
+    # Set up tab titles
+    echo "<li><a href='#tab1'><span>Settings</span></a></li>\n"
+        . "<li><a href='#tab2'><span>Upload</span></a></li>\n"
+        . "<li><a href='#tab3'><span>Manage Images</span></a></li>\n"
+        . "</ul>\n";
+
+    echo "<div id='tab1'>\n";
     echo '<form method="post" action="options.php">'. "\n";
     settings_fields('unc_gallery_settings_page');
     do_settings_sections( 'unc_gallery_settings_page');
     submit_button();
     echo "</form>\n";
+    echo "</div>\n";
+    echo "<div id='tab2'>\n";
     echo unc_gallery_admin_upload();
-    // echo unc_gallery_admin_rebuild_thumbs();
-    // echo unc_gallery_admin_delete_everything();
+    echo "</div>\n";
+    echo "<div id='tab3'>\n";
+    echo unc_gallery_admin_display_images();
+    echo "</div>\n";
     echo "</div>";
 }
 
