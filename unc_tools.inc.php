@@ -129,7 +129,10 @@ function unc_tools_folder_delete_empty($path) {
         }
     }
     $UNC_GALLERY['debug'][]['$empty'] = $empty;
-    return $empty && rmdir($path);
+    if ($empty) {
+        rmdir($path);
+    }
+    return $empty;
 }
 
 /**
