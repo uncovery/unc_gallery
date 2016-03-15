@@ -271,6 +271,31 @@ function unc_tools_date_random() {
     return $new_date_str;
 }
 
+
+/**
+ * returns the latest file from a folder
+ *
+ * @param type $date_path
+ * @return type
+ */
+function unc_tools_file_latest($date_path) {
+    global $UNC_GALLERY;
+    $base_folder = WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_path/";
+    $files = array();
+    foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file) {
+        // found a sub-folder, go deeper
+        if (!is_dir($file)) {
+            $file_date = unc_tools_image_date($file);
+            $files[$file_date] = $file;
+        }
+    }
+    
+    krsort($files);
+    $latest_file = $files[0];
+    return $latest_file;
+}
+
+
 /**
  * returns a random file from a folder
  *
