@@ -71,3 +71,11 @@ Date.prototype.addMinutes= function(m){
     this.setMinutes(this.getMinutes()+m);
     return this;
 };
+
+jQuery(document).ready(function(jQuery) {
+    // Initialize jquery-ui tabs
+    jQuery( '.unc_jquery_tabs' ).tabs();
+
+    // Fade in sections that we wanted to pre-render
+    jQuery('.unc_fade_in').fadeIn('fast');
+});
