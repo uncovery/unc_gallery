@@ -22,7 +22,7 @@ require_once( plugin_dir_path( __FILE__ ) . "unc_display.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_tools.inc.php");
 
 global $XMPP_ERROR;
-if (file_exist('/home/includes/xmpp_error/xmpp_error.php')) {
+if (file_exists('/home/includes/xmpp_error/xmpp_error.php')) {
     require_once('/home/includes/xmpp_error/xmpp_error.php');
     $XMPP_ERROR['config']['project_name'] = 'unc_gallery';
     $XMPP_ERROR['config']['enabled'] = true;
