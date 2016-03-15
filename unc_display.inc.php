@@ -44,7 +44,6 @@ function unc_gallery_apply($atts = array()) {
 
 function unc_gallery_display_var_init($atts = array()) {
     global $UNC_GALLERY;
-    $atts = array();
     $a = shortcode_atts( array(
         'type' => 'day',    // display type
         'date' => 'latest', // which date?
