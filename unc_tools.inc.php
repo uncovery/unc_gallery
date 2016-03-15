@@ -475,8 +475,8 @@ class IPTC {
 
     function __construct($filename) {
         $info = null;
-        $size = getimagesize($filename, $info);
-        if(isset($info["APP13"])) {
+        // $size = getimagesize($filename, $info);
+        if (isset($info["APP13"])) {
             $this->meta = iptcparse($info["APP13"]);
         }
         $this->file = $filename;
@@ -494,8 +494,8 @@ class IPTC {
     private function write() {
         $mode = 0;
         $content = iptcembed($this->binary(), $this->file, $mode);
-        $filename = $this->file;
-        if(file_exists($this->file))  {
+        // $filename = $this->file;
+        if (file_exists($this->file))  {
             unlink($this->file);
         }
 
@@ -519,7 +519,7 @@ class IPTC {
         $length = strlen($value);
         $retval = chr(0x1C) . chr($rec) . chr($data);
 
-        if($length < 0x8000) {
+        if ($length < 0x8000) {
             $retval .= chr($length >> 8) .  chr($length & 0xFF);
         } else {
             $retval .= chr(0x80) .
@@ -541,7 +541,7 @@ class IPTC {
     function removeAllTags() {
         $this->meta = [];
         $img = imagecreatefromstring(implode(file($this->file)));
-        if(file_exists($this->file)) {
+        if (file_exists($this->file)) {
             unlink($this->file);
         }
         imagejpeg($img, $this->file, 100);
