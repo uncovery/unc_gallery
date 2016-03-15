@@ -24,7 +24,7 @@ $UNC_GALLERY['keywords'] = array(
         'icon' => array('link'), // only the icon of one image, requires file addon unless random or latest
     ),
     'date' => array('random', 'latest'),  // whichdate to chose
-    'file', // in case of image or icon type, you can chose one filename
+    'file' => array('random', 'latest'), // in case of image or icon type, you can chose one filename
 );
 
 // file & mime-types
