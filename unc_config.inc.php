@@ -8,11 +8,11 @@ global $UNC_GALLERY;
 
 // upload folders below above folder
 // these configs should be moved to database settings
-$UNC_GALLERY['upload'] = "/unc_gallery";
-$UNC_GALLERY['photos'] = "/photos";
-$UNC_GALLERY['thumbnails'] = "/thumbs";
+$UNC_GALLERY['upload'] = DIRECTORY_SEPARATOR . "unc_gallery";
+$UNC_GALLERY['photos'] = DIRECTORY_SEPARATOR . "photos";
+$UNC_GALLERY['thumbnails'] = DIRECTORY_SEPARATOR . "thumbs";
 $UNC_GALLERY['base_url'] = plugins_url();
-$UNC_GALLERY['gallery_url'] = $UNC_GALLERY['base_url'] . "/galleries";
+$UNC_GALLERY['gallery_url'] = $UNC_GALLERY['base_url'] . DIRECTORY_SEPARATOR . "galleries";
 $UNC_GALLERY['settings_prefix'] = 'unc_gallery_';
 
 // file & mime-types
