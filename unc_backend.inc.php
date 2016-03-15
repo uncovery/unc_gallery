@@ -58,8 +58,7 @@ function unc_gallery_admin_display_images() {
     }
 
     // get a standard short-tag output for latest date with datepicker
-    $UNC_GALLERY['display']['options'] = 'datelist';
-    $out .= unc_gallery_apply();
+    $out .= unc_gallery_apply(array('options'=> 'datelist'));
     echo $out;
 }
 
