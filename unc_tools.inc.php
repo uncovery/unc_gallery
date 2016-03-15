@@ -312,6 +312,28 @@ function unc_tools_bytes_get($ini_val) {
     return $val;
 }
 
+function unc_tools_image_path($date_path, $file_name) {
+    global $UNC_GALLERY;
+    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['photos'] ;
+    $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
+    $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
+    return $file_path;
+}
+
+function unc_tools_image_date($file_path) {
+    $exif = unc_tools_image_exif_date($file_path);
+    if (!$exif) {
+        $ipct = unc_tools_image_ipct_date($file_path);
+        if ($ipct) {
+            return false;
+        } else {
+            return $ipct;
+        }
+    } else {
+        return $exif;
+    }
+}
+
 /**
  * Get the EXIF date of a file based on date & filename only
  *
@@ -320,15 +342,11 @@ function unc_tools_bytes_get($ini_val) {
  * @param type $file_name
  * @return type
  */
-function unc_tools_image_exif_date($date_path, $file_name) {
-    global $UNC_GALLERY;
-    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['photos'] ;
-    $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
-    $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
+function unc_tools_image_exif_date($file_path) {
     $exif_data = exif_read_data($file_path);
     // if EXIF Invalid, try IPICT
     if (!$exif_data || !isset($exif_data['DateTimeOriginal'])) {
-        return unc_tools_image_ipct_date($date_path, $file_name);
+        return false;
     }
     $file_date = $exif_data['DateTimeOriginal'];
     $search_pattern = '/(\d\d\d\d):(\d\d):(\d\d \d\d:\d\d:\d\d)/';
@@ -337,18 +355,33 @@ function unc_tools_image_exif_date($date_path, $file_name) {
     return $fixed_date;
 }
 
-function unc_tools_image_ipct_date($date_path, $file_name) {
-    global $UNC_GALLERY;
-    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['photos'] ;
-    $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
-    $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
+
+
+function unc_tools_image_ipct_date($file_path) {
     $ipct_obj = new IPTC($file_path);
     $ipct_date = $ipct_obj->getValue(IPTC_CREATED_DATE); //  '20160220',
     $ipct_time = $ipct_obj->getValue(IPTC_CREATED_TIME); //  '235834',
+    if (strlen($ipct_date . $ipct_time) != 14) {
+        return false;
+    }
     $search_pattern = '/(\d\d\d\d)(\d\d)(\d\d) (\d\d)(\d\d)(\d\d)/';
     $replace_pattern = '$1-$2-$3 $4:$5:$6';
     $fixed_date = preg_replace($search_pattern, $replace_pattern, "$ipct_date $ipct_time");
     return $fixed_date;
+}
+
+function unc_tools_image_ipct_date_write($file_path, $date_str) {
+    // convert date_str to IPCT
+    $search_pattern = '/(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)/';
+    $date_pattern = '$1$2$3';
+    $ipct_date = preg_replace($search_pattern, $date_pattern, $date_str);
+    $time_pattern = '$4$5$6';
+    $ipct_time = preg_replace($search_pattern, $time_pattern, $date_str);
+
+    // write IPICT Date / time
+    $taget_ipct_obj = new IPTC($file_path);
+    $taget_ipct_obj->setValue(IPTC_CREATED_DATE, $ipct_date);
+    $taget_ipct_obj->setValue(IPTC_CREATED_TIME, $ipct_time);
 }
 
 /**
@@ -451,6 +484,8 @@ function unc_tools_date_path($date) {
     return $date_str;
 }
 
+define("IPTC_CREATED_DATE", "055");
+define("IPTC_CREATED_TIME", "060");
 /**
  * Class to write IPTC data to a file
  * Source: http://stackoverflow.com/questions/5384962/writing-exif-data-in-php
@@ -459,16 +494,11 @@ function unc_tools_date_path($date) {
  *  $file = "photo.jpg";
     $objIPTC = new IPTC($file);
 
-    //set title
-    $objIPTC->setValue(IPTC_HEADLINE, "A title for this picture");
-    echo $objIPTC->getValue(IPTC_HEADLINE);
+    //set date
+    $objIPTC->setValue(IPTC_CREATED_DATE, "20160130");
+    echo $objIPTC->getValue(IPTC_CREATED_DATE);
  *
  */
-
-define("IPTC_CREATED_DATE", "055");
-define("IPTC_CREATED_TIME", "060");
-
-
 class IPTC {
     var $meta = [];
     var $file = null;
