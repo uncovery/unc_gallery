@@ -39,18 +39,23 @@ $UNC_GALLERY['user_settings'] = array(
     'thumbnail_height' => array(
         'help' => 'The desired thumbnail height in pixels. Applies only for new uploads',
         'default' => '120',
+        'type' => 'text',
     ),
     'picture_long_edge' => array(
         'help' => 'Shrink the full-size images so that the long edge will be this long (in pixels, 0 for disable)',
         'default' => '0',
+        'type' => 'text',
     ),
     'time_offset' => array(
         'help' => 'If you take photos after midnight and don\'t want them show on the next day,
         add an offset here in one of <a href="http://php.net/manual/en/datetime.formats.relative.php">these</a> formats.',
         'default' => '-6 hours',
+        'type' => 'text',
     ),
     'admin_date_selector' => array(
         'help' => 'Chose if you want to have a "datepicker" or a "datelist" for the Manage Images Admin page',
         'default' => 'datepicker',
+        'type' => 'dropdown',
+        'options' => array('datepicker', "datelist"),
     ),
 );
