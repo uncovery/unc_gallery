@@ -113,9 +113,11 @@ function unc_gallery_admin_settings() {
     submit_button();
     echo "</form>\n";
     echo "</div>\n";
+
     echo "<div id='tab2'>\n";
     echo unc_gallery_admin_upload();
     echo "</div>\n";
+
     echo "<div id='tab3'>\n";
     echo unc_gallery_admin_display_images();
     echo "</div>\n";
