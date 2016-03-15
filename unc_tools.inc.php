@@ -326,6 +326,10 @@ function unc_tools_image_exif_date($date_path, $file_name) {
     $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
     $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
     $exif_data = exif_read_data($file_path);
+    // if EXIF Invalid, try IPICT
+    if (!$exif_data || !isset($exif_data['DateTimeOriginal'])) {
+        return unc_tools_image_ipct_date($date_path, $file_name);
+    }
     $file_date = $exif_data['DateTimeOriginal'];
     $search_pattern = '/(\d\d\d\d):(\d\d):(\d\d \d\d:\d\d:\d\d)/';
     $replace_pattern = '$1-$2-$3';
@@ -339,12 +343,11 @@ function unc_tools_image_ipct_date($date_path, $file_name) {
     $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
     $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
     $ipct_obj = new IPTC($file_path);
-    $ipict_text = $ipct_obj->dump();
-    XMPP_ERROR_trace("IPICT", $ipict_text);
-    XMPP_ERROR_trigger('test');
-    // $search_pattern = '/(\d\d\d\d):(\d\d):(\d\d \d\d:\d\d:\d\d)/';
-    // $replace_pattern = '$1-$2-$3';
-    // $fixed_date = preg_replace($search_pattern, $replace_pattern, $file_date);
+    $ipict_date = $ipct_obj->getValue(IPTC_CREATED_DATE); //  '20160220',
+    $ipict_time = $ipct_obj->getValue(IPTC_CREATED_TIME); //  '235834',
+    $search_pattern = '/(\d\d\d\d)(\d\d)(\d\d) (\d\d)(\d\d)(\d\d)/';
+    $replace_pattern = '$1-$2-$3 $4:$5:$6';
+    $fixed_date = preg_replace($search_pattern, $replace_pattern, "$ipict_date $ipict_time");
     return $fixed_date;
 }
 
