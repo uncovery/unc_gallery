@@ -368,8 +368,9 @@ function unc_tools_image_ipct_date($file_path) {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     $ipct_obj = new IPTC($file_path);
-    $ipct_date = $ipct_obj->getValue(IPTC_CREATED_DATE); //  '20160220',
-    $ipct_time = $ipct_obj->getValue(IPTC_CREATED_TIME); //  '235834',
+
+    $ipct_date = $ipct_obj->get(IPTC_CREATED_DATE); //  '20160220',
+    $ipct_time = $ipct_obj->get(IPTC_CREATED_TIME); //  '235834',
     $UNC_GALLERY['debug'][]["IPCT Dump"] = $ipct_obj->dump();
     if (strlen($ipct_date . $ipct_time) != 14) {
         return false;
@@ -393,8 +394,9 @@ function unc_tools_image_ipct_date_write($file_path, $date_str) {
     $UNC_GALLERY['debug'][]["wirting IPCT"] = "$ipct_date / $ipct_time";
     // write IPICT Date / time
     $taget_ipct_obj = new IPTC($file_path);
-    $taget_ipct_obj->setValue(IPTC_CREATED_DATE, $ipct_date);
-    $taget_ipct_obj->setValue(IPTC_CREATED_TIME, $ipct_time);
+    $taget_ipct_obj->set(IPTC_CREATED_DATE, $ipct_date);
+    $taget_ipct_obj->set(IPTC_CREATED_TIME, $ipct_time);
+    $taget_ipct_obj->write();
 }
 
 /**
@@ -506,93 +508,83 @@ define("IPTC_CREATED_DATE", "055");
 define("IPTC_CREATED_TIME", "060");
 /**
  * Class to write IPTC data to a file
- * Source: http://stackoverflow.com/questions/5384962/writing-exif-data-in-php
- *
- * Example:
- *  $file = "photo.jpg";
-    $objIPTC = new IPTC($file);
-
-    //set date
-    $objIPTC->setValue(IPTC_CREATED_DATE, "20160130");
-    echo $objIPTC->getValue(IPTC_CREATED_DATE);
- *
+ * Source: http://php.net/manual/en/function.iptcembed.php
  */
-class IPTC {
-    var $meta = [];
-    var $file = null;
+class iptc {
+    var $meta=Array();
+    var $hasmeta=false;
+    var $file=false;
 
-    function __construct($filename) {
-        $info = null;
-        // $size = getimagesize($filename, $info);
-        if (isset($info["APP13"])) {
-            $this->meta = iptcparse($info["APP13"]);
+
+    function iptc($filename) {
+        $size = getimagesize($filename, $info);
+        $this->hasmeta = isset($info["APP13"]);
+        if($this->hasmeta) {
+            $this->meta = iptcparse ($info["APP13"]);
         }
         $this->file = $filename;
     }
 
-    function getValue($tag) {
-        return isset($this->meta["2#$tag"]) ? $this->meta["2#$tag"][0] : "";
+    function set($tag, $data) {
+        $this->meta ["2#$tag"]= Array( $data );
+        $this->hasmeta=true;
     }
 
-    function setValue($tag, $data) {
-        $this->meta["2#$tag"] = [$data];
-        $this->write();
+    function get($tag) {
+        return isset($this->meta["2#$tag"]) ? $this->meta["2#$tag"][0] : false;
     }
 
-    private function write() {
+    function dump() {
+        print_r($this->meta);
+    }
+
+    function binary() {
+        $iptc_new = '';
+        foreach (array_keys($this->meta) as $s) {
+            $tag = str_replace("2#", "", $s);
+            $iptc_new .= $this->iptc_maketag(2, $tag, $this->meta[$s][0]);
+        }
+        return $iptc_new;
+    }
+
+    function iptc_maketag($rec,$dat,$val) {
+        $len = strlen($val);
+        if ($len < 0x8000) {
+            return chr(0x1c).chr($rec).chr($dat)
+                . chr($len >> 8)
+                . chr($len & 0xff)
+                . $val;
+        } else {
+            return chr(0x1c).chr($rec).chr($dat)
+                . chr(0x80).chr(0x04)
+                . chr(($len >> 24) & 0xff)
+                . chr(($len >> 16) & 0xff)
+                . chr(($len >> 8 ) & 0xff)
+                . chr(($len ) & 0xff)
+                . $val;
+        }
+    }
+    function write() {
+        if(!function_exists('iptcembed')) {
+            return false;
+        }
         $mode = 0;
         $content = iptcembed($this->binary(), $this->file, $mode);
-        // $filename = $this->file;
-        if (file_exists($this->file))  {
-            unlink($this->file);
-        }
+        $filename = $this->file;
 
-        $fp = fopen($this->file, "w");
+        @unlink($filename); #delete if exists
+
+        $fp = fopen($filename, "w");
         fwrite($fp, $content);
         fclose($fp);
     }
 
-    private function binary() {
-        $data = "";
-
-        foreach(array_keys($this->meta) as $key) {
-            $tag = str_replace("2#", "", $key);
-            $data .= $this->iptc_maketag(2, $tag, $this->meta[$key][0]);
-        }
-        global $UNC_GALLERY;
-        $UNC_GALLERY['debug'][]["binary ipict data"] = $data;
-        return $data;
-    }
-
-    function iptc_maketag($rec, $data, $value) {
-        $length = strlen($value);
-        $retval = chr(0x1C) . chr($rec) . chr($data);
-
-        if ($length < 0x8000) {
-            $retval .= chr($length >> 8) .  chr($length & 0xFF);
-        } else {
-            $retval .= chr(0x80) .
-                chr(0x04) .
-                chr(($length >> 24) & 0xFF) .
-                chr(($length >> 16) & 0xFF) .
-                chr(($length >> 8) & 0xFF) .
-                chr($length & 0xFF);
-        }
-
-        return $retval . $value;
-    }
-
-    function dump() {
-        return var_export($this->meta, true);
-    }
-
     #requires GD library installed
     function removeAllTags() {
-        $this->meta = [];
+        $this->hasmeta=false;
+        $this->meta=Array();
         $img = imagecreatefromstring(implode(file($this->file)));
-        if (file_exists($this->file)) {
-            unlink($this->file);
-        }
-        imagejpeg($img, $this->file, 100);
+        @unlink($this->file); #delete if exists
+        imagejpeg($img,$this->file,100);
     }
 }
