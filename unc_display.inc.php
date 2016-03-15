@@ -370,7 +370,7 @@ function unc_display_single_image($date_path, $file_name, $show_thumb, $file_dat
          . "            <img alt=\"$file_name\" src=\"$shown_image\">\n"
          . "        </a>\n";
     if (is_admin()) {
-        $out .= "         <input type=\"submit\" class=\"delete_image_link\" value=\"&#9851;\" onClick=\"delete_image('$file_name','$date_str')\">\n";
+        $out .= "         <button class=\"delete_image_link\" onClick=\"delete_image('$file_name','$date_str')\">&#9851;</button>";
     }
     return $out;
 }
