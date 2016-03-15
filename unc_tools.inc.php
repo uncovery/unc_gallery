@@ -326,12 +326,12 @@ function unc_tools_image_date($file_path) {
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     $exif = unc_tools_image_exif_date($file_path);
     if (!$exif) {
-        XMPP_ERROR_trace("image date check", "exif failed, getting ipct");
+        $UNC_GALLERY['debug'][]["image date check"] = "exif failed, getting ipct";
         $ipct = unc_tools_image_ipct_date($file_path);
         if ($ipct) {
             return $ipct;
         } else {
-            XMPP_ERROR_trace("image date check", "ipct failed, bail!");
+            $UNC_GALLERY['debug'][]["image date check"] = "ipct failed, bail!";
             return false;
         }
     } else {
@@ -389,7 +389,7 @@ function unc_tools_image_ipct_date_write($file_path, $date_str) {
     $time_pattern = '$4$5$6';
     $ipct_time = preg_replace($search_pattern, $time_pattern, $date_str);
 
-    XMPP_ERROR_trace("wirting IPCT", "$ipct_date / $ipct_time");
+    $UNC_GALLERY['debug'][]["wirting IPCT"] = "$ipct_date / $ipct_time";
     // write IPICT Date / time
     $taget_ipct_obj = new IPTC($file_path);
     $taget_ipct_obj->setValue(IPTC_CREATED_DATE, $ipct_date);
