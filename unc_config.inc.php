@@ -14,9 +14,10 @@ $UNC_GALLERY['thumbnails'] = DIRECTORY_SEPARATOR . "thumbs";
 $UNC_GALLERY['base_url'] = plugins_url();
 $UNC_GALLERY['gallery_url'] = $UNC_GALLERY['base_url'] . DIRECTORY_SEPARATOR . "galleries";
 $UNC_GALLERY['settings_prefix'] = 'unc_gallery_';
+$UNC_GALLERY['display'] = array(); // ignore this
 
 // file & mime-types
-$UNC_GALLERY['thumbnail_ext'] = 'jpeg';
+$UNC_GALLERY['thumbnail_ext'] = 'jpeg'; // do not change this, PNG has issues with IPCT
 $UNC_GALLERY['valid_filetypes'] = array(
     "image/gif" => 'gif',
     "image/jpeg" => 'jpeg',
