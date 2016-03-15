@@ -49,4 +49,8 @@ $UNC_GALLERY['user_settings'] = array(
         add an offset here in one of <a href="http://php.net/manual/en/datetime.formats.relative.php">these</a> formats.',
         'default' => '-6 hours',
     ),
+    'admin_date_selector' => array(
+        'help' => 'Chose if you want to have a "datepicker" or a "datelist" for the admin image manager',
+        'default' => 'datepicker',
+    ),
 );
