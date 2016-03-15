@@ -25,6 +25,26 @@ function unc_gallery_apply($atts = array()) {
 
     unc_gallery_add_css_and_js();
 
+    unc_gallery_display_var_init();
+
+    $D = $UNC_GALLERY['display'];
+
+    if ($D['file']) {
+        if ($D['file'] == 'latest') {
+            $out = unc_display_single_image($D['date'], $D['file'], false);
+            return $out;
+        } else if ($D['file'] == 'random') {
+            // get a random filename for the date
+        }
+    }
+
+    $out = unc_gallery_display_page();
+    return $out;
+}
+
+function unc_gallery_display_var_init() {
+    global $UNC_GALLERY;
+    $atts = array();
     $a = shortcode_atts( array(
         'type' => 'day',    // display type
         'date' => 'latest', // which date?
@@ -35,11 +55,10 @@ function unc_gallery_apply($atts = array()) {
         'end_time' => false, // time of the day when we stop displaying this date
         'description' => false, // description for the whole day
         'details' => false, // description for individual files
-    ), $atts );
+    ), $atts);
 
     $type = $a['type'];
     $date = $a['date'];
-    $UNC_GALLERY['display'] = array();
     $UNC_GALLERY['display']['featured_image'] = $a['featured']; // TODO: Sanitize & verify filename
 
     // there can be several options, separated by space
@@ -48,17 +67,7 @@ function unc_gallery_apply($atts = array()) {
     } else {
         $options = explode(" ", $a['options']);
     }
-
-    // options for displays
-    $keywords = array(
-        'type' => array(
-            'day' => array('datepicker', 'datelist'), // shows a single date's gallery, optional date picker
-            'image' => array('link'), // only one image, requires file addon unless random or latest
-            'icon' => array('link'), // only the icon of one image, requires file addon unless random or latest
-        ),
-        'date' => array('random', 'latest'),  // whichdate to chose
-        'file', // in case of image or icon type, you can chose one filename
-    );
+    $UNC_GALLERY['options'] = $options;
 
     // icon or image?
     $thumb = false;
@@ -68,6 +77,7 @@ function unc_gallery_apply($atts = array()) {
 
     $UNC_GALLERY['display']['description'] = $a['description'];
 
+    $keywords = $UNC_GALLERY['keywords'];
     if (!in_array($date, $keywords['date'])) {
         // lets REGEX
         $pattern = '/[\d]{4}-[\d]{2}-[\d\d]{2}/';
@@ -127,22 +137,9 @@ function unc_gallery_apply($atts = array()) {
         }
     }
 
-    $file = $a['file'];
-    if ($file) {
-        if ($file == 'latest') {
-            $out = unc_display_single_image($date, $file, false);
-            return $out;
-        } else if ($file == 'random') {
-            // get a random filename for the date
-
-        } else { // we should have a date
-            $file = unc_tools_filename_validate($a['file']);
-        }
-    }
-
     // options
     $possible_type_options = $keywords['type'][$type];
-    foreach ($options as $option) {
+    foreach ($UNC_GALLERY['options'] as $option) {
         if (!in_array($option, $possible_type_options)) {
             $error = unc_tools_errormsg("You have an invalid option for the display type \"option\" in your tag."
                 . "<br>Valid options are: " . implode(", ", $keywords['type'][$type]));
@@ -150,9 +147,9 @@ function unc_gallery_apply($atts = array()) {
         }
     }
 
-    $link = false;
-    if (in_array('link', $options)) {
-        $link = true;
+    $UNC_GALLERY['display']['link'] = false;
+    if (in_array('link', $UNC_GALLERY['options'])) {
+        $UNC_GALLERY['display']['link'] = true;
     }
 
     $UNC_GALLERY['display']['date_selector'] = false;
@@ -162,8 +159,7 @@ function unc_gallery_apply($atts = array()) {
         $UNC_GALLERY['display']['date_selector'] = 'datelist';
     }
 
-    $out = unc_gallery_display_page();
-    return $out;
+    $UNC_GALLERY['display']['file'] = unc_tools_filename_validate($a['file']);
 }
 
 function unc_gallery_display_page() {
@@ -230,6 +226,10 @@ function unc_gallery_display_page() {
     return $out;
 }
 
+function unc_display_ajax_folder() {
+    unc_gallery_display_var_init();
+    return unc_display_folder_images();
+}
 
 /**
  * Open a folder of a certain date and display all the images in there
