@@ -82,6 +82,7 @@ function unc_gallery_admin_init() {
     }
     wp_register_script('jquery-form', '/wp-includes/js/jquery/jquery.form.js');
     wp_register_script('jquery-ui-datepicker', '/wp-includes/js/jquery/ui/jquery.ui.datepicker.min.js');
+    unc_gallery_add_css_and_js();
 }
 
 function unc_gallery_setting_text_field_render($A) {
@@ -97,7 +98,6 @@ function unc_gallery_settings_section_callback(  ) {
  * this will manage the settings
  */
 function unc_gallery_admin_settings() {
-    unc_gallery_add_css_and_js();
     echo '<div class="wrap">'
         . "<div class='unc_jquery_tabs unc_fade_in'>\n"
         . "<ul>\n";
