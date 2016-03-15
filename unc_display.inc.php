@@ -42,7 +42,7 @@ function unc_gallery_apply($atts = array()) {
     return $out;
 }
 
-function unc_gallery_display_var_init() {
+function unc_gallery_display_var_init($atts = array()) {
     global $UNC_GALLERY;
     $atts = array();
     $a = shortcode_atts( array(
@@ -226,8 +226,8 @@ function unc_gallery_display_page() {
     return $out;
 }
 
-function unc_display_ajax_folder() {
-    unc_gallery_display_var_init();
+function unc_display_ajax_folder($atts = array()) {
+    unc_gallery_display_var_init($atts);
     return unc_display_folder_images();
 }
 
