@@ -45,6 +45,8 @@ function unc_gallery_apply($atts = array()) {
         $date_path = unc_tools_date_path($D['date']);
         if ($D['file'] == 'random') {
             $file = unc_tools_file_random($date_path);
+        } else if ($D['file'] == 'latest') {
+            $file = unc_tools_file_latest($date_path);
         } else {
             $file = $D['file'];
         }
