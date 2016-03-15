@@ -313,7 +313,7 @@ function unc_uploads_process_file($i, $overwrite) {
  * @return boolean
  */
 function unc_import_image_resize($image_file_path, $target_file_path, $size, $edge, $extension) {
-
+    XMPP_ERROR_trace(__FUNCTION__, func_get_args());
     $img_types = array(1 => 'GIF', 2 => 'JPEG', 3 => 'PNG');
 
     // let's get the image size
