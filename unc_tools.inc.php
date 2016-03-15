@@ -281,17 +281,18 @@ function unc_tools_date_random() {
 function unc_tools_file_latest($date_path) {
     global $UNC_GALLERY;
     $base_folder = WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_path/";
-    $files = array();
+    $paths = array();
     foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file) {
         // found a sub-folder, go deeper
         if (!is_dir($file)) {
             $file_date = unc_tools_image_date($file);
-            $files[$file_date] = $file;
+            $paths[$file_date] = $file;
         }
     }
 
-    krsort($files);
-    $latest_file = array_shift($files);
+    krsort($paths);
+    $latest_path = array_shift($paths);
+    $latest_file = basename($latest_path);
     return $latest_file;
 }
 
