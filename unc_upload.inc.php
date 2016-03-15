@@ -361,8 +361,8 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     $img_generator($new_image, $target_file_path);
 
     // write ipct date
-    unc_tools_image_ipct_date_write($image_file_path, $file_date);
-    $new_file_date = unc_tools_image_date($image_file_path);
+    unc_tools_image_ipct_date_write($target_file_path, $file_date);
+    $new_file_date = unc_tools_image_date($target_file_path);
     XMPP_ERROR_trace("write IPCT", $new_file_date);
     XMPP_ERROR_trigger("check");
 
