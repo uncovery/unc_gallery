@@ -42,16 +42,16 @@ function unc_gallery_apply($atts = array()) {
     $D = $UNC_GALLERY['display'];
 
     if ($D['file']) {
-        if ($D['file'] == 'latest') {
-            $out = unc_display_single_image($D['date'], $D['file'], false);
-            return $out;
-        } else if ($D['file'] == 'random') {
-            // get a random filename for the date
+        if ($D['file'] == 'random') {
+            $file = unc_tools_file_random($D['date']);
+        } else {
+            $file = $D['file'];
         }
+        $out = unc_display_single_image($D['date'], $file, false);
     } else {
         $out = unc_gallery_display_page();
-        return $out;
     }
+    return $out;
 }
 
 /**
