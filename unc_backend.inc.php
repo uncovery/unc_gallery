@@ -97,6 +97,7 @@ function unc_gallery_settings_section_callback(  ) {
  * this will manage the settings
  */
 function unc_gallery_admin_settings() {
+    unc_gallery_add_css_and_js();
     echo '<div class="wrap">'
         . "<div class='unc_jquery_tabs unc_fade_in'>\n"
         . "<ul>\n";
