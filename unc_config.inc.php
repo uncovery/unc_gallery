@@ -16,7 +16,7 @@ $UNC_GALLERY['gallery_url'] = $UNC_GALLERY['base_url'] . DIRECTORY_SEPARATOR . "
 $UNC_GALLERY['settings_prefix'] = 'unc_gallery_';
 
 // file & mime-types
-$UNC_GALLERY['thumbnail_ext'] = 'PNG';
+$UNC_GALLERY['thumbnail_ext'] = 'png';
 $UNC_GALLERY['valid_filetypes'] = array(
     "image/gif" => 'gif',
     "image/jpeg" => 'jpeg',
