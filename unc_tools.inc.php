@@ -271,8 +271,27 @@ function unc_tools_date_random() {
     return $new_date_str;
 }
 
-function unc_tools_file_random($date_str) {
-
+/**
+ * returns a random file from a folder
+ *
+ * @param type $date_path
+ * @return type
+ */
+function unc_tools_file_random($date_path) {
+    global $UNC_GALLERY;
+    $base_folder = WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_path/";
+    $files = array();
+    foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file) {
+        // found a sub-folder, go deeper
+        if (!is_dir($file)) {
+            $files[] = $file;
+        }
+    }
+    // get random file
+    $count = count($files);
+    $rnd = random_int (0, $count - 1);
+    $rnd_file = $files[$rnd];
+    return $rnd_file;
 }
 
 /**
