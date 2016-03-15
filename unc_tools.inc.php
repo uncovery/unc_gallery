@@ -467,6 +467,7 @@ function unc_tools_image_delete() {
             echo "File name $path could not be found!";
         }
     }
+    XMPP_ERROR_trigger("Ajax delete");
     unc_display_ajax_folder();
 }
 
