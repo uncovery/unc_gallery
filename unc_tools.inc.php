@@ -271,6 +271,10 @@ function unc_tools_date_random() {
     return $new_date_str;
 }
 
+function unc_tools_file_random($date_str) {
+
+}
+
 /**
  * checks if a date is valid and sends it back
  *
@@ -323,6 +327,14 @@ function unc_tools_bytes_get($ini_val) {
     return $val;
 }
 
+/**
+ * Generate a folder from a date-path / filename combination
+ *
+ * @global array $UNC_GALLERY
+ * @param type $date_path
+ * @param type $file_name
+ * @return string
+ */
 function unc_tools_image_path($date_path, $file_name) {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
@@ -332,6 +344,13 @@ function unc_tools_image_path($date_path, $file_name) {
     return $file_path;
 }
 
+/**
+ * Get the date of an image, first EXIF, then IPCT
+ *
+ * @global type $UNC_GALLERY
+ * @param type $file_path
+ * @return boolean
+ */
 function unc_tools_image_date($file_path) {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
@@ -374,7 +393,13 @@ function unc_tools_image_exif_date($file_path) {
 }
 
 
-
+/**
+ * Get the IPCT date of an image
+ *
+ * @global type $UNC_GALLERY
+ * @param type $file_path
+ * @return boolean
+ */
 function unc_tools_image_ipct_date($file_path) {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
@@ -392,6 +417,13 @@ function unc_tools_image_ipct_date($file_path) {
     return $fixed_date;
 }
 
+/**
+ * Write the IPCT date to an image
+ *
+ * @global type $UNC_GALLERY
+ * @param type $file_path
+ * @param type $date_str
+ */
 function unc_tools_image_ipct_date_write($file_path, $date_str) {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
@@ -448,6 +480,11 @@ function unc_tools_folder_list($base_folder) {
     return $all_dates;
 }
 
+/**
+ * Delete an image
+ *
+ * @global array $UNC_GALLERY
+ */
 function unc_tools_image_delete() {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
@@ -482,6 +519,13 @@ function unc_tools_image_delete() {
     unc_display_ajax_folder();
 }
 
+/**
+ * Make sure a filename has only valid letters in it
+ *
+ * @global array $UNC_GALLERY
+ * @param type $file_name
+ * @return boolean
+ */
 function unc_tools_filename_validate($file_name) {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
@@ -515,6 +559,7 @@ function unc_tools_date_path($date) {
     }
     return $date_str;
 }
+
 
 define("IPTC_CREATED_DATE", "055");
 define("IPTC_CREATED_TIME", "060");
