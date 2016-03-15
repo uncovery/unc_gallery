@@ -81,8 +81,8 @@ function unc_gallery_admin_init() {
         unc_gallery_plugin_activate();
     }
     wp_register_script('jquery-form', '/wp-includes/js/jquery/jquery.form.js');
+    wp_register_script('jquery-ui');
     wp_register_script('jquery-ui-datepicker', '/wp-includes/js/jquery/ui/jquery.ui.datepicker.min.js');
-    wp_enqueue_script('jquery-ui');
 }
 
 function unc_gallery_setting_text_field_render($A) {
