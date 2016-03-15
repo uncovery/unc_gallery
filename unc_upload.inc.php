@@ -313,7 +313,8 @@ function unc_uploads_process_file($i, $overwrite) {
  * @return boolean
  */
 function unc_import_image_resize($image_file_path, $target_file_path, $size, $edge, $extension) {
-    XMPP_ERROR_trace(__FUNCTION__, func_get_args());
+    global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     $img_types = array(1 => 'GIF', 2 => 'JPEG', 3 => 'PNG');
 
     // let's get the image size
@@ -353,7 +354,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
 
     // get original file date
     $file_date = unc_tools_image_date($image_file_path);
-    XMPP_ERROR_trace("Read IPCT", $file_date);
+    $UNC_GALLERY['debug'][]["Read IPCT"] = $file_date;
 
     $old_image = $imgcreatefrom($image_file_path);
     $new_image = imagecreatetruecolor($new_width, $new_height);
@@ -363,7 +364,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     // write ipct date
     unc_tools_image_ipct_date_write($target_file_path, $file_date);
     $new_file_date = unc_tools_image_date($target_file_path);
-    XMPP_ERROR_trace("check IPCT", $new_file_date);
+    $UNC_GALLERY['debug'][]["check IPCT"] = $new_file_date;
     XMPP_ERROR_trigger("check");
 
     imagedestroy($new_image); // free up the memory
