@@ -123,15 +123,14 @@ function unc_gallery_admin_settings() {
     submit_button();
     echo "</form>\n";
     echo unc_gallery_admin_upload();
-    echo unc_gallery_admin_rebuild_thumbs();
-    echo unc_gallery_admin_delete_everything();
+    // echo unc_gallery_admin_rebuild_thumbs();
+    // echo unc_gallery_admin_delete_everything();
     echo "</div>";
 }
 
 function unc_gallery_admin_rebuild_thumbs() {
-    return;
     // delete all thumbnails
-    //unc_gallery_recurse_files($thumb_folder, 'unlink', 'rmdir');
+    unc_gallery_recurse_files($thumb_folder, 'unlink', 'rmdir');
 
     // iterate all image folders
     unc_tools_recurse_folders($photo_folder);
