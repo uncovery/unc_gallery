@@ -143,7 +143,8 @@ function unc_gallery_display_var_init($atts = array()) {
         foreach ($file_details as $file_detail) {
             $tmp_arr = explode(":", $file_detail);
             if (count($tmp_arr) !== 2) {
-                return unc_tools_errormsg("File details are invalid!");
+                echo unc_tools_errormsg("File details are invalid!");
+                return;
             }
             $details_filename = trim($tmp_arr[0]);
             $details_description = trim($tmp_arr[1]);
