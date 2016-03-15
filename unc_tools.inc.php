@@ -515,7 +515,6 @@ class iptc {
     var $hasmeta=false;
     var $file=false;
 
-
     function iptc($filename) {
         global $UNC_GALLERY;
         $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
