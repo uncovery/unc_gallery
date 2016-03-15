@@ -21,7 +21,7 @@ $UNC_GALLERY['keywords'] = array(
     'type' => array(
         'day' => array('datepicker', 'datelist'), // shows a single date's gallery, optional date picker
         'image' => array('link'), // only one image, requires file addon unless random or latest
-        'icon' => array('link'), // only the icon of one image, requires file addon unless random or latest
+        'thumb' => array('link'), // only the icon of one image, requires file addon unless random or latest
     ),
     'date' => array('random', 'latest'),  // whichdate to chose
     'file' => array('random', 'latest'), // in case of image or icon type, you can chose one filename
