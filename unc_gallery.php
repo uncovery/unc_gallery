@@ -22,11 +22,12 @@ require_once( plugin_dir_path( __FILE__ ) . "unc_display.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_tools.inc.php");
 
 global $XMPP_ERROR;
-require_once('/home/includes/xmpp_error/xmpp_error.php');
-$XMPP_ERROR['config']['project_name'] = 'unc_gallery';
-$XMPP_ERROR['config']['enabled'] = true;
-$XMPP_ERROR['config']['ignore_warnings'] = array('jaxl');
-
+if (file_exist('/home/includes/xmpp_error/xmpp_error.php')) {
+    require_once('/home/includes/xmpp_error/xmpp_error.php');
+    $XMPP_ERROR['config']['project_name'] = 'unc_gallery';
+    $XMPP_ERROR['config']['enabled'] = true;
+    $XMPP_ERROR['config']['ignore_warnings'] = array('jaxl');
+}
 // actions on activating and deactivating the plugin
 register_activation_hook( __FILE__, 'unc_gallery_plugin_activate');
 register_deactivation_hook( __FILE__, 'unc_gallery_plugin_deactivate');
