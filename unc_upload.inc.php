@@ -223,17 +223,15 @@ function unc_uploads_process_file($i, $overwrite) {
     }
 
     // we need the exif date to know when the image was taken
-    $exif_data = exif_read_data($sourcePath);
-    if (!$exif_data || !isset($exif_data['DateTimeOriginal'])) {
-        echo unc_tools_errormsg("Cannot read EXIF of file $sourcePath");
+    $date_str = unc_tools_image_date($sourcePath);
+    if (!$date_str) {
+        echo unc_tools_errormsg("Cannot read EXIF or IPCT of file $sourcePath");
         return false;
     }
 
-    // is that EXIF date a valid date?
-    $date_str = $exif_data['DateTimeOriginal']; // format: 2011:06:04 08:56:22
     $date_check = date_create($date_str);
     if (!$date_check) {
-        echo unc_tools_errormsg("'$date_str' is invalid date in EXIF");
+        echo unc_tools_errormsg("'$date_str' is invalid date in EXIF or IPCT");
         return false;
     }
     // echo "File date is $date_str";
