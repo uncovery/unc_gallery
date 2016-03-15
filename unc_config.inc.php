@@ -50,7 +50,7 @@ $UNC_GALLERY['user_settings'] = array(
         'default' => '-6 hours',
     ),
     'admin_date_selector' => array(
-        'help' => 'Chose if you want to have a "datepicker" or a "datelist" for the admin image manager',
+        'help' => 'Chose if you want to have a "datepicker" or a "datelist" for the Manage Images Admin page',
         'default' => 'datepicker',
     ),
 );
