@@ -236,7 +236,6 @@ function unc_gallery_display_page() {
     } else {
         $images = unc_display_folder_images();
 
-
         $single_photo = '';
         if ($D['featured_image']) {
             $single_photo = "<div class=\"featured_photo\">\n"
@@ -256,6 +255,7 @@ function unc_gallery_display_page() {
             <span style=\"clear:both;\"></span>";
     }
     // remove the page tag from the original content and insert the new content
+    XMPP_ERROR_trigger('check');
     return $out;
 }
 
