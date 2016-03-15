@@ -125,7 +125,9 @@ function unc_tools_folder_delete_empty($path) {
     $empty = true;
     foreach (glob($path . DIRECTORY_SEPARATOR . "*") as $file) {
         if (is_dir($file)) {
-            $empty &= is_dir($file) && unc_tools_folder_delete_empty($file);
+           $empty = unc_tools_folder_delete_empty($file);
+        } else {
+           $empty = false;
         }
     }
     $UNC_GALLERY['debug'][]['$empty'] = $empty;
