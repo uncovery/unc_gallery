@@ -393,7 +393,7 @@ function unc_tools_image_ipct_date_write($file_path, $date_str) {
 
     $UNC_GALLERY['debug'][]["wirting IPCT"] = "$ipct_date / $ipct_time";
     // write IPICT Date / time
-    $taget_ipct_obj = new IPTC($file_path);
+    $taget_ipct_obj = new iptc($file_path);
     $taget_ipct_obj->set(IPTC_CREATED_DATE, $ipct_date);
     $taget_ipct_obj->set(IPTC_CREATED_TIME, $ipct_time);
     $taget_ipct_obj->write();
@@ -529,6 +529,8 @@ class iptc {
     }
 
     function set($tag, $data) {
+        global $UNC_GALLERY;
+        $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
         $this->meta ["2#$tag"]= Array( $data );
         $this->hasmeta=true;
     }
@@ -568,7 +570,10 @@ class iptc {
         }
     }
     function write() {
+        global $UNC_GALLERY;
+        $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
         if(!function_exists('iptcembed')) {
+            $UNC_GALLERY['debug'][]['iptcembed'] = "Does not exist!!";
             return false;
         }
         $mode = 0;
