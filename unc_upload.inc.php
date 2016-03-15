@@ -343,6 +343,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
         $new_height = intval($original_height * ($size / $original_width));
     }
 
+    $UNC_GALLERY['debug'][]["New imaged dims"] = "$new_width x $new_height";
     // get image extension from MIME type
     $image_ext = $img_types[$arr_image_details[2]];
 
