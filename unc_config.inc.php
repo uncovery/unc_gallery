@@ -8,6 +8,8 @@ global $UNC_GALLERY;
 
 // upload folders below above folder
 // these configs should be moved to database settings
+// TODO remove the directory-separators here and insert them only in the code since
+// URLS need different ones from the Paths.
 $UNC_GALLERY['upload'] = DIRECTORY_SEPARATOR . "unc_gallery";
 $UNC_GALLERY['photos'] = DIRECTORY_SEPARATOR . "photos";
 $UNC_GALLERY['thumbnails'] = DIRECTORY_SEPARATOR . "thumbs";
