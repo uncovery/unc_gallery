@@ -42,12 +42,13 @@ function unc_gallery_apply($atts = array()) {
     $D = $UNC_GALLERY['display'];
 
     if ($D['file']) {
+        $date_path = unc_tools_date_path($D['date']);
         if ($D['file'] == 'random') {
-            $file = unc_tools_file_random($D['date']);
+            $file = unc_tools_file_random($date_path);
         } else {
             $file = $D['file'];
         }
-        $out = unc_display_single_image($D['date'], $file, false);
+        $out = unc_display_single_image($date_path, $file, false);
     } else {
         $out = unc_gallery_display_page();
     }
