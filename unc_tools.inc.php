@@ -116,6 +116,9 @@ function unc_date_folder_delete($date_str) {
  * @return type
  */
 function unc_tools_folder_delete_empty($path) {
+    global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    
     if (!is_admin()) {
         return false;
     }
