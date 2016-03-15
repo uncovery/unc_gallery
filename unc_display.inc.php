@@ -308,6 +308,7 @@ function unc_display_folder_images() {
             . "</div>\n";
     }
 
+    $UNC_GALLERY['debug'][]['out'] = $out;
     if ($echo) {
         ob_clean();
         echo $out;
