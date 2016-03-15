@@ -16,6 +16,17 @@ $UNC_GALLERY['gallery_url'] = $UNC_GALLERY['base_url'] . DIRECTORY_SEPARATOR . "
 $UNC_GALLERY['settings_prefix'] = 'unc_gallery_';
 $UNC_GALLERY['display'] = array(); // ignore this
 
+// options for displays
+$UNC_GALLERY['keywords'] = array(
+    'type' => array(
+        'day' => array('datepicker', 'datelist'), // shows a single date's gallery, optional date picker
+        'image' => array('link'), // only one image, requires file addon unless random or latest
+        'icon' => array('link'), // only the icon of one image, requires file addon unless random or latest
+    ),
+    'date' => array('random', 'latest'),  // whichdate to chose
+    'file', // in case of image or icon type, you can chose one filename
+);
+
 // file & mime-types
 $UNC_GALLERY['thumbnail_ext'] = 'jpeg'; // do not change this, PNG has issues with IPCT
 $UNC_GALLERY['valid_filetypes'] = array(
