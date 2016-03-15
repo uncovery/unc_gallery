@@ -355,6 +355,16 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     $new_image = imagecreatetruecolor($new_width, $new_height);
     imagecopyresized($new_image, $old_image, 0, 0, 0, 0, $new_width, $new_height, $original_width, $original_height);
     $img_generator($new_image, $target_file_path);
+
+    // get original file ipct
+    $source_ipct_obj = new IPTC($image_file_path);
+    $ipct_date = $source_ipct_obj->getValue(IPTC_CREATED_DATE); //  '20160220',
+    $ipct_time = $source_ipct_obj->getValue(IPTC_CREATED_TIME); //  '235834',
+    // write IPICT Date:
+    $taget_ipct_obj = new IPTC($target_file_path);
+    $taget_ipct_obj->setValue(IPTC_CREATED_DATE, $ipct_date);
+    $taget_ipct_obj->setValue(IPTC_CREATED_TIME, $ipct_time);
+
     imagedestroy($new_image); // free up the memory
     return true;
 }
