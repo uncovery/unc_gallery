@@ -25,7 +25,7 @@ function unc_gallery_apply($atts = array()) {
 
     unc_gallery_add_css_and_js();
 
-    unc_gallery_display_var_init();
+    unc_gallery_display_var_init($atts);
 
     $D = $UNC_GALLERY['display'];
 
