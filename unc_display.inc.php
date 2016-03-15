@@ -273,7 +273,8 @@ function unc_display_folder_images() {
             continue;
         }
         if ($file_name != '.' && $file_name != '..') {
-            $file_date = unc_tools_image_exif_date($date_path, $file_name);
+            $file_path = unc_tools_image_path($date_path, $file_name);
+            $file_date = unc_tools_image_date($file_path);
             $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
             $file_stamp = $dtime->getTimestamp();
             // range
@@ -334,7 +335,8 @@ function unc_display_single_image($date_path, $file_name, $show_thumb, $file_dat
     }
 
     if (!$file_date) {
-        $file_date = unc_tools_image_exif_date($date_path, $file_name);
+        $file_path = unc_tools_image_path($date_path, $file_name);
+        $file_date = unc_tools_image_date($file_path);
     }
 
     $date_str = str_replace(DIRECTORY_SEPARATOR, "-", $date_path);
