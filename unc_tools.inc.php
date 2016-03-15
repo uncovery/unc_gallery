@@ -378,6 +378,7 @@ function unc_tools_image_ipct_date_write($file_path, $date_str) {
     $time_pattern = '$4$5$6';
     $ipct_time = preg_replace($search_pattern, $time_pattern, $date_str);
 
+    XMPP_ERROR_trace("wirting IPCT", "$ipct_date / $ipct_time");
     // write IPICT Date / time
     $taget_ipct_obj = new IPTC($file_path);
     $taget_ipct_obj->setValue(IPTC_CREATED_DATE, $ipct_date);
