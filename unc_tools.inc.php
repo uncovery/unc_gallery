@@ -467,7 +467,7 @@ function unc_tools_image_delete() {
             echo "File name $path could not be found!";
         }
     }
-    unc_display_folder_images();
+    unc_display_ajax_folder();
 }
 
 function unc_tools_filename_validate($file_name) {
