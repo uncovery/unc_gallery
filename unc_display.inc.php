@@ -258,7 +258,6 @@ function unc_gallery_display_page() {
             <span style=\"clear:both;\"></span>";
     }
     // remove the page tag from the original content and insert the new content
-    XMPP_ERROR_trigger('check');
     return $out;
 }
 
