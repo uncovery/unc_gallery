@@ -184,6 +184,7 @@ function unc_gallery_display_var_init($atts = array()) {
 
     $UNC_GALLERY['display']['file'] = unc_tools_filename_validate($a['file']);
     $UNC_GALLERY['debug'][][__FUNCTION__] = 'completed!';
+    return true;
 }
 
 function unc_gallery_display_page() {
