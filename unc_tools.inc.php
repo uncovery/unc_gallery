@@ -323,10 +323,12 @@ function unc_tools_image_path($date_path, $file_name) {
 function unc_tools_image_date($file_path) {
     $exif = unc_tools_image_exif_date($file_path);
     if (!$exif) {
+        XMPP_ERROR_trace("image date check", "exif failed, getting ipct");
         $ipct = unc_tools_image_ipct_date($file_path);
         if ($ipct) {
             return $ipct;
         } else {
+            XMPP_ERROR_trace("image date check", "ipct failed, bail!");
             return false;
         }
     } else {
