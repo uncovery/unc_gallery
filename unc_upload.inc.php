@@ -347,9 +347,14 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     // get image extension from MIME type
     $image_ext = $img_types[$arr_image_details[2]];
 
+
+
     // set the function names for processing
     $img_generator = "Image" . $extension;
     $imgcreatefrom = "ImageCreateFrom" . $image_ext;
+
+    $UNC_GALLERY['debug'][]['$img_generator'] = $img_generator;
+    $UNC_GALLERY['debug'][]['$imgcreatefrom'] = $imgcreatefrom;
 
     // get original file date
     $file_date = unc_tools_image_date($image_file_path);
