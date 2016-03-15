@@ -39,10 +39,7 @@ function unc_gallery_apply($atts = array()) {
     $check = unc_gallery_display_var_init($atts);
     if ($check) {
         return unc_gallery_display_page();
-    } else {
-        echo "error!";
     }
-    XMPP_ERROR_trigger('check');
 }
 
 /**
@@ -183,7 +180,6 @@ function unc_gallery_display_var_init($atts = array()) {
     }
 
     $UNC_GALLERY['display']['file'] = unc_tools_filename_validate($a['file']);
-    $UNC_GALLERY['debug'][][__FUNCTION__] = 'completed!';
     return true;
 }
 
