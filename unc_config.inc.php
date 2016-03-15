@@ -35,6 +35,7 @@ $UNC_GALLERY['valid_filetypes'] = array(
     "image/png" => 'png',
 );
 
+// This is used to automatically / dynamically create the settings menu
 $UNC_GALLERY['user_settings'] = array(
     'thumbnail_height' => array(
         'help' => 'The desired thumbnail height in pixels. Applies only for new uploads',
