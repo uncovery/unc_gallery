@@ -325,9 +325,9 @@ function unc_tools_image_date($file_path) {
     if (!$exif) {
         $ipct = unc_tools_image_ipct_date($file_path);
         if ($ipct) {
-            return false;
-        } else {
             return $ipct;
+        } else {
+            return false;
         }
     } else {
         return $exif;
