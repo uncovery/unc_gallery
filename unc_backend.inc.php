@@ -129,8 +129,9 @@ function unc_gallery_admin_settings() {
 }
 
 function unc_gallery_admin_rebuild_thumbs() {
+    return;
     // delete all thumbnails
-    unc_gallery_recurse_files($thumb_folder, 'unlink', 'rmdir');
+    //unc_gallery_recurse_files($thumb_folder, 'unlink', 'rmdir');
 
     // iterate all image folders
     unc_tools_recurse_folders($photo_folder);
