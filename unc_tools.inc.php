@@ -370,6 +370,7 @@ function unc_tools_image_ipct_date($file_path) {
     $ipct_obj = new IPTC($file_path);
     $ipct_date = $ipct_obj->getValue(IPTC_CREATED_DATE); //  '20160220',
     $ipct_time = $ipct_obj->getValue(IPTC_CREATED_TIME); //  '235834',
+    $UNC_GALLERY['debug'][]["IPCT Dump"] = $ipct_obj->dump();
     if (strlen($ipct_date . $ipct_time) != 14) {
         return false;
     }
