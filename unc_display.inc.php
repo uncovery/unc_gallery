@@ -36,12 +36,19 @@ function unc_gallery_apply($atts = array()) {
         } else if ($D['file'] == 'random') {
             // get a random filename for the date
         }
+    } else {
+        $out = unc_gallery_display_page();
+        return $out;
     }
-
-    $out = unc_gallery_display_page();
-    return $out;
 }
 
+/**
+ * Process and validate $UNC_GALLERY['display'] settings
+ *
+ * @global type $UNC_GALLERY
+ * @param type $atts
+ * @return type
+ */
 function unc_gallery_display_var_init($atts = array()) {
     global $UNC_GALLERY;
     $a = shortcode_atts( array(
@@ -227,11 +234,15 @@ function unc_gallery_display_page() {
     return $out;
 }
 
+/**
+ * displays folder images while getting values from AJAX
+ *
+ * @return type
+ */
 function unc_display_ajax_folder() {
     // we get the date from the GET value
     $date_str = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
     unc_gallery_display_var_init(array('date' => $date_str, 'echo' => true));
-    XMPP_ERROR_trigger('ajax');
     return unc_display_folder_images();
 }
 
