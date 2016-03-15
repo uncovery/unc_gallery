@@ -343,11 +343,11 @@ function unc_tools_image_ipct_date($date_path, $file_name) {
     $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
     $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
     $ipct_obj = new IPTC($file_path);
-    $ipict_date = $ipct_obj->getValue(IPTC_CREATED_DATE); //  '20160220',
-    $ipict_time = $ipct_obj->getValue(IPTC_CREATED_TIME); //  '235834',
+    $ipct_date = $ipct_obj->getValue(IPTC_CREATED_DATE); //  '20160220',
+    $ipct_time = $ipct_obj->getValue(IPTC_CREATED_TIME); //  '235834',
     $search_pattern = '/(\d\d\d\d)(\d\d)(\d\d) (\d\d)(\d\d)(\d\d)/';
     $replace_pattern = '$1-$2-$3 $4:$5:$6';
-    $fixed_date = preg_replace($search_pattern, $replace_pattern, "$ipict_date $ipict_time");
+    $fixed_date = preg_replace($search_pattern, $replace_pattern, "$ipct_date $ipct_time");
     return $fixed_date;
 }
 
