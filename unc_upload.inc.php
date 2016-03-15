@@ -371,7 +371,6 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
         $new_file_date = unc_tools_image_date($target_file_path);
         $UNC_GALLERY['debug'][]["check IPCT result"] = $new_file_date;
     }
-    XMPP_ERROR_trigger("check");
 
     imagedestroy($new_image); // free up the memory
     return true;
