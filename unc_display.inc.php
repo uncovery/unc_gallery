@@ -54,6 +54,7 @@ function unc_gallery_display_var_init($atts = array()) {
         'end_time' => false, // time of the day when we stop displaying this date
         'description' => false, // description for the whole day
         'details' => false, // description for individual files
+        'echo' => false, // internal variable, used by AJAX call
     ), $atts);
 
     $type = $a['type'];
@@ -226,7 +227,9 @@ function unc_gallery_display_page() {
 }
 
 function unc_display_ajax_folder() {
-    unc_gallery_display_var_init();
+    // we get the date from the GET value
+    $date_str = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
+    unc_gallery_display_var_init(array('date' => $date_str, 'echo' => true));
     XMPP_ERROR_trigger('ajax');
     return unc_display_folder_images();
 }
@@ -242,13 +245,8 @@ function unc_display_folder_images() {
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
 
     $D = $UNC_GALLERY['display'];
-    $echo = false;
-    if (!$D['date']) {
-        $echo = true;
-        $date_str = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
-    } else {
-        $date_str = $D['date'];
-    }
+
+    $date_str = $D['date'];
     $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
 
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
@@ -308,8 +306,7 @@ function unc_display_folder_images() {
             . "</div>\n";
     }
 
-    $UNC_GALLERY['debug'][]['out'] = $out;
-    if ($echo) {
+    if ($D['echo']) {
         ob_clean();
         echo $out;
         wp_die();
