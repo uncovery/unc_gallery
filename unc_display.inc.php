@@ -68,6 +68,7 @@ function unc_gallery_display_var_init($atts = array()) {
         $options = explode(" ", $a['options']);
     }
     $UNC_GALLERY['options'] = $options;
+    $UNC_GALLERY['echo'] = $a['echo'];
 
     // icon or image?
     $thumb = false;
