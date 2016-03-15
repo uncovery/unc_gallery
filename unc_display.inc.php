@@ -227,6 +227,7 @@ function unc_gallery_display_page() {
 
 function unc_display_ajax_folder() {
     unc_gallery_display_var_init();
+    XMPP_ERROR_trigger('ajax');
     return unc_display_folder_images();
 }
 
