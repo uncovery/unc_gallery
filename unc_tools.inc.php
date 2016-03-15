@@ -517,6 +517,8 @@ class iptc {
 
 
     function iptc($filename) {
+        global $UNC_GALLERY;
+        $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
         $info = false;
         getimagesize($filename, $info);
         $this->hasmeta = isset($info["APP13"]);
