@@ -151,14 +151,14 @@ function unc_gallery_display_var_init($atts = array()) {
 
     // options
     if (!isset($keywords['type'][$type])) {
-        echo $error = unc_tools_errormsg("You have an invalid type value in your tag."
+        echo unc_tools_errormsg("You have an invalid type value in your tag."
             . "<br>Valid options are: " . implode(", ", $keywords['type']));
         return false;
     }
     $possible_type_options = $keywords['type'][$type];
     foreach ($UNC_GALLERY['options'] as $option) {
         if (!in_array($option, $possible_type_options)) {
-            echo $error = unc_tools_errormsg("You have an invalid option for the display type \"option\" in your tag."
+            echo unc_tools_errormsg("You have an invalid option for the display type \"option\" in your tag."
                 . "<br>Valid options are: " . implode(", ", $keywords['type'][$type]));
             return false;
         }
