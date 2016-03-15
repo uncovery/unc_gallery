@@ -345,7 +345,7 @@ function unc_display_single_image($date_path, $file_name, $show_thumb, $file_dat
     } else {
         $description_full = "File Name: $file_name Date: $file_date";
     }
-    $out = "        <a href=\"$photo_url\" class=\"thickbox\" title=\"$description_full / IPCT: $file_date2\" rel=\"gallery_$date_str\">\n"
+    $out = "        <a href=\"$photo_url\" class=\"thickbox\" title=\"$description_full\" rel=\"gallery_$date_str\">\n"
          . "            <img alt=\"$file_name\" src=\"$shown_image\">\n"
          . "        </a>\n";
     if (is_admin()) {
