@@ -355,6 +355,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     $source_ipct_obj = new IPTC($image_file_path);
     $ipct_date = $source_ipct_obj->getValue(IPTC_CREATED_DATE); //  '20160220',
     $ipct_time = $source_ipct_obj->getValue(IPTC_CREATED_TIME); //  '235834',
+    XMPP_ERROR_trace("Read IPCT", $ipct_date . $ipct_time);
 
     $old_image = $imgcreatefrom($image_file_path);
     $new_image = imagecreatetruecolor($new_width, $new_height);
@@ -367,6 +368,11 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     $taget_ipct_obj->setValue(IPTC_CREATED_DATE, $ipct_date);
     $taget_ipct_obj->setValue(IPTC_CREATED_TIME, $ipct_time);
 
+    // check
+    $new_ipct_date = $taget_ipct_obj->getValue(IPTC_CREATED_DATE);
+    XMPP_ERROR_trace("Read IPCT", $new_ipct_date);
+
     imagedestroy($new_image); // free up the memory
+    XMPP_ERROR_trigger('test');
     return true;
 }
