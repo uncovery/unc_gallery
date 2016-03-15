@@ -467,7 +467,7 @@ function unc_tools_image_delete() {
             echo "File name $path could not be found!";
         }
     }
-    unc_tools_folder_delete_empty($UNC_GALLERY['upload']);
+    unc_tools_folder_delete_empty(WP_CONTENT_DIR . $UNC_GALLERY['upload']);
     unc_display_ajax_folder();
 }
 
