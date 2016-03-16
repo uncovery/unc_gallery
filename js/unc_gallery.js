@@ -61,6 +61,7 @@ function delete_image(file_name, rel_date) {
 }
 
 function unc_gallery_generic_ajax(action, target_div, confirmation_message) {
+    jQuery('#' + target_div).html('');
     if (confirmation_message) {
         var c = confirm(confirmation_message);
     }
@@ -77,6 +78,8 @@ function unc_gallery_generic_ajax(action, target_div, confirmation_message) {
 
             }
         });
+    } else {
+        jQuery('#' + target_div).html('Action cancelled!');
     }
 }
 
