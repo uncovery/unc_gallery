@@ -13,7 +13,6 @@ The plugin has the following base options:
 
 * Time shift: If photos are generally also taken after midnight, a time shift
 can be applied to all photos to make sure they do not appear as photos of the next day.
-
 * Photo and Thumbnail resizing: The admin can choose the quality and size of thumbnails.
 
 There are several additional options beyond this basic format:
