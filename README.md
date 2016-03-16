@@ -88,7 +88,7 @@ can be used in the details.
 
 #### `start_time="20:32:00" end_time="21:40:29"`
 
-This allows you to show only a certain timespan. You can use this dynamically.
+This allows you to show only images from a certain time span. You can use this dynamically.
 for example, only using the `end_time` will hide images after that time. Only
 using the start time will hide all images before that time. Using both, and if
 the start time is earlier than the end time, it will show only the items between
