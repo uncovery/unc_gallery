@@ -222,6 +222,9 @@ function unc_gallery_display_page() {
     }
 
     $date_path = unc_tools_date_path($D['date']);
+    if (!$date_path) {
+        return;
+    }
 
     if ($D['type'] == 'image' || $D['type'] == 'thumb') {
         $thumb = false;
