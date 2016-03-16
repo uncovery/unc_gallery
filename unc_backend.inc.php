@@ -145,12 +145,7 @@ function unc_gallery_admin_settings() {
     echo "</div>\n";
 
     echo "<div id='tab5'>\n";
-    require_once(__DIR__ .  DIRECTORY_SEPARATOR . 'libraries' . DIRECTORY_SEPARATOR . 'Parsedown.php');
-
-    $markdown_docs = file_get_contents(__DIR__ .  DIRECTORY_SEPARATOR . 'README.md');
-    $markdown_fixed = str_replace('/images/', plugins_url( '/images/', __FILE__ ), $markdown_docs);
-    $Parsedown = new Parsedown();
-    echo $Parsedown->text($markdown_fixed);
+    echo unc_gallery_admin_show_documentation();
     echo "</div>\n";
 
     echo "</div>";
@@ -197,6 +192,23 @@ function unc_gallery_admin_maintenance() {
     return $out;
 }
 
+/**
+ * Show the documentation my parsing the README.md file through a markdown parser
+ * We are using https://github.com/erusev/parsedown
+ */
+function unc_gallery_admin_show_documentation() {
+    require_once(__DIR__ .  DIRECTORY_SEPARATOR . 'libraries' . DIRECTORY_SEPARATOR . 'Parsedown.php');
+
+    $markdown_docs = file_get_contents(__DIR__ .  DIRECTORY_SEPARATOR . 'README.md');
+    $markdown_fixed = str_replace('/images/', plugins_url( '/images/', __FILE__ ), $markdown_docs);
+    $Parsedown = new Parsedown();
+    echo $Parsedown->text($markdown_fixed);
+}
+
+/**
+ * function to re-build all thumbnails
+ * @global type $UNC_GALLERY
+ */
 function unc_gallery_admin_rebuild_thumbs() {
     global $UNC_GALLERY;
     ob_clean();
@@ -234,6 +246,10 @@ function unc_gallery_admin_rebuild_thumbs() {
     wp_die();
 }
 
+/**
+ * Function to delte all contents
+ * @global type $UNC_GALLERY
+ */
 function unc_gallery_admin_delete_everything() {
     global $UNC_GALLERY;
     ob_clean();
