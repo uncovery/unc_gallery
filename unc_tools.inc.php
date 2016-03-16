@@ -128,7 +128,7 @@ function unc_tools_folder_delete_empty($path) {
     foreach (glob($path . DIRECTORY_SEPARATOR . "*") as $file) {
         if (is_dir($file)) { // recurse lower directory
            if (!unc_tools_folder_delete_empty($file)) {
-               $empty=false;
+               $empty = false;
            }
         } else {
            $empty = false;
