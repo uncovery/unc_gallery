@@ -384,7 +384,7 @@ function unc_display_single_image($date_path, $file_name, $show_thumb, $file_dat
     } else {
         $description_full = "File Name: $file_name Date: $file_date";
     }
-    $out = "        <a href=\"$photo_url\" data-lightbox=\"gallery_$date_str\" title=\"$description_full\">\n"
+    $out = "        <a href=\"$photo_url\" data-lightbox=\"gallery_$date_str\" data-title=\"$description_full\" title=\"$description_full\">\n"
          . "            <img alt=\"$file_name\" src=\"$shown_image\">\n"
          . "        </a>\n";
     if (is_admin()) {
