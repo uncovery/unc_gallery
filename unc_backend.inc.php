@@ -205,8 +205,7 @@ function unc_gallery_admin_rebuild_thumbs() {
     // iterate all image folders
     $photo_folder = $dirPath . $UNC_GALLERY['photos'];
     $target_folders = unc_tools_recurse_folders($photo_folder);
-    var_dump($target_folders);
-    wp_die();
+
     // create thumbnaisl
     foreach ($target_folders as $date => $folder) {
         // construct the thumb folder where we put the thumbnails
