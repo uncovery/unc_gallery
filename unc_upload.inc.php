@@ -126,7 +126,7 @@ function unc_uploads_iterate_files() {
         // process one file
         $result_arr = unc_uploads_process_file($i, $overwrite);
         $date_str = $result_arr['date'];
-        $action = $result_arr['file'];
+        $action = $result_arr['action'];
         if (!$date_str) {
             $errors[] = $action;
         } else {
@@ -293,7 +293,7 @@ function unc_uploads_process_file($i, $overwrite) {
     // now make the thumbnail
     $check = unc_import_image_resize($F['tmp_name'][$i], $new_thumb_path, $UNC_GALLERY['thumbnail_height'], 'height', $UNC_GALLERY['thumbnail_ext'], $UNC_GALLERY['thumbnail_quality']);
     if (!$check) {
-        return array('date'=> false, 'action' => "Could not create the thumbnail!");
+        return array('date'=> false, 'action' => "Could not create the thumbnail for {$F['tmp_name'][$i]} / $new_thumb_path!");
     } else if (!$action) {
         $action = 'written';
     }
