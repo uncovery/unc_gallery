@@ -1,7 +1,7 @@
 # Uncovery Gallery
 A Wordpress-plugin that displays photo galleries.
 
-== General Info ==
+## General Info
 
 This plugin specializes in displaying photos of a certain date or a certain time
 of a single day. It takes away the need to handle each photo individually. The
@@ -16,7 +16,7 @@ they will disappear without errors from the whole page (unless they have been
 featured somewhere) and you can also re-upload photos and overwrite old ones in
 case you changed them without going through complicated admin pages.
 
-== Features ==
+## Features
 
 * Time shift: If photos are generally also taken after midnight, a time shift
 can be applied to all photos to make sure they do not appear as photos of the next day.
@@ -33,5 +33,10 @@ the first or latest
 * Descriptions: Whole days or individual photos can have specific description
 set in the short code
 
-== Shortcodes ==
+## Shortcodes
+
+`type="day|image|thumb"` This code can be omitted, "day" is used in that case.
+
+
+
 
