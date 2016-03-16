@@ -176,11 +176,11 @@ function unc_gallery_admin_display_images() {
  */
 function unc_gallery_admin_maintenance() {
     $out = '<h2>Maintenance</h2>
-        <button onclick="unc_gallery_generic_ajax(\'unc_gallery_thumbnails_rebuild\', \'rebuild_thumbs_result\', \'Are you sure?\nThis can take a while for the whole database!\')">
+        <button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_thumbnails_rebuild\', \'rebuild_thumbs_result\', \'Are you sure?\nThis can take a while for the whole database!\')">
             Rebuild Thumbnails
         </button> This will re-generate all thumbnails. Use this if after you changed the size of the thumbnails in the settings.<br>
         <div id="rebuild_thumbs_result"></div><br>
-        <button onclick="unc_gallery_generic_ajax(\'unc_gallery_delete_everything\', \'delete_all_result\', \'Are you sure?\nThis will delete ALL photos!\')">
+        <button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_delete_everything\', \'delete_all_result\', \'Are you sure?\nThis will delete ALL photos!\')">
             Delete all pictures
         </button> This will delete ALL images and thumbnails. Use with caution!<br>
         <div id="delete_all_result"></div><br>';
