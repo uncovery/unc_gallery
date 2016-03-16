@@ -187,7 +187,8 @@ function unc_array_iterate_compact($array, $path = '') {
  * @return array
  */
 function unc_gallery_recurse_files($base_folder, $file_function, $dir_function) {
-    global $TMP_FOLDERS;
+    global $TMP_FOLDERS, $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     // safety net
     if (strpos($base_folder, '.' . DIRECTORY_SEPARATOR)) {
         die("Error, recursive path! $base_folder");
@@ -212,7 +213,8 @@ function unc_gallery_recurse_files($base_folder, $file_function, $dir_function) 
  * @return type
  */
 function unc_tools_recurse_folders($base_folder) {
-    global $TMP_FOLDERS;
+    global $TMP_FOLDERS, $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     if (strpos($base_folder, '.' . DIRECTORY_SEPARATOR)) {
         die("Error, recursive path! $base_folder");
     }
@@ -241,6 +243,8 @@ function unc_tools_recurse_folders($base_folder) {
  */
 function unc_tools_date_latest() {
     global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
     $folders = unc_tools_recurse_folders($photo_folder);
     if (count($folders) == 1 && $folders[0] == $photo_folder) {
