@@ -90,6 +90,8 @@ function unc_gallery_admin_upload() {
  * @return boolean
  */
 function unc_uploads_iterate_files() {
+    global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     // get the amount of files
     if (empty($_FILES) && empty($_POST) && isset($_SERVER['REQUEST_METHOD']) && strtolower($_SERVER['REQUEST_METHOD']) == 'post'){ //catch file overload error...
             $postMax = ini_get('post_max_size'); //grab the size limits...
@@ -161,6 +163,7 @@ function unc_uploads_iterate_files() {
  */
 function unc_uploads_process_file($i, $overwrite) {
     global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     $action = false;
     //$_FILES(1) {
     //    ["userImage"]=> array(5) {
