@@ -361,18 +361,17 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     $file_date = unc_tools_image_date($image_file_path);
     $UNC_GALLERY['debug'][]["Read image date result"] = $file_date;
 
-    $old_image = $imgcreatefrom($image_file_path);
+
     $new_image = imagecreatetruecolor($new_width, $new_height); // create a blank canvas
-    $resize_check = imagecopyresized($new_image, $old_image, 0, 0, 0, 0, $new_width, $new_height, $original_width, $original_height);
-    if (!$resize_check) {
+    $old_image = $imgcreatefrom($image_file_path); // take the old image to memort
+    $resize_check = imagecopyresized($new_image, $old_image, 0, 0, 0, 0, $new_width, $new_height, $original_width, $original_height); // resize it
+    if (!$resize_check) { // ;et's check if the file was resized
         echo "Could not resize image to dimensions $new_width, $new_height, $original_width, $original_height!";
         wp_die();
     }
 
     $image_check = $img_generator($new_image, $target_file_path, $quality);
-
-    // let's check if the file was created:
-    if (!$image_check || !file_exists($target_file_path)) {
+    if (!$image_check || !file_exists($target_file_path)) { // let's check if the file was created
         echo "File $target_file_path was not created through $img_generator at quality $quality!";
         wp_die();
     }
