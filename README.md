@@ -42,8 +42,39 @@ inside the brackets to modify the display.
 
 ### Additional items
 
-####`type="day|image|thumb"`
+#### `type="day|image|thumb"`
 
 You can user either `day`, `image` or `thumb` as type.
 `day` will display all images of that day, `image` a single image in full size
-and `thumb` the image with a link to the large version.
+and `thumb` the image with a link to the large version. Default is `day` in case
+the type is not used.
+
+#### `date="latest|random|2016-10-30"`
+
+You can use either `latest`, `random` or a date in the format `yyyy-mm-dd`. If
+the `date` is not used, it will use the latest date.
+
+#### `file="latest|random|2016-10-30"`
+
+The file setting is only active if you use `image` or `thumb` as a `type`. You
+can use `latest`, `random` or the filename such as `img_1233.jpg` here. If you
+use `image` or `thumb` as a `type` but omit the `file` tag, it will display the
+latest by default.
+
+#### `description="some text"`
+
+This will show a description for every image that does not have a `details` tag
+set. No double quotes `"` or line breaks can be used in the details.
+
+#### `featured="filename.jpg"`
+
+This will, in case you did not use `image` or `thumb` as a `type`, show the image
+used here as a featured image for the date, at the left edge and larger. It will
+not appear again among the other, smaller images.
+
+#### `details="IMG_9401.jpg:Some text;IMG_9341.jpg:Some more text"`
+
+This allows you to display a description for specific images. The format for one
+image is `filename.jpg:Description;`. Make sure that the last description does
+not have NOT have a colon `;` in the end. Also, no double quotes `"` or line breaks
+can be used in the details.
