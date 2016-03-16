@@ -66,7 +66,7 @@ latest by default.
 This will show a description for every image that does not have a `details` tag
 set. No double quotes `"` or line breaks can be used in the details. Example of
 a description set to "Don't panic":
-![Sample screenshot of "Don't panic" description](/images/screenshot-5.png)
+![Sample screenshot of "Don't panic" description](/images/screenshot-6.png)
 
 #### `featured="filename.jpg"`
 
