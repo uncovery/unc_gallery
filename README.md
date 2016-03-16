@@ -9,6 +9,11 @@ sorted by date.
 The galleries are then displayed by inserting a short code into any wordpress element
 such as posts or pages in the basic format [unc_gallery date="2006-03-30"].
 
+One key advantage of this system is that you can remove individual photos and
+they will disappear without errors from the whole page (unless they have been
+featured somewhere) and you can also re-upload photos and overwrite old ones in
+case you changed them without going through complicated admin pages.
+
 The plugin has the following base options:
 
 * Time shift: If photos are generally also taken after midnight, a time shift
