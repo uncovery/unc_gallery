@@ -35,8 +35,15 @@ set in the short code
 
 ## Shortcodes
 
-`type="day|image|thumb"` This code can be omitted, "day" is used in that case.
+### Basic minimum
 
+`[unc_gallery]` This will display the full, latest day. Add additional codes
+inside the brackets to modify the display.
 
+### Additional items
 
+####`type="day|image|thumb"`
 
+You can user either `day`, `image` or `thumb` as type.
+`day` will display all images of that day, `image` a single image in full size
+and `thumb` the image with a link to the large version.
