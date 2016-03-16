@@ -154,15 +154,17 @@ function unc_gallery_admin_settings() {
 
     echo "</div>";
 }
-
+/**
+ * Displays a dilogue to perform maintenance operations
+ * @return string
+ */
 function unc_gallery_admin_maintenance() {
-    $out = "<h2>Uncovery Gallery: Maintenance</h2>\n"
-        . '<button onclick="">Rebuild Thumbnails</button>'
-        . '<button onclick="">Delete all pictures</button>';
-
-
+    $out = '<h2>Uncovery Gallery: Maintenance</h2>\n
+        <button onclick="unc_gallery_generic_ajax(\'unc_gallery_thumbnails_rebuild\', \'rebuild_thumbs_result\', \'Are you sure?\nThis can take a while for the whole database!\')">Rebuild Thumbnails</button><br>
+        <div class="rebuild_thumbs_result></div>
+        <button onclick="unc_gallery_generic_ajax(\'unc_gallery_delete_everything\', \'delete_all_result\', \'Are you sure?\nThis will delete ALL photos!\')">Delete all pictures</button><br>
+        <div class="delete_all_result></div>';
     return $out;
-
 }
 
 function unc_gallery_admin_rebuild_thumbs() {
