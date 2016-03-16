@@ -28,7 +28,7 @@ function unc_gallery_admin_init() {
 
     add_settings_section(
         'unc_gallery_pluginPage_section',
-        __('Uncovery Gallery Settings', 'wordpress'),
+        __('Settings', 'wordpress'),
         'unc_gallery_settings_section_callback',
         'unc_gallery_settings_page' // need to match menu_slug
     );
@@ -104,6 +104,7 @@ function unc_gallery_admin_settings() {
     unc_gallery_add_css_and_js();
     remove_filter('the_content', 'wpautop');
     echo '<div class="wrap">
+    <h2>Uncovery Gallery</h2>
     <script type="text/javascript">
         jQuery(document).ready(function() {
         // Initialize jquery-ui tabs
