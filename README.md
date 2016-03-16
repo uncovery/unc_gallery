@@ -64,13 +64,16 @@ latest by default.
 #### `description="some text"`
 
 This will show a description for every image that does not have a `details` tag
-set. No double quotes `"` or line breaks can be used in the details.
+set. No double quotes `"` or line breaks can be used in the details. Example of
+a description set to "Don't panic":
+![Sample screenshot of "Don't panic" description](/images/screenshot-5.png)
 
 #### `featured="filename.jpg"`
 
 This will, in case you did not use `image` or `thumb` as a `type`, show the image
 used here as a featured image for the date, at the left edge and larger. It will
 not appear again among the other, smaller images.
+Sample screenshot of a featured image:
 ![Sample screenshot of a featured image](/images/screenshot-5.png)
 
 #### `details="IMG_9401.jpg:Some text;IMG_9341.jpg:Some more text"`
