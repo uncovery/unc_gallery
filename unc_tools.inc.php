@@ -344,9 +344,8 @@ function unc_tools_date_validate($date) {
  */
 function unc_tools_folder_date($folder) {
     $path_arr = explode(DIRECTORY_SEPARATOR, $folder);
-    $folder_count = count($path_arr);
     // get last 3 elements
-    $new_date_arr = array($path_arr[$folder_count - 3], $path_arr[$folder_count - 2], $path_arr[$folder_count - 1]);
+    $new_date_arr = array_slice($path_arr, -3, 3);
     $new_date_str = implode("-", $new_date_arr);
     return $new_date_str;
 }
