@@ -298,7 +298,7 @@ function unc_uploads_process_file($i, $overwrite) {
     } else if (!$action) {
         $action = 'written';
     }
-    return array('date'=> $date_str, 'action' => $action);
+    return array('date'=> $date_str, 'action' => $target_filename . ": " . $action);
 }
 
 /**
