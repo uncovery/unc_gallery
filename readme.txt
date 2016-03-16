@@ -1,6 +1,5 @@
 === Uncovery Gallery ===
 Contributors: uncovery
-Donate link: http://example.com/
 Tags: gallery, photos, photo
 Requires at least: 4.4.2
 Tested up to: 4.4.2
@@ -12,25 +11,20 @@ Creates date-based photo galleries.
 
 == Description ==
 
-This Plugin specializes in photo series that are shot at a certain date or time.
-It allows bulk upload and automatic chronological display of photos so that not
-every photo needs to be handled individually.
+This plugin specializes in displaying photos of a certain date or a certain time
+of a single day. It takes away the need to handle each photo individually. The
+admin can simply upload all images in a batch and they will be automatically
+sorted by date.
 
-Uncovery Gallery allows various ways to display galleries on your wordpress site via shortcodes in the format of
-[unc_gallery ... ]
+The galleries are then displayed by inserting a short code into any wordpress element
+such as posts or pages in the basic format [unc_gallery date="2006-03-30"].
 
 
 == Installation ==
 
 1. Upload the plugin files to the `/wp-content/plugins/unc_gallery` directory, or install the plugin through the WordPress plugins screen directly.
 1. Activate the plugin through the 'Plugins' screen in WordPress
-1. Use the Settings->Uncovery Gallery screen to configure it and upload photos
-
-== Frequently Asked Questions ==
-
-= A question that someone might have =
-
-An answer to that question.
+1. Use the Uncovery Gallery screen to configure it and upload photos
 
 == Screenshots ==
 
@@ -42,6 +36,6 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 
 == Changelog ==
 
-= 0.1 =
+= 1.0 =
 
 Initial Release
