@@ -231,10 +231,10 @@ function unc_gallery_display_page() {
         if ($D['type'] == 'thumb') {
             $thumb = true;
         }
-        if ($D['file'] == 'random') {
-            $file = unc_tools_file_random($date_path);
-        } else if ($D['file'] == 'latest') {
+        if (!isset($D['file']) || $D['file'] == 'latest') {
             $file = unc_tools_file_latest($date_path);
+        } else if ($D['file'] == 'random') {
+            $file = unc_tools_file_random($date_path);
         } else {
             $file = $D['file'];
         }
