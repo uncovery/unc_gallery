@@ -57,6 +57,26 @@ function delete_image(file_name, rel_date) {
     });
 }
 
+function unc_gallery_generic_ajax(action, target_div, confirmation_message) {
+    if (confirmation_message) {
+        var c = confirm(confirmation_message);
+    }
+    if (c) {
+        jQuery.ajax({
+            url: ajaxurl,
+            method: 'GET',
+            dataType: 'text',
+            data: {action: action},
+            complete: function (response) {
+                jQuery('#' + target_div).html(response.responseText);
+            },
+            error: function () {
+
+            }
+        });
+    }
+}
+
 // this parses the current iterated date and checks if it's the current displayed
 function formatCurrentDate(dateYmd) {
     var query = window.location.search.substring(1);
