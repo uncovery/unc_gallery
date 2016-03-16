@@ -101,16 +101,16 @@ function unc_uploads_iterate_files() {
     $ini_max = ini_get('max_file_uploads');
 
     if ($count < 1) {
-        $out = "No images found to upload";
-        return $out;
+        echo "No images found to upload";
+        wp_die();
     }
 
     if ($count >= $ini_max) {
-        $out = "Your server does not allow you to upload more than $ini_max files, you picked $count!";
-        return $out;
+        echo "Your server does not allow you to upload more than $ini_max files, you picked $count!";
+        wp_die();
     }
 
-    $out = "Processing $count image(s)....<br>";
+    echo "Processing $count image(s)....<br>";
 
     // overwrite files?
     $overwrite = false;
@@ -146,9 +146,8 @@ function unc_uploads_iterate_files() {
     foreach ($errors as $error) {
          echo "$error<br>\n";
     }
-    $out .= "<br>All images processed!";
+    echo "<br>All images processed!";
     // ob_clean();
-    echo $out;
     wp_die();
 }
 
