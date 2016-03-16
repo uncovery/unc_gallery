@@ -370,7 +370,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
         wp_die();
     }
 
-    $image_check = $img_generator($new_image, $target_file_path);
+    $image_check = $img_generator($new_image, $target_file_path, $quality);
     if (!$image_check || !file_exists($target_file_path)) { // let's check if the file was created
         echo "File $target_file_path was not created through $img_generator at quality $quality!";
         wp_die();
