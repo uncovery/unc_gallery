@@ -68,7 +68,7 @@ function unc_gallery_admin_init() {
  * @param type $A
  */
 function unc_gallery_setting_text_field_render($A) {
-    $out = "<input type='text' name='{$A['setting']}' value='{$A['value']}'> {$A['help']}<br>\n<strong>Default:</strong> '{$A['default']}'\n";
+    $out = "<input type='text' name='{$A['setting']}' value='{$A['value']}'> {$A['help']} <strong>Default:</strong> '{$A['default']}'\n";
     echo $out;
 }
 
@@ -85,7 +85,7 @@ function unc_gallery_setting_drodown_render($A) {
         }
         $out .= "<option value=\"$option\" $sel>$text</option>\n";
     }
-    $out .= "</select> {$A['help']}<br>\n<strong>Default:</strong> '{$A['options'][$A['default']]}'\n";
+    $out .= "</select> {$A['help']} <strong>Default:</strong> '{$A['options'][$A['default']]}'\n";
     echo $out;
 }
 
