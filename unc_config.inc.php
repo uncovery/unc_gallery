@@ -32,9 +32,9 @@ $UNC_GALLERY['keywords'] = array(
 // file & mime-types
 $UNC_GALLERY['thumbnail_ext'] = 'jpeg'; // do not change this, PNG has issues with IPCT
 $UNC_GALLERY['valid_filetypes'] = array(
-    "image/gif" => 'gif',
     "image/jpeg" => 'jpeg',
-    "image/png" => 'png',
+    // "image/png" => 'png',
+    // "image/gif" => 'gif',
 );
 
 // This is used to automatically / dynamically create the settings menu
