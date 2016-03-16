@@ -40,7 +40,7 @@ $UNC_GALLERY['valid_filetypes'] = array(
 // This is used to automatically / dynamically create the settings menu
 $UNC_GALLERY['user_settings'] = array(
     'thumbnail_height' => array(
-        'help' => 'The desired thumbnail height in pixels. Applies only for new uploads',
+        'help' => 'The desired thumbnail height in pixels. Applies only for new uploads. Use the "Rebuild Thumbnails" function in the "Maintenance" tab to re-generate all tumbnails after changing this.',
         'default' => '120',
         'type' => 'text',
     ),
