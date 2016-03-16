@@ -85,11 +85,19 @@ function unc_gallery_admin_init() {
     }
 }
 
+/**
+ * Generic function to render a text input for WP settings dialogues
+ * @param type $A
+ */
 function unc_gallery_setting_text_field_render($A) {
     $out = "<input type='text' name='{$A['setting']}' value='{$A['value']}'> {$A['help']}\n";
     echo $out;
 }
 
+/**
+ * Generic function to render a dropdown input for WP settings dialogues
+ * @param type $A
+ */
 function unc_gallery_setting_drodown_render($A) {
     $out = "<select name=\"{$A['setting']}\">\n";
     foreach ($A['options'] as $option => $text) {
@@ -103,7 +111,7 @@ function unc_gallery_setting_drodown_render($A) {
     echo $out;
 }
 
-function unc_gallery_settings_section_callback(  ) {
+function unc_gallery_settings_section_callback() {
     echo __( 'Basic Settings', 'wordpress' );
 }
 
@@ -162,7 +170,7 @@ function unc_gallery_admin_maintenance() {
     $out = '<h2>Uncovery Gallery: Maintenance</h2>
         <button onclick="unc_gallery_generic_ajax(\'unc_gallery_thumbnails_rebuild\', \'rebuild_thumbs_result\', \'Are you sure?\nThis can take a while for the whole database!\')">
             Rebuild Thumbnails
-        </button> This will re-generate all thumbnails. USe this if after you changed the size of the thumbnails in the settings.<br>
+        </button> This will re-generate all thumbnails. Use this if after you changed the size of the thumbnails in the settings.<br>
         <div id="rebuild_thumbs_result"></div><br>
         <button onclick="unc_gallery_generic_ajax(\'unc_gallery_delete_everything\', \'delete_all_result\', \'Are you sure?\nThis will delete ALL photos!\')">
             Delete all pictures
