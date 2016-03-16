@@ -6,7 +6,7 @@ of a single day. It takes away the need to handle each photo individually. The
 admin can simply upload all images in a batch and they will be automatically
 sorted by date.
 
-The galleries are then created by inserting a short code into any wordpress element
+The galleries are then displayed by inserting a short code into any wordpress element
 such as posts or pages in the basic format [unc_gallery date="2006-03-30"].
 
 The plugin has the following base options:
