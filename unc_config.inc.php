@@ -44,6 +44,11 @@ $UNC_GALLERY['user_settings'] = array(
         'default' => '120',
         'type' => 'text',
     ),
+    'thumbnail_quality' => array(
+        'help' => 'The desired thumbnail quality. Has to be a number between 1 (worst, smallest file) to 100 (best, largest file)',
+        'default' => '60',
+        'type' => 'text',
+    ),
     'picture_long_edge' => array(
         'help' => 'Shrink the full-size images so that the long edge will be this long (in pixels, 0 for disable)',
         'default' => '0',
