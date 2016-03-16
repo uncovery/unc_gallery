@@ -64,8 +64,9 @@ latest by default.
 #### `description="some text"`
 
 This will show a description for every image that does not have a `details` tag
-set. No double quotes `"` or line breaks can be used in the details. Example of
-a description set to "Don't panic":
+set. No double quotes `"` or line breaks can be used in the details. All images
+automatically have the description of the filename and the date. The above set
+description is added to it if set. Example of a description set to "Don't panic":
 
 ![Sample screenshot of "Don't panic" description](/images/screenshot-6.png)
 
