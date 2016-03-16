@@ -269,7 +269,7 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // finally, move the file
     if ($UNC_GALLERY['picture_long_edge'] > 0) {
-        $resize_check = unc_import_image_resize($F['tmp_name'][$i], $new_path, $UNC_GALLERY['picture_long_edge'], 'long', $extension);
+        $resize_check = unc_import_image_resize($F['tmp_name'][$i], $new_path, $UNC_GALLERY['picture_long_edge'], 'long', $extension, $UNC_GALLERY['image_quality']);
         if (!$resize_check) {
             echo unc_tools_errormsg("Could not resize {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path");
             return false;
