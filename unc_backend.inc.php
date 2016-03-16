@@ -168,11 +168,14 @@ function unc_gallery_admin_maintenance() {
 }
 
 function unc_gallery_admin_rebuild_thumbs() {
+    ob_clean();
     if (!is_admin()) {
-        ob_clean();
+
         echo "You are not admin!";
-        wp_die();
+
     }
+    echo 'success';
+    /*
     // delete all thumbnails
     unc_gallery_recurse_files($thumb_folder, 'unlink', 'rmdir');
 
@@ -187,9 +190,11 @@ function unc_gallery_admin_rebuild_thumbs() {
         }
 
     }
+     *
+     */
 
 
-
+    wp_die();
 }
 
 function unc_gallery_admin_delete_everything() {
@@ -200,7 +205,7 @@ function unc_gallery_admin_delete_everything() {
     } else {
         $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
         // delete all images
-        unc_gallery_recurse_files($dirPath, 'unlink', 'rmdir');
+        // unc_gallery_recurse_files($dirPath, 'unlink', 'rmdir');
         echo "Done!";
     }
     wp_die();
