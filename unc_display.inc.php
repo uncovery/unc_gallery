@@ -192,7 +192,7 @@ function unc_gallery_display_page() {
     // do not let wp manipulate linebreaks
     remove_filter('the_content', 'wpautop');
 
-    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
+    $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
 
     // get a json datepicker
     $datepicker_div = '';
@@ -279,7 +279,7 @@ function unc_display_folder_images() {
     $date_str = $D['date'];
     $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
 
-    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
+    $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
     $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
 
     $out = '';
@@ -360,8 +360,8 @@ function unc_display_single_image($date_path, $file_name, $show_thumb, $file_dat
 
     $D = $UNC_GALLERY['display'];
 
-    $photo_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
-    $thumb_url = content_url($UNC_GALLERY['upload'] . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
+    $photo_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
+    $thumb_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
 
     if ($show_thumb) {
         $shown_image = $thumb_url;

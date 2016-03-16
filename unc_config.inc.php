@@ -10,13 +10,11 @@ global $UNC_GALLERY;
 // these configs should be moved to database settings
 // TODO remove the directory-separators here and insert them only in the code since
 // URLS need different ones from the Paths.
-$UNC_GALLERY['upload'] = DIRECTORY_SEPARATOR . "unc_gallery";
-$UNC_GALLERY['photos'] = DIRECTORY_SEPARATOR . "photos";
-$UNC_GALLERY['thumbnails'] = DIRECTORY_SEPARATOR . "thumbs";
-$UNC_GALLERY['base_url'] = plugins_url();
-$UNC_GALLERY['gallery_url'] = $UNC_GALLERY['base_url'] . DIRECTORY_SEPARATOR . "galleries";
+$UNC_GALLERY['upload'] = "unc_gallery";
+$UNC_GALLERY['upload_path'] = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $UNC_GALLERY['upload'];
+$UNC_GALLERY['photos'] = "photos";
+$UNC_GALLERY['thumbnails'] = "thumbs";
 $UNC_GALLERY['settings_prefix'] = 'unc_gallery_';
-$UNC_GALLERY['display'] = array(); // ignore this
 
 // options for displays
 $UNC_GALLERY['keywords'] = array(

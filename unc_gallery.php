@@ -67,12 +67,11 @@ foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
  */
 function unc_gallery_plugin_activate() {
     global $UNC_GALLERY;
-    $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
-    if (!file_exists($dirPath)) {
-        $result = mkdir($dirPath, 0755);
+    if (!file_exists($UNC_GALLERY['upload_path'])) {
+        $result = mkdir($UNC_GALLERY['upload_path'], 0755);
         // check success
         if (!$result) {
-            echo unc_tools_errormsg("There was an error creating the upload folder $dirPath!");
+            echo unc_tools_errormsg("There was an error creating the upload folder {$UNC_GALLERY['upload_path']}!");
         }
     }
 }
@@ -93,10 +92,8 @@ function unc_gallery_plugin_deactivate() {
 
 function unc_gallery_plugin_uninstall() {
     global $UNC_GALLERY;
-    $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
-
     // delete all images
-    unc_gallery_recurse_files($dirPath, 'unlink', 'rmdir');
+    unc_gallery_recurse_files($UNC_GALLERY['upload_path'], 'unlink', 'rmdir');
 
     //delete all settings properly
     $prefix = $UNC_GALLERY['settings_prefix'];

@@ -56,7 +56,7 @@ function unc_gallery_admin_init() {
 
     //add_settings_field( 'field-one', 'Field One', 'unc_gallery_backend_image_upload', 'unc_gallery', 'basic_settings');
     // check if the upload folder exists:
-    $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
+    $dirPath =  $UNC_GALLERY['upload_path'];
     if (!file_exists($dirPath)) {
         echo unc_tools_errormsg("The upload folder $dirPath does not exist!");
         unc_gallery_plugin_activate();
@@ -194,16 +194,13 @@ function unc_gallery_admin_rebuild_thumbs() {
         echo "You are not admin!";
         wp_die();
     }
-    $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
+    $dirPath = $UNC_GALLERY['upload_path'];
     // cleanup empty folders first
     unc_tools_folder_delete_empty($dirPath);
 
-    // delete all thumbnails
-
-    $thumb_root = $dirPath . $UNC_GALLERY['thumbnails'];
-
+    $thumb_root = $dirPath . DIRECTORY_SEPARATOR . $UNC_GALLERY['thumbnails'];
     // iterate all image folders
-    $photo_folder = $dirPath . $UNC_GALLERY['photos'];
+    $photo_folder = $dirPath . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
     $target_folders = unc_tools_recurse_folders($photo_folder);
 
     // create thumbnaisl
@@ -233,9 +230,8 @@ function unc_gallery_admin_delete_everything() {
     if (!is_admin()) {
         echo "You are not admin!";
     } else {
-        $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
         // delete all images
-        unc_gallery_recurse_files($dirPath, 'unlink', 'rmdir');
+        unc_gallery_recurse_files($UNC_GALLERY['upload_path'], 'unlink', 'rmdir');
         echo "Done!";
     }
     wp_die();

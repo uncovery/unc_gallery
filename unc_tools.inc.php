@@ -23,8 +23,6 @@ function unc_date_folder_create($date_str) {
     // these are the format strings for $date->format
     // the 'false' is to create the root folder
     $date_folders = array(false, "Y", "m", "d");
-    // we get the base folder from config
-    $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
     // let's create a date object for the given date
     $date_obj = new DateTime($date_str);
     // substract 12 hours to get the correct date
@@ -36,7 +34,7 @@ function unc_date_folder_create($date_str) {
     // iterate them
     foreach ($path_arr as $img_folder) {
         // create the complete folder
-        $base_folder = $dirPath . $img_folder;
+        $base_folder = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $img_folder;
         // iterate the date strings y m d
         foreach ($date_folders as $date_folder) {
             // if it's not the root folder, we format the date to reflect he element
@@ -71,7 +69,6 @@ function unc_date_folder_delete($date_str) {
     }
     global $UNC_GALLERY;
 
-    $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
     $date_obj = new DateTime($date_str);
     if (!$date_obj) {
         return unc_tools_errormsg("Invalid date folder!");
@@ -86,7 +83,7 @@ function unc_date_folder_delete($date_str) {
     // iterate both
     foreach ($path_arr as $img_folder) {
         // now let's get the path of that date
-        $base_folder = $dirPath . $img_folder . DIRECTORY_SEPARATOR . $date_folder;
+        $base_folder = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $img_folder . DIRECTORY_SEPARATOR . $date_folder;
         if (!file_exists($base_folder)) {
             // the folder does not exist, so let's not delete anything
             return unc_tools_errormsg("Folder $base_folder could not be deleted!");
@@ -106,7 +103,7 @@ function unc_date_folder_delete($date_str) {
         // $out .= " /$base_folder... <br>";
         rmdir($base_folder);
         // now we iterate the tree and make sure we delete all leftover empty months & year folders.
-        unc_tools_folder_delete_empty($dirPath . $img_folder);
+        unc_tools_folder_delete_empty($UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $img_folder);
     }
     return $out;
 }
@@ -247,7 +244,7 @@ function unc_tools_date_latest() {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
 
-    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
+    $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
     $folders = unc_tools_recurse_folders($photo_folder);
     if (count($folders) == 1 && $folders[0] == $photo_folder) {
         return false;
@@ -267,7 +264,7 @@ function unc_tools_date_latest() {
  */
 function unc_tools_date_random() {
     global $UNC_GALLERY;
-    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
+    $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
     $folders = unc_tools_recurse_folders($photo_folder);
     if (count($folders) == 0) {
         return false;
@@ -289,7 +286,7 @@ function unc_tools_date_random() {
  */
 function unc_tools_file_latest($date_path) {
     global $UNC_GALLERY;
-    $base_folder = WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_path/";
+    $base_folder = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_path;
     $paths = array();
     foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file) {
         // found a sub-folder, go deeper
@@ -314,7 +311,7 @@ function unc_tools_file_latest($date_path) {
  */
 function unc_tools_file_random($date_path) {
     global $UNC_GALLERY;
-    $base_folder = WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . "/$date_path/";
+    $base_folder = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_path;
     $files = array();
     foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file) {
         // found a sub-folder, go deeper
@@ -392,7 +389,7 @@ function unc_tools_bytes_get($ini_val) {
 function unc_tools_image_path($date_path, $file_name) {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
-    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] .  $UNC_GALLERY['photos'] ;
+    $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] ;
     $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
     $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
     return $file_path;
@@ -506,7 +503,7 @@ function unc_tools_image_ipct_date_write($file_path, $date_str) {
 function unc_tools_folder_list($base_folder) {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
-    $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
+    $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
     $base_length = strlen($photo_folder) + 1;
 
     $dates = array();
@@ -559,8 +556,8 @@ function unc_tools_image_delete() {
     $date_str = str_replace("-", DIRECTORY_SEPARATOR, $date_wrong);
 
     $paths = array(
-        WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['thumbnails'] . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name,
-        WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name,
+        $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['thumbnails'] . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name,
+        $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name,
     );
     foreach ($paths as $path) {
         if (file_exists($path)) {
@@ -569,7 +566,7 @@ function unc_tools_image_delete() {
             echo "File name $path could not be found!";
         }
     }
-    unc_tools_folder_delete_empty(WP_CONTENT_DIR . $UNC_GALLERY['upload']);
+    unc_tools_folder_delete_empty($UNC_GALLERY['upload_path']);
     unc_display_ajax_folder();
 }
 
@@ -604,7 +601,7 @@ function unc_tools_date_path($date) {
     if ($date_obj) {
         $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
         $date_str = $date_obj->format($format);
-        $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
+        $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
         if (!file_exists($photo_folder . DIRECTORY_SEPARATOR . $date_str)) {
             echo unc_tools_errormsg("Date not found (folder does not exist) $photo_folder/$date_str");
             return false;
