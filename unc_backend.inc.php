@@ -111,8 +111,12 @@ function unc_gallery_setting_drodown_render($A) {
     echo $out;
 }
 
+/**
+ * Callback for the Settings-section. Since we have only one, no need to use this
+ * Called in unc_gallery_admin_init
+ */
 function unc_gallery_settings_section_callback() {
-    echo __( 'Basic Settings', 'wordpress' );
+    // echo __( 'Basic Settings', 'wordpress' );
 }
 
 /**
@@ -180,32 +184,36 @@ function unc_gallery_admin_maintenance() {
 }
 
 function unc_gallery_admin_rebuild_thumbs() {
+    global $UNC_GALLERY;
     ob_clean();
     if (!is_admin()) {
-
         echo "You are not admin!";
-
     }
-    echo 'success';
-    /*
+    $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
+
     // delete all thumbnails
+
+    $thumb_folder = $dirPath . $UNC_GALLERY['thumbnails'];
     unc_gallery_recurse_files($thumb_folder, 'unlink', 'rmdir');
 
     // iterate all image folders
-    unc_tools_recurse_folders($photo_folder);
+    $photo_folder = $dirPath . $UNC_GALLERY['photos'];
+    $target_folders = unc_tools_recurse_folders($photo_folder);
     // create thumbnaisl
-    foreach ($photo_folder as $folder) {
+    foreach ($target_folders as $folder) {
         // list all files in folder
+        // get the date of the folder
 
+        // construct the thumb folder where we put the thumbnails
+
+        // enumerate all the files in the source folder
+
+        // iterate them to make the thumbnails
         foreach ($files as $file) {
             unc_import_make_thumbnail($image_file_path, $target_file_path);
         }
 
     }
-     *
-     */
-
-
     wp_die();
 }
 
@@ -217,7 +225,7 @@ function unc_gallery_admin_delete_everything() {
     } else {
         $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
         // delete all images
-        // unc_gallery_recurse_files($dirPath, 'unlink', 'rmdir');
+        unc_gallery_recurse_files($dirPath, 'unlink', 'rmdir');
         echo "Done!";
     }
     wp_die();
