@@ -19,7 +19,6 @@ function unc_gallery_admin_menu() {
 
 /**
  * displayes the complete image catalogue for the admin
- * TODO: the content should only show the past few dates and collapse the rest
  * and then provide buttons for AJAX-loading of older content
  *
  * @global type $UNC_GALLERY
@@ -29,8 +28,6 @@ function unc_gallery_admin_display_images() {
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
 
     $out = "<h2>Uncovery Gallery: All Images</h2>\n";
-    // we do not want to convert linebreaks
-    remove_filter('the_content', 'wpautop');
     // check first if there is a folder to delete:
     $folder_del = filter_input(INPUT_GET, 'folder_del', FILTER_SANITIZE_STRING);
     if (!is_null($folder_del)) {
@@ -115,9 +112,18 @@ function unc_gallery_settings_section_callback(  ) {
  */
 function unc_gallery_admin_settings() {
     unc_gallery_add_css_and_js();
-    echo '<div class="wrap">'
-        . "<div class='unc_jquery_tabs unc_fade_in'>\n"
-        . "<ul>\n";
+    remove_filter('the_content', 'wpautop');
+    echo '<div class="wrap">
+    <script type="text/javascript">
+        jQuery(document).ready(function() {
+        // Initialize jquery-ui tabs
+        jQuery(\'.unc_jquery_tabs\').tabs();
+        // Fade in sections that we wanted to pre-render
+        jQuery(\'.unc_fade_in\').fadeIn(\'fast\');
+        });
+    </script>
+    <div class="unc_jquery_tabs unc_fade_in">
+    <ul>' . "\n";
 
     # Set up tab titles
     echo "<li><a href='#tab1'><span>Settings</span></a></li>\n"
@@ -150,11 +156,21 @@ function unc_gallery_admin_settings() {
 }
 
 function unc_gallery_admin_maintenance() {
-    return "Rebuild Thumbnails";
+    $out = "<h2>Uncovery Gallery: Maintenance</h2>\n"
+        . '<button onclick="">Rebuild Thumbnails</button>'
+        . '<button onclick="">Delete all pictures</button>';
+
+
+    return $out;
 
 }
 
 function unc_gallery_admin_rebuild_thumbs() {
+    if (!is_admin()) {
+        ob_clean();
+        echo "You are not admin!";
+        wp_die();
+    }
     // delete all thumbnails
     unc_gallery_recurse_files($thumb_folder, 'unlink', 'rmdir');
 
@@ -175,5 +191,15 @@ function unc_gallery_admin_rebuild_thumbs() {
 }
 
 function unc_gallery_admin_delete_everything() {
-
+    global $UNC_GALLERY;
+    ob_clean();
+    if (!is_admin()) {
+        echo "You are not admin!";
+    } else {
+        $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
+        // delete all images
+        unc_gallery_recurse_files($dirPath, 'unlink', 'rmdir');
+        echo "Done!";
+    }
+    wp_die();
 }
