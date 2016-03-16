@@ -210,7 +210,7 @@ function unc_gallery_admin_rebuild_thumbs() {
     foreach ($target_folders as $date => $folder) {
         // construct the thumb folder where we put the thumbnails
         $thumb_folder = $thumb_root . DIRECTORY_SEPARATOR . $date;
-        unc_date_folder_create(unc_tools_folder_date($date));
+        unc_date_folder_create(unc_tools_folder_date($folder));
         echo "Iterating folder $date: ";
 
         // enumerate all the files in the source folder
