@@ -52,7 +52,7 @@ the type is not used.
 #### `date="latest|random|2016-10-30"`
 
 You can use either `latest`, `random` or a date in the format `yyyy-mm-dd`. If
-the `date` is not used, it will use the latest date.
+the `date` is not used, the latest date will be displayed.
 
 #### `file="latest|random|2016-10-30"`
 
