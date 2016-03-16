@@ -114,7 +114,7 @@ function unc_uploads_iterate_files() {
 
     // overwrite files?
     $overwrite = false;
-    // filter_input is null when the vaiable is not in POST
+    // filte_input is null when the vaiable is not in POST
     if (!is_null(filter_input(INPUT_POST, 'overwrite'))) {
         $overwrite = true;
     }
@@ -123,17 +123,26 @@ function unc_uploads_iterate_files() {
     $out_arr = array();
     for ($i=0; $i<$count; $i++){
         // process one file
-        $date_str = unc_uploads_process_file($i, $overwrite);
-        if (!isset($out_arr[$date_str])) {
-            $out_arr[$date_str] = 0;
+        $result_arr = unc_uploads_process_file($i, $overwrite);
+        $date_str = $result_arr['date'];
+        $action = $result_arr['file'];
+        if (!isset($out_arr[$date_str][$action])) {
+            $out_arr[$date_str][$action] = 0;
         }
-        $out_arr[$date_str]++;
+        $out_arr[$date_str][$action]++;
         // did we get a valid result?
-        if (!$date_str) {
+        if (!$result_arr) {
             // something went wrong with this file, take the next
             // this is a bit redundant since nothing else would happen anyway
             continue;
         }
+    }
+    // display results
+    foreach ($out_arr as $date_str => $data) {
+        foreach ($data as $action => $count) {
+            echo "$date_str: $count images $action<br>\n";
+        }
+        
     }
     $out .= "<br>All images processed!";
     // ob_clean();
@@ -151,7 +160,7 @@ function unc_uploads_iterate_files() {
  */
 function unc_uploads_process_file($i, $overwrite) {
     global $UNC_GALLERY;
-
+    $action = false;
     //$_FILES(1) {
     //    ["userImage"]=> array(5) {
     //        ["name"]=> array(1) { [0]=> string(23) "2013-11-02 21.00.38.jpg" }
@@ -260,11 +269,12 @@ function unc_uploads_process_file($i, $overwrite) {
     // let's check that file already exists
     if (!$overwrite && file_exists($new_path)) {
         echo "$target_filename already exists, skipping!<br>";
-        return false;
+        return array('date'=> $date_str, 'action' => 'skipped');
     } else if ($overwrite && file_exists($new_path)) {
         unlink($new_path);
-        unlink($new_thumb_path);
-        echo "$target_filename already exists, overwriting!<br>";
+        // unlink($new_thumb_path); thumbs are always overwritten
+        // echo "$target_filename already exists, overwriting!<br>";
+        $action = 'overwritten';
     }
 
     // finally, move the file
@@ -293,10 +303,13 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // now make the thumbnail
     $check = unc_import_image_resize($F['tmp_name'][$i], $new_thumb_path, $UNC_GALLERY['thumbnail_height'], 'height', $UNC_GALLERY['thumbnail_ext'], $UNC_GALLERY['thumbnail_quality']);
-    if ($check) {
-        echo $F['name'][$i] . " ($date_str), ";
+    if (!$check) {
+        echo unc_tools_errormsg("Could not create the thumbnail!");
+        return false;
+    } else if (!$action) {
+        $action = 'written';
     }
-    return true;
+    return array('date'=> $date_str, 'action' => $action);
 }
 
 /**
