@@ -14,7 +14,7 @@ such as posts or pages in the basic format `[unc_gallery date="2006-03-30"]`.
 One key advantage of this system is that you can remove individual photos and
 they will disappear without errors from the whole page (unless they have been
 featured somewhere) and you can also re-upload photos and overwrite old ones in
-case you changed them without going through complicated admin pages.
+case you changed them without going through delete & replace processes.
 
 ## Features
 
