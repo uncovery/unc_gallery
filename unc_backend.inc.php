@@ -201,10 +201,6 @@ function unc_gallery_admin_rebuild_thumbs() {
     // delete all thumbnails
 
     $thumb_root = $dirPath . $UNC_GALLERY['thumbnails'];
-    // delete all files & folder in the thumb directory
-    unc_gallery_recurse_files($thumb_root, 'unlink', 'rmdir');
-
-    echo "Deleted existing thumbnails in $thumb_root<br>";
 
     // iterate all image folders
     $photo_folder = $dirPath . $UNC_GALLERY['photos'];
