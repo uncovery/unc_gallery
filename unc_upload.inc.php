@@ -262,8 +262,7 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // let's check that file already exists
     if (!$overwrite && file_exists($new_path)) {
-        echo "$target_filename already exists, skipping!<br>";
-        return array('date'=> $date_str, 'action' => 'skipped');
+        return array('date'=> false, 'action' => 'skipped');
     } else if ($overwrite && file_exists($new_path)) {
         unlink($new_path);
         // unlink($new_thumb_path); thumbs are always overwritten
