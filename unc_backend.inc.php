@@ -192,7 +192,11 @@ function unc_gallery_admin_rebuild_thumbs() {
     ob_clean();
     if (!is_admin()) {
         echo "You are not admin!";
+        wp_die();
     }
+    echo "Under Construction!";
+    wp_die();
+
     $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
 
     // delete all thumbnails
