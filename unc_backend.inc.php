@@ -195,6 +195,8 @@ function unc_gallery_admin_rebuild_thumbs() {
         wp_die();
     }
     $dirPath =  WP_CONTENT_DIR . $UNC_GALLERY['upload'];
+    // cleanup empty folders first
+    unc_tools_folder_delete_empty($dirPath);
 
     // delete all thumbnails
 
