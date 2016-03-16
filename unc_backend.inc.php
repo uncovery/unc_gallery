@@ -156,7 +156,7 @@ function unc_gallery_admin_display_images() {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
 
-    $out = "<h2>All Images</h2>\n";
+    $out = "<h2>Manage Images</h2>\n";
     // check first if there is a folder to delete:
     $folder_del = filter_input(INPUT_GET, 'folder_del', FILTER_SANITIZE_STRING);
     if (!is_null($folder_del)) {
