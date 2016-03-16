@@ -85,3 +85,12 @@ This allows you to display a description for specific images. The format for one
 image is `filename.jpg:Description;`. Make sure that the last description does
 not have NOT have a colon `;` in the end. Also, no double quotes `"` or line breaks
 can be used in the details.
+
+#### `start_time="20:32:00" end_time="21:40:29"`
+
+This allows you to show only a certain timespan. You can use this dynamically.
+for example, only using the `end_time` will hide images after that time. Only
+using the start time will hide all images before that time. Using both, and if
+the start time is earlier than the end time, it will show only the items between
+the start and the end time. If you use both and the end time is before the start
+time, it will skip the images between the two times and show everything else.
