@@ -45,7 +45,7 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'text',
     ),
     'thumbnail_quality' => array(
-        'help' => 'The desired thumbnail quality. Has to be a number between 1 (worst, smallest file) to 100 (best, largest file)',
+        'help' => 'The desired thumbnail quality. Has to be a number between 1 (worst, smallest file) to 100 (best, largest file).',
         'default' => '60',
         'type' => 'text',
     ),
@@ -66,7 +66,7 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'text',
     ),
     'admin_date_selector' => array(
-        'help' => 'Chose if you want to have a calendar or a dropdown list for the Manage Images Admin page',
+        'help' => 'Chose if you want to have a calendar or a dropdown list for the Manage Images Admin page.',
         'default' => 'datepicker',
         'type' => 'dropdown',
         'options' => array('datepicker' => 'Calendar', 'datelist' => 'Date List'),
