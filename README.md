@@ -9,7 +9,7 @@ admin can simply upload all images in a batch and they will be automatically
 sorted by date.
 
 The galleries are then displayed by inserting a short code into any wordpress element
-such as posts or pages in the basic format [unc_gallery date="2006-03-30"].
+such as posts or pages in the basic format `[unc_gallery date="2006-03-30"]`.
 
 One key advantage of this system is that you can remove individual photos and
 they will disappear without errors from the whole page (unless they have been
