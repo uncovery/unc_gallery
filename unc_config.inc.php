@@ -54,6 +54,11 @@ $UNC_GALLERY['user_settings'] = array(
         'default' => '0',
         'type' => 'text',
     ),
+    'image_quality' => array(
+        'help' => 'The desired thumbnail quality. Has to be a number between 1 (worst, smallest file) to 100 (best, largest file). This applies only if the images are resized with the above setting.',
+        'default' => '75',
+        'type' => 'text',
+    ),
     'time_offset' => array(
         'help' => 'If you take photos after midnight and don\'t want them show on the next day,
         add an offset here in one of <a href="http://php.net/manual/en/datetime.formats.relative.php">these</a> formats.',
