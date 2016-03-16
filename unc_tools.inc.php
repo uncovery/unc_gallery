@@ -225,7 +225,10 @@ function unc_tools_recurse_folders($base_folder) {
         }
     }
     if (!$has_subfolder) {
-        $TMP_FOLDERS[] = $base_folder;
+        $path_arr = explode(DIRECTORY_SEPARATOR, $base_folder);
+        $date_elements = array_slice($path_arr, -3, 3);
+        $date_string = implode(DIRECTORY_SEPARATOR, $date_elements);
+        $TMP_FOLDERS[$date_string] = $base_folder;
     }
     return $TMP_FOLDERS;
 }
@@ -334,7 +337,7 @@ function unc_tools_date_validate($date) {
 }
 
 /**
- * takes a folder and returns the date of the folder.
+ * takes a folder and returns the date of the folder as a date-string
  *
  * @param type $folder
  * @return type
@@ -598,10 +601,12 @@ function unc_tools_date_path($date) {
         $date_str = $date_obj->format($format);
         $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
         if (!file_exists($photo_folder . DIRECTORY_SEPARATOR . $date_str)) {
-            return unc_tools_errormsg("Date not found (folder does not exist) $photo_folder/$date_str");
+            echo unc_tools_errormsg("Date not found (folder does not exist) $photo_folder/$date_str");
+            return false;
         }
     } else {
-        return unc_tools_errormsg("Date not found (invalid date)");
+        echo unc_tools_errormsg("Date not found (invalid date)");
+        return false;
     }
     return $date_str;
 }
