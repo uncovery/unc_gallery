@@ -59,7 +59,7 @@ function unc_gallery_admin_init() {
         $prefix = $UNC_GALLERY['settings_prefix'];
         register_setting('unc_gallery_settings_page', $prefix . $setting);
         $setting_value = get_option($prefix . $setting, $D['default']);
-        $args = array('setting' => $prefix . $setting, 'value'=> $setting_value, 'help'=> $D['help']);
+        $args = array('setting' => $prefix . $setting, 'value'=> $setting_value, 'help'=> $D['help'], 'default' => $D['default']);
         if ($D['type'] == 'text') {
             $callback = 'unc_gallery_setting_text_field_render';
         } else {
@@ -90,7 +90,7 @@ function unc_gallery_admin_init() {
  * @param type $A
  */
 function unc_gallery_setting_text_field_render($A) {
-    $out = "<input type='text' name='{$A['setting']}' value='{$A['value']}'> {$A['help']}\n";
+    $out = "<input type='text' name='{$A['setting']}' value='{$A['value']}'> {$A['help']} Default: {$A['default']}\n";
     echo $out;
 }
 
@@ -107,7 +107,7 @@ function unc_gallery_setting_drodown_render($A) {
         }
         $out .= "<option value=\"$option\" $sel>$text</option>\n";
     }
-    $out .= "</select> {$A['help']}\n";
+    $out .= "</select> {$A['help']} Default: {$A['options'][$A['default']]}\n";
     echo $out;
 }
 
