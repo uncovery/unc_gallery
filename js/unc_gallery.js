@@ -43,18 +43,21 @@ function datelist_change() {
 }
 
 function delete_image(file_name, rel_date) {
-    jQuery.ajax({
-        url: ajaxurl,
-        method: 'GET',
-        dataType: 'text',
-        data: {action: 'unc_gallery_image_delete', date: rel_date, file_name: file_name},
-        complete: function (response) {
-            jQuery('#photos').html(response.responseText);
-        },
-        error: function () {
+    var c = confirm("Are you sure you want to delete " + file_name + "?");
+    if (c) {
+        jQuery.ajax({
+            url: ajaxurl,
+            method: 'GET',
+            dataType: 'text',
+            data: {action: 'unc_gallery_image_delete', date: rel_date, file_name: file_name},
+            complete: function (response) {
+                jQuery('#photos').html(response.responseText);
+            },
+            error: function () {
 
-        }
-    });
+            }
+        });
+    }
 }
 
 function unc_gallery_generic_ajax(action, target_div, confirmation_message) {
