@@ -366,6 +366,12 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     imagecopyresized($new_image, $old_image, 0, 0, 0, 0, $new_width, $new_height, $original_width, $original_height);
     $img_generator($new_image, $target_file_path, $quality);
 
+    // let's check if the file was created:
+    if (!file_exists($target_file_path)) {
+        echo "File $target_file_path was not created!";
+        wp_die();
+    }
+
     // write ipct date
     if ($file_date) {
         unc_tools_image_ipct_date_write($target_file_path, $file_date);
