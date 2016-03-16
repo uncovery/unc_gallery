@@ -292,7 +292,7 @@ function unc_uploads_process_file($i, $overwrite) {
     }
 
     // now make the thumbnail
-    $check = unc_import_image_resize($F['tmp_name'][$i], $new_thumb_path, $UNC_GALLERY['thumbnail_height'], 'height', $UNC_GALLERY['thumbnail_ext'], $UNC_GALLERY['thumbnail_quality']);
+    $check = unc_import_image_resize($new_path, $new_thumb_path, $UNC_GALLERY['thumbnail_height'], 'height', $UNC_GALLERY['thumbnail_ext'], $UNC_GALLERY['thumbnail_quality']);
     if (!$check) {
         return array('date'=> false, 'action' => "Could not create the thumbnail for {$F['tmp_name'][$i]} / $new_thumb_path!");
     } else if (!$action) {
