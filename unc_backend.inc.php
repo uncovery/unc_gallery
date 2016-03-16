@@ -145,8 +145,9 @@ function unc_gallery_admin_settings() {
     echo "</div>\n";
 
     echo "<div id='tab5'>\n";
-    require_once('./libraries/Parsedown.php');
-    $markdown_docs = file_get_contents('./README.md');
+    require_once(__DIR__ .  DIRECTORY_SEPARATOR . 'libraries' . DIRECTORY_SEPARATOR . 'Parsedown.php');
+
+    $markdown_docs = file_get_contents(__DIR__ .  DIRECTORY_SEPARATOR . 'README.md');
     $Parsedown = new Parsedown();
     echo $Parsedown->text($markdown_docs);
     echo "</div>\n";
