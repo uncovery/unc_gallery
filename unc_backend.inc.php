@@ -17,28 +17,6 @@ function unc_gallery_admin_menu() {
     add_action('admin_print_scripts-' . $main_options_page_hook_suffix, 'unc_gallery_add_css_and_js');
 }
 
-/**
- * displayes the complete image catalogue for the admin
- * and then provide buttons for AJAX-loading of older content
- *
- * @global type $UNC_GALLERY
- */
-function unc_gallery_admin_display_images() {
-    global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
-
-    $out = "<h2>Uncovery Gallery: All Images</h2>\n";
-    // check first if there is a folder to delete:
-    $folder_del = filter_input(INPUT_GET, 'folder_del', FILTER_SANITIZE_STRING);
-    if (!is_null($folder_del)) {
-        // TODO: the return here should be in a notifcation area
-        $out .= unc_date_folder_delete($folder_del);
-    }
-
-    // get a standard short-tag output for latest date with datepicker
-    $out .= unc_gallery_apply(array('options'=> $UNC_GALLERY['admin_date_selector']));
-    echo $out;
-}
 
 /**
  * This adds the Wordpress features for the admin pages
@@ -166,12 +144,37 @@ function unc_gallery_admin_settings() {
 
     echo "</div>";
 }
+
+/**
+ * displayes the complete image catalogue for the admin
+ * and then provide buttons for AJAX-loading of older content
+ *
+ * @global type $UNC_GALLERY
+ */
+function unc_gallery_admin_display_images() {
+    global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+
+    $out = "<h2>All Images</h2>\n";
+    // check first if there is a folder to delete:
+    $folder_del = filter_input(INPUT_GET, 'folder_del', FILTER_SANITIZE_STRING);
+    if (!is_null($folder_del)) {
+        // TODO: the return here should be in a notifcation area
+        $out .= unc_date_folder_delete($folder_del);
+    }
+
+    // get a standard short-tag output for latest date with datepicker
+    $out .= unc_gallery_apply(array('options'=> $UNC_GALLERY['admin_date_selector']));
+    echo $out;
+}
+
+
 /**
  * Displays a dilogue to perform maintenance operations
  * @return string
  */
 function unc_gallery_admin_maintenance() {
-    $out = '<h2>Uncovery Gallery: Maintenance</h2>
+    $out = '<h2>Maintenance</h2>
         <button onclick="unc_gallery_generic_ajax(\'unc_gallery_thumbnails_rebuild\', \'rebuild_thumbs_result\', \'Are you sure?\nThis can take a while for the whole database!\')">
             Rebuild Thumbnails
         </button> This will re-generate all thumbnails. Use this if after you changed the size of the thumbnails in the settings.<br>
