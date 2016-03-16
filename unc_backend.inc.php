@@ -123,6 +123,7 @@ function unc_gallery_admin_settings() {
     echo "<li><a href='#tab1'><span>Settings</span></a></li>\n"
         . "<li><a href='#tab2'><span>Upload</span></a></li>\n"
         . "<li><a href='#tab3'><span>Manage Images</span></a></li>\n"
+        . "<li><a href='#tab4'><span>Maintenance</span></a></li>\n"
         . "</ul>\n";
 
     echo "<div id='tab1'>\n";
@@ -140,7 +141,17 @@ function unc_gallery_admin_settings() {
     echo "<div id='tab3'>\n";
     echo unc_gallery_admin_display_images();
     echo "</div>\n";
+
+    echo "<div id='tab4'>\n";
+    echo unc_gallery_admin_maintenance();
+    echo "</div>\n";
+
     echo "</div>";
+}
+
+function unc_gallery_admin_maintenance() {
+    return "Rebuild Thumbnails";
+
 }
 
 function unc_gallery_admin_rebuild_thumbs() {
