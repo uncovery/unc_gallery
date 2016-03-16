@@ -5,7 +5,7 @@ if (!defined('WPINC')) {
 }
 
 /**
- * Take a date string and create the respective folders
+ * Take a date string (with time!) and create the respective folders
  *
  * @global type $UNC_GALLERY
  * @param type $i
@@ -13,6 +13,8 @@ if (!defined('WPINC')) {
  * @return type
  */
 function unc_date_folder_create($date_str) {
+    global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     if (!is_admin()) {
         return false;
     }
@@ -244,7 +246,7 @@ function unc_tools_recurse_folders($base_folder) {
 function unc_tools_date_latest() {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
-    
+
     $photo_folder =  WP_CONTENT_DIR . $UNC_GALLERY['upload'] . $UNC_GALLERY['photos'];
     $folders = unc_tools_recurse_folders($photo_folder);
     if (count($folders) == 1 && $folders[0] == $photo_folder) {
