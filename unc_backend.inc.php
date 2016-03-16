@@ -202,7 +202,7 @@ function unc_gallery_admin_show_documentation() {
     $markdown_docs = file_get_contents(__DIR__ .  DIRECTORY_SEPARATOR . 'README.md');
     $markdown_fixed = str_replace('/images/', plugins_url( '/images/', __FILE__ ), $markdown_docs);
     $Parsedown = new Parsedown();
-    echo $Parsedown->text($markdown_fixed);
+    return $Parsedown->text($markdown_fixed);
 }
 
 /**
