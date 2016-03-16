@@ -292,7 +292,7 @@ function unc_uploads_process_file($i, $overwrite) {
     }
 
     // now make the thumbnail
-    $check = unc_import_image_resize($F['tmp_name'][$i], $new_thumb_path, $UNC_GALLERY['thumbnail_height'], 'height', $UNC_GALLERY['thumbnail_ext']);
+    $check = unc_import_image_resize($F['tmp_name'][$i], $new_thumb_path, $UNC_GALLERY['thumbnail_height'], 'height', $UNC_GALLERY['thumbnail_ext'], $UNC_GALLERY['thumbnail_quality']);
     if ($check) {
         echo $F['name'][$i] . " ($date_str), ";
     }
@@ -308,9 +308,10 @@ function unc_uploads_process_file($i, $overwrite) {
  * @param int $size target size of the image
  * @param string $edge one of the following: 'height', 'width', 'long'
  * @param string $extension the file extension
+ * @param int @quality quality from 1 (worst) to 100 (best)
  * @return boolean
  */
-function unc_import_image_resize($image_file_path, $target_file_path, $size, $edge, $extension) {
+function unc_import_image_resize($image_file_path, $target_file_path, $size, $edge, $extension, $quality) {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     $img_types = array(1 => 'GIF', 2 => 'JPEG', 3 => 'PNG');
@@ -363,7 +364,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     $old_image = $imgcreatefrom($image_file_path);
     $new_image = imagecreatetruecolor($new_width, $new_height); // create a blank canvas
     imagecopyresized($new_image, $old_image, 0, 0, 0, 0, $new_width, $new_height, $original_width, $original_height);
-    $img_generator($new_image, $target_file_path);
+    $img_generator($new_image, $target_file_path, $quality);
 
     // write ipct date
     if ($file_date) {
