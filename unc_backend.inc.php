@@ -200,6 +200,7 @@ function unc_gallery_admin_rebuild_thumbs() {
 
     $thumb_root = $dirPath . $UNC_GALLERY['thumbnails'];
     unc_gallery_recurse_files($thumb_root, 'unlink', 'rmdir');
+
     echo "Deleted existing thumbnails in $thumb_root<br>";
 
     // iterate all image folders
@@ -209,7 +210,9 @@ function unc_gallery_admin_rebuild_thumbs() {
     foreach ($target_folders as $date => $folder) {
         // construct the thumb folder where we put the thumbnails
         $thumb_folder = $thumb_root . DIRECTORY_SEPARATOR . $date;
+        unc_date_folder_create(unc_tools_folder_date($date));
         echo "Iterating folder $date: ";
+
         // enumerate all the files in the source folder
         foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $image_file) {
             if (!is_dir($image_file)) {
