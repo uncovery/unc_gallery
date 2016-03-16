@@ -212,11 +212,11 @@ function unc_gallery_admin_rebuild_thumbs() {
         echo "Iterating folder $date: ";
         // enumerate all the files in the source folder
         foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $image_file) {
-            if (!is_dir($file)) {
+            if (!is_dir($image_file)) {
                 echo ".";
                 $filename = basename($image_file);
                 $thumb_filename = $thumb_folder . DIRECTORY_SEPARATOR . $filename;
-                // unc_import_make_thumbnail($image_file, $thumb_filename);
+                unc_import_image_resize($image_file, $thumb_filename, $UNC_GALLERY['thumbnail_height'], 'height', $UNC_GALLERY['thumbnail_ext'], $UNC_GALLERY['thumbnail_quality']);
             }
         }
         echo "<br>";
