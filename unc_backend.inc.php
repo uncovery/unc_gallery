@@ -148,7 +148,7 @@ function unc_gallery_admin_settings() {
     require_once(__DIR__ .  DIRECTORY_SEPARATOR . 'libraries' . DIRECTORY_SEPARATOR . 'Parsedown.php');
 
     $markdown_docs = file_get_contents(__DIR__ .  DIRECTORY_SEPARATOR . 'README.md');
-    $markdown_fixed = str_replace('(/images/', plugins_url( '/images/', __FILE__ ), $markdown_docs);
+    $markdown_fixed = str_replace('/images/', plugins_url( '/images/', __FILE__ ), $markdown_docs);
     $Parsedown = new Parsedown();
     echo $Parsedown->text($markdown_fixed);
     echo "</div>\n";
