@@ -221,6 +221,7 @@ function unc_gallery_admin_rebuild_thumbs() {
         }
         echo "<br>";
     }
+    echo "Done!";
     wp_die();
 }
 
