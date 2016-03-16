@@ -50,7 +50,7 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'text',
     ),
     'picture_long_edge' => array(
-        'help' => 'Shrink the full-size images so that the long edge will be this long (in pixels, 0 for disable)',
+        'help' => 'Shrink the full-size images so that the long edge will be this long (in pixels, 0 for disable). Warning: Resizing will remove all photo meta-data except for the date.',
         'default' => '0',
         'type' => 'text',
     ),
