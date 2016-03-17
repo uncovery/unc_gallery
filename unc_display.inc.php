@@ -67,7 +67,7 @@ function unc_gallery_display_var_init($atts = array()) {
     ), $atts);
 
     $type = $a['type'];
-    $date = $a['date'];
+
 
     $featured_file = unc_tools_filename_validate($a['featured']);
     if ($featured_file) {
@@ -91,39 +91,27 @@ function unc_gallery_display_var_init($atts = array()) {
 
     $UNC_GALLERY['display']['description'] = $a['description'];
 
+    // date
     $keywords = $UNC_GALLERY['keywords'];
-    if (!in_array($date, $keywords['date'])) {
+    $date_raw = $a['date'];
+    if (!in_array($date_raw, $keywords['date'])) {
         // lets REGEX
-        $pattern = '/[\d]{4}-[\d]{2}-[\d\d]{2}/';
-        if (preg_match($pattern, $date) == 0) {
+        $date_str = unc_tools_validate_date($date_raw);
+        if (!$date_str) {
             echo unc_tools_errormsg("Your date needs to be in the format '2016-01-31'");
             return false;
         }
-        $datetime = new DateTime($date);
-        if (!$datetime) { // invalid date, fallback to latest
-            $date = 'latest'; // TODO: this should throw an error
-        } else { // otherwise accept it, format it again to be sure
-            $date = $datetime->format("Y-m-d");
+        $UNC_GALLERY['display']['date_description'] = false;
+    } else {
+        // get the latest or a random date if required
+        $UNC_GALLERY['display']['date_description'] = true;
+        if ($date_raw == 'latest') {
+            $date_str = unc_tools_date_latest();
+        } else if ($date_raw == 'random') {
+            $date_str = unc_tools_date_random();
         }
     }
-
-    // get the latest or a random date if required
-    $UNC_GALLERY['display']['date_description'] = true;
-    if ($date == 'latest') {
-        $date = unc_tools_date_latest();
-    } elseif ($date == 'random') {
-        $date = unc_tools_date_random();
-    } else {
-        $UNC_GALLERY['display']['date_description'] = false;
-        $date = unc_tools_date_validate($date);
-    }
-
-    if (!$date) {
-        // there are no pictures
-        echo unc_tools_errormsg("No pictures found, please upload some images first!");
-        return false;
-    }
-    $UNC_GALLERY['display']['date'] = $date;
+    $UNC_GALLERY['display']['date'] = $date_str;
 
     // range
     $UNC_GALLERY['display']['range'] = array('start_time' => false, 'end_time' => false);
@@ -134,6 +122,7 @@ function unc_gallery_display_var_init($atts = array()) {
         }
     }
 
+    // details
     $details_raw = $a['details'];
     $UNC_GALLERY['display']['details'] = false;
     if ($details_raw) {
@@ -178,7 +167,7 @@ function unc_gallery_display_var_init($atts = array()) {
 
     $UNC_GALLERY['display']['date_selector'] = false;
     if (in_array('datepicker', $options)) {
-        $UNC_GALLERY['display']['date_selector'] = 'datepicker';
+        $UNC_GALLERY['display']['date_selector'] = 'calendar';
     } else if (in_array('datelist', $options)) {
         $UNC_GALLERY['display']['date_selector'] = 'datelist';
     }
@@ -204,7 +193,7 @@ function unc_gallery_display_page() {
     if ($D['date_description']) {
         $datepicker_div = "<span id=\"photodate\">Showing {$D['date']}</span>";
     }
-    if ($D['date_selector'] == 'datepicker') {
+    if ($D['date_selector'] == 'calendar') {
         $avail_dates = unc_tools_folder_list($photo_folder);
 
         $out .= "\n     <script type=\"text/javascript\">
