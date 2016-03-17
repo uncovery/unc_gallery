@@ -88,9 +88,9 @@ can be used in the details.
 
 #### `start_time="20:32:00" end_time="21:40:29"`
 
-This allows you to show only images from a certain time span. You can use this dynamically.
-for example, only using the `end_time` will hide images after that time. Only
-using the start time will hide all images before that time. Using both, and if
-the start time is earlier than the end time, it will show only the items between
-the start and the end time. If you use both and the end time is before the start
-time, it will skip the images between the two times and show everything else.
+This allows you to show only images from a certain time span. It needs to be in
+the format HH:MM:SS, 24h notation. Usage:
+    * `start_time="20:32:00`: hide everything before 20:32
+    * `end_time="21:40:29"`: hide everything after 21:40:29
+    * `start_time="20:00:00" end_time="21:00:00"`: Show only the hour 20:00-21:20
+    * `end_time="20:00:00"` `start_time="21:00:00" : Hide the hour 20:00-21:20
