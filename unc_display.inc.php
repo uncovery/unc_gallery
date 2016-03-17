@@ -68,7 +68,11 @@ function unc_gallery_display_var_init($atts = array()) {
 
     $type = $a['type'];
     $date = $a['date'];
-    $UNC_GALLERY['display']['featured_image'] = $a['featured']; // TODO: Sanitize & verify filename
+
+    $featured_file = unc_tools_filename_validate($a['featured']);
+    if ($featured_file) {
+        $UNC_GALLERY['display']['featured_image'] = $a['featured']; // TODO: Sanitize & verify filename
+    }
 
     // there can be several options, separated by space
     if (!$a['options']) {
