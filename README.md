@@ -94,4 +94,4 @@ the format HH:MM:SS, 24h notation. Usage:
 * `start_time="20:32:00`: hide everything before 20:32
 * `end_time="21:40:29"`: hide everything after 21:40:29
 * `start_time="20:00:00" end_time="21:00:00"`: Show only the hour 20:00-21:20
-* `end_time="20:00:00"` `start_time="21:00:00" : Hide the hour 20:00-21:20
+* `end_time="20:00:00" start_time="21:00:00"` : Hide the hour 20:00-21:20
