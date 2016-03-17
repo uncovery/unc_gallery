@@ -156,3 +156,8 @@ depending on your preference.
 |Sample screenshot of the calendar|Sample screenshot of the datelist|
 |---------------------------------|----------------------------------|
 |![Calendar](/images/screenshot-7.png)|![Datelist](/images/screenshot-8.png)|
+
+## Known Bugs, upcoming features
+
+You can see known bugs and upcoming features on the project's
+![Issue page on Github](https://github.com/uncovery/unc_gallery/issues)
