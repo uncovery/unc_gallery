@@ -106,14 +106,9 @@ You can choose to show field on top of your gallery that allows the user to
 display a different date's images. You can chose between a calendar and a date
 list in a dropdown.
 
-Sample screenshot of the calendar
-
-![Sample screenshot of the calendar](/images/screenshot-9.png)
-
-Sample screenshot of the datelist:
-
-![Sample screenshot of the datelist](/images/screenshot-10.png)
-
+|Sample screenshot of the calendar|Sample screenshot of the datelist:|
+|---------------------------------|----------------------------------|
+|![Calendar](/images/screenshot-9.png)|![Datelist](/images/screenshot-10.png)|
 
 ## Configuration
 
