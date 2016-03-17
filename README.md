@@ -16,6 +16,10 @@ they will disappear without errors from the whole page (unless they have been
 featured somewhere) and you can also re-upload photos and overwrite old ones in
 case you changed them without going through delete & replace processes.
 
+Example of a gallery
+
+![Example of a gallery](/images/screenshot-11.png)
+
 ## Features
 
 * Time shift: If photos are generally also taken after midnight, a time shift
