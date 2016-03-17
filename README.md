@@ -96,6 +96,19 @@ the format `yyyy-mm-dd hh:mm:ss`, 24h notation. Usage:
 * `start_time="2016-10-30 20:00:00" end_time="2016-10-30 21:00:00"`: Show only the hour 20:00-21:20
 * `end_time="2016-10-30 20:00:00" start_time="2016-10-30 21:00:00"`: Hide the hour 20:00-21:20
 
+#### `options="calendar|datelist"`
+
+You can choose to show field on top of your gallery that allows the user to
+display a different date's images. You can chose between a calendar and a date
+list in a dropdown.
+
+Sample screenshot of the calendar
+![Sample screenshot of the calendar](/images/screenshot-9.png)
+
+Sample screenshot of the datelist:
+![Sample screenshot of the datelist](/images/screenshot-10.png)
+
+
 ## Configuration
 
 ### Thumbnail Height
@@ -138,6 +151,8 @@ In the administration `Manage Images` page the system will give you an option to
 select a date. This will be either a calendar or a drop-down list of all available
 dates. Chose `Calendar` or `Datelist` depending on your preference.
 
+Sample screenshot of the calendar
 ![Sample screenshot of the calendar](/images/screenshot-7.png)
 
+Sample screenshot of the datelist:
 ![Sample screenshot of the datelist](/images/screenshot-8.png)

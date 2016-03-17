@@ -328,18 +328,6 @@ function unc_tools_file_random($date_path) {
 }
 
 /**
- * checks if a date is valid and sends it back
- *
- * @param type $date
- * @return type
- */
-function unc_tools_date_validate($date) {
-
-    $newdate = $date;
-    return $newdate;
-}
-
-/**
  * takes a folder and returns the date of the folder as a date-string
  *
  * @param type $folder

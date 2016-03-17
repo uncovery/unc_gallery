@@ -15,7 +15,7 @@ $UNC_GALLERY['settings_prefix'] = 'unc_gallery_';
 // options for displays
 $UNC_GALLERY['keywords'] = array(
     'type' => array(
-        'day' => array('datepicker', 'datelist'), // shows a single date's gallery, optional date picker
+        'day' => array('calendar', 'datelist'), // shows a single date's gallery, optional date picker
         'image' => array('link'), // only one image, requires file addon unless random or latest
         'thumb' => array('link'), // only the icon of one image, requires file addon unless random or latest
     ),
@@ -61,8 +61,8 @@ $UNC_GALLERY['user_settings'] = array(
     ),
     'admin_date_selector' => array(
         'help' => 'Chose if you want to have a calendar or a dropdown list for the Manage Images Admin page.',
-        'default' => 'datepicker',
+        'default' => 'calendar',
         'type' => 'dropdown',
-        'options' => array('datepicker' => 'Calendar', 'datelist' => 'Date List'),
+        'options' => array('calendar' => 'Calendar', 'datelist' => 'Date List'),
     ),
 );

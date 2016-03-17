@@ -166,7 +166,7 @@ function unc_gallery_display_var_init($atts = array()) {
     }
 
     $UNC_GALLERY['display']['date_selector'] = false;
-    if (in_array('datepicker', $options)) {
+    if (in_array('calendar', $options)) {
         $UNC_GALLERY['display']['date_selector'] = 'calendar';
     } else if (in_array('datelist', $options)) {
         $UNC_GALLERY['display']['date_selector'] = 'datelist';
