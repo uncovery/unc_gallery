@@ -72,6 +72,8 @@ function unc_gallery_display_var_init($atts = array()) {
     $featured_file = unc_tools_filename_validate($a['featured']);
     if ($featured_file) {
         $UNC_GALLERY['display']['featured_image'] = $a['featured']; // TODO: Sanitize & verify filename
+    } else {
+        $UNC_GALLERY['display']['featured_image'] = false;
     }
 
     // there can be several options, separated by space
