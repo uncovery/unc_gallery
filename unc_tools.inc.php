@@ -588,6 +588,21 @@ function unc_tools_filename_validate($file_name) {
 }
 
 /**
+ * Validate Datestr
+ *
+ * @param type $date_str
+ * @return boolean
+ */
+function unc_tools_validate_date($date_str) {
+    $pattern = "/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/";
+    if (preg_match($pattern, $date_str)) {
+        return $date_str;
+    }else{
+        return false;
+    }
+}
+
+/**
  * converts a 2013-12-12 to 2013/12/12 and checks if the file exists
  *
  * @global type $UNC_GALLERY
