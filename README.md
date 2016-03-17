@@ -32,9 +32,9 @@ There are several additional options beyond this basic format:
 the whole day
 * Featured photo: Display one photo at the start and larger than the other photos
 * One Photo only: Show only one photo of one day. Either a specific photo, random,
-the first or latest
-* Dynamic date: Instead of showing a specific date, show random, first or latest
-* Descriptions: Whole days or individual photos can have specific description
+the or the latest
+* Dynamic date: Instead of showing a specific date, show random or latest
+* Descriptions: Whole days and individual photos can have specific description
 set in the short code
 
 ## Shortcodes
