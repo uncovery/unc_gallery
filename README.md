@@ -16,7 +16,7 @@ they will disappear without errors from the whole page (unless they have been
 featured somewhere) and you can also re-upload photos and overwrite old ones in
 case you changed them without going through delete & replace processes.
 
-Example of a gallery
+## Example gallery
 
 ![Example of a gallery](/images/screenshot-11.png)
 
