@@ -152,10 +152,6 @@ In the administration `Manage Images` page the system will give you an option to
 select a date. This will be either a calendar or a drop-down list of all available
 dates. Chose `Calendar` or `Datelist` depending on your preference.
 
-Sample screenshot of the calendar
-
-![Sample screenshot of the calendar](/images/screenshot-7.png)
-
-Sample screenshot of the datelist
-
-![Sample screenshot of the datelist](/images/screenshot-8.png)
+|Sample screenshot of the calendar|Sample screenshot of the datelist|
+|---------------------------------|----------------------------------|
+|![Calendar](/images/screenshot-7.png)|![Datelist](/images/screenshot-8.png)|
