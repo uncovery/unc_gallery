@@ -95,3 +95,49 @@ the format `yyyy-mm-dd hh:mm:ss`, 24h notation. Usage:
 * `end_time="2016-10-30 21:40:29"`: hide everything after 21:40:29
 * `start_time="2016-10-30 20:00:00" end_time="2016-10-30 21:00:00"`: Show only the hour 20:00-21:20
 * `end_time="2016-10-30 20:00:00" start_time="2016-10-30 21:00:00"`: Hide the hour 20:00-21:20
+
+## Configuration
+
+### Thumbnail Height
+
+This determines the pixel height of the thumbnails that are generated during the
+upload of new images. If this value is changed, it will only affect newly uploaded
+images. However, you can re-build all existing thumbnails in the Maintenance menu.
+
+### Thumbnail Quality
+
+This determines the JPEG quality of your thumbnails and their file size. The lowest
+value is `1` with the lowest quality and the smallest files. The highest number is
+`100` with the largest file size and the highest quality.
+
+### Picture Long Edge
+
+If this is not `0`, the images will be resized on upload so that their longest edge
+(the vertical for portrait style images and the horizontal for landscape style images)
+will be shrunken to that length. Images will not be enlarged.
+
+### Picture Quality
+
+If the images are resized because `Picture Long Edge` is larger than `0`, they will
+be compressed with the quality set for this value.  The lowest value is `1` with
+the lowest quality and the smallest files. The highest number is `100` with the
+largest file size and the highest quality.
+
+### Time Offset
+
+If you take photos until after midnight, but do not want those photos to show as
+a different date, set this to a negative value (e.g. `-6 hours`). With this
+example, all images between 6:00 in the morning of Sunday until 5:59 Monday morning
+will be considered to be taken on Sunday. This applies for photos on upload.
+If you want to change this for individual days, change the setting before uploading
+images and then change it back after the upload.
+
+### Admin Date Selector
+
+In the administration `Manage Images` page the system will give you an option to
+select a date. This will be either a calendar or a drop-down list of all available
+dates. Chose `Calendar` or `Datelist` depending on your preference.
+
+![Sample screenshot of the calendar](/images/screenshot-7.png)
+
+![Sample screenshot of the datelist](/images/screenshot-8.png)
