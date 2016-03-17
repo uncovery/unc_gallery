@@ -149,8 +149,9 @@ images and then change it back after the upload.
 ### Admin Date Selector
 
 In the administration `Manage Images` page the system will give you an option to
-select a date. This will be either a calendar or a drop-down list of all available
-dates. Chose `Calendar` or `Datelist` depending on your preference.
+select a date. You can choose to select a date either with a calendar or a
+drop-down list of all available dates. Chose `Calendar` or `Datelist`
+depending on your preference.
 
 |Sample screenshot of the calendar|Sample screenshot of the datelist|
 |---------------------------------|----------------------------------|
