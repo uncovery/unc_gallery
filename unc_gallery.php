@@ -3,7 +3,7 @@
 Plugin Name: Uncovery Gallery
 Plugin URI:  https://github.com/uncovery/unc_gallery
 Description: A simple, self-generating, date-based gallery
-Version:     0.1
+Version:     0.3
 Author:      Uncovery
 Author URI:  http://uncovery.net
 License:     GPL2
