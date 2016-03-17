@@ -103,9 +103,11 @@ display a different date's images. You can chose between a calendar and a date
 list in a dropdown.
 
 Sample screenshot of the calendar
+
 ![Sample screenshot of the calendar](/images/screenshot-9.png)
 
 Sample screenshot of the datelist:
+
 ![Sample screenshot of the datelist](/images/screenshot-10.png)
 
 
@@ -152,7 +154,9 @@ select a date. This will be either a calendar or a drop-down list of all availab
 dates. Chose `Calendar` or `Datelist` depending on your preference.
 
 Sample screenshot of the calendar
+
 ![Sample screenshot of the calendar](/images/screenshot-7.png)
 
-Sample screenshot of the datelist:
+Sample screenshot of the datelist
+
 ![Sample screenshot of the datelist](/images/screenshot-8.png)
