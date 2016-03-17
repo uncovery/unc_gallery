@@ -86,12 +86,12 @@ image is `filename.jpg:Description;`. Make sure that the last description does
 not have NOT have a colon `;` in the end. Also, no double quotes `"` or line breaks
 can be used in the details.
 
-#### `start_time="20:32:00" end_time="21:40:29"`
+#### `start_time="2016-10-30 20:32:00" end_time="2016-10-30 21:40:29"`
 
 This allows you to show only images from a certain time span. It needs to be in
-the format HH:MM:SS, 24h notation. Usage:
+the format `yyyy-mm-dd hh:mm:ss`, 24h notation. Usage:
 
-* `start_time="20:32:00`: hide everything before 20:32
-* `end_time="21:40:29"`: hide everything after 21:40:29
-* `start_time="20:00:00" end_time="21:00:00"`: Show only the hour 20:00-21:20
-* `end_time="20:00:00" start_time="21:00:00"`: Hide the hour 20:00-21:20
+* `start_time="2016-10-30 20:32:00`: hide everything before 20:32
+* `end_time="2016-10-30 21:40:29"`: hide everything after 21:40:29
+* `start_time="2016-10-30 20:00:00" end_time="2016-10-30 21:00:00"`: Show only the hour 20:00-21:20
+* `end_time="2016-10-30 20:00:00" start_time="2016-10-30 21:00:00"`: Hide the hour 20:00-21:20
