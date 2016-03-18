@@ -4,12 +4,6 @@ if (!defined('WPINC')) {
     die;
 }
 
-function unc_images_display() {
-    echo "<h2>Uncovery Gallery: All Images</h2>\n";
-    $content_new = unc_gallery_display_page('[unc_gallery]', false, false, "?page=unc_gallery_admin_view&");
-    echo $content_new;
-}
-
 /**
  * displays folder images while getting values from AJAX
  *
@@ -23,10 +17,8 @@ function unc_display_ajax_folder() {
 }
 
 /**
- * Displays content through keyword replacement
- * Checks for the keyword in the content and switches that define
- * the content further. Then calls the function that creates the actual content
- * and returns the modified content
+ * This is the core function that actually is called when a shortcode
+ * is parsed
  *
  * @param string $atts
  * @return string
