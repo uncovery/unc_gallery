@@ -101,7 +101,6 @@ function unc_gallery_settings_section_callback() {
  * this will manage the settings
  */
 function unc_gallery_admin_settings() {
-    unc_gallery_add_css_and_js();
     remove_filter('the_content', 'wpautop');
     echo '<div class="wrap">
     <h2>Uncovery Gallery</h2>
