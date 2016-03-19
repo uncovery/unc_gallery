@@ -3,7 +3,7 @@ Contributors: uncovery
 Tags: gallery, photos, photo
 Requires at least: 4.4.2
 Tested up to: 4.4.2
-Stable tag: 0.3
+Stable tag: 1.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
