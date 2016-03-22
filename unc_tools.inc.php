@@ -188,7 +188,7 @@ function unc_tools_images_list($folder) {
         $folder_info = pathinfo($file_path);
         $date_str = unc_tools_folder_date($folder_info['dirname']);
         $date_path = str_replace("-", "/", $date_str);
-        $file_name = $folder_info['filename'];
+        $file_name = $folder_info['basename'];
         
         $photo_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
         $thumb_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
