@@ -178,6 +178,14 @@ function unc_array_iterate_compact($array, $path = '') {
     return $out;
 }
 
+/**
+ * Iterate all files in a folder and make a list of all the images with all the info
+ * for them
+ * 
+ * @global type $UNC_GALLERY
+ * @param type $folder
+ * @return array
+ */
 function unc_tools_images_list($folder) {
     global $UNC_GALLERY;
     $files = array();
