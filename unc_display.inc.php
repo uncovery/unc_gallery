@@ -248,6 +248,7 @@ function unc_gallery_display_page() {
             <span style=\"clear:both;\"></span>";
     }
     // remove the page tag from the original content and insert the new content
+    $out .= unc_display_photoswipe();
     return $out;
 }
 
@@ -280,8 +281,6 @@ function unc_display_folder_images() {
         </span>\n";
     }
 
-    $files = array();
-
     $dirs = array('.', '..');
     if ($D['featured_image']) {
         $skip_files = array_merge(array($D['featured_image']), $dirs);
@@ -289,37 +288,29 @@ function unc_display_folder_images() {
         $skip_files = $dirs;
     }
 
-    foreach (glob($curr_photo_folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
-        $file_name = basename($file_path);
-        if (in_array($file_name, $skip_files)) {
+    // get all the files in the folder with attributes
+    $files = unc_tools_images_list($curr_photo_folder);
+    // sort by date
+    ksort($files);
+    
+    // display except for skipped files and files out of time range
+    foreach ($files as $F) {
+        if (in_array($F['file_name'], $skip_files)) {
             continue;
         }
-        if ($file_name != '.' && $file_name != '..') {
-            $file_path = unc_tools_image_path($date_path, $file_name);
-            $file_date = unc_tools_image_date($file_path);
-            $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
-            $file_stamp = $dtime->getTimestamp();
-            // range
-            if (($D['range']['end_time'] && $D['range']['start_time']) && // only if both are set
-                    ($D['range']['end_time'] < $D['range']['start_time'])) { // AND the end is before the start
-                if (($D['range']['end_time'] < $file_stamp)
-                        && ($file_stamp < $D['range']['start_time'])) {  // then skip over the files inbetween end and start
-                    continue;
-                }
-            } else if (($D['range']['start_time'] && ($file_stamp < $D['range']['start_time'])) || // if there is a start and the file is earlier
-                ($D['range']['end_time'] && ($D['range']['end_time'] < $file_stamp))) { // or if there is an end and the file is later then skip
+        // range
+        if (($D['range']['end_time'] && $D['range']['start_time']) && // only if both are set
+                ($D['range']['end_time'] < $D['range']['start_time'])) { // AND the end is before the start
+            if (($D['range']['end_time'] < $F['time_stamp'])
+                    && ($F['time_stamp'] < $D['range']['start_time'])) {  // then skip over the files inbetween end and start
                 continue;
             }
-            $files[$file_date] = $file_name;
+        } else if (($D['range']['start_time'] && ($F['time_stamp'] < $D['range']['start_time'])) || // if there is a start and the file is earlier
+            ($D['range']['end_time'] && ($D['range']['end_time'] < $F['time_stamp']))) { // or if there is an end and the file is later then skip
+            continue;
         }
-    }
-
-    // sort the files by date / time
-    ksort($files);
-
-    foreach ($files as $file_date => $file_name) {
         $out .= "<div class=\"one_photo\">\n"
-            . unc_display_single_image($date_path, $file_name, true, $file_date)
+            . unc_display_single_image($date_path, $F['file_name'], true, $D['file_date'])
             . "</div>\n";
     }
 
@@ -379,5 +370,76 @@ function unc_display_single_image($date_path, $file_name, $show_thumb, $file_dat
     if (is_admin()) {
         $out .= "         <button class=\"delete_image_link\" title=\"Delete Image\" onClick=\"delete_image('$file_name','$date_str')\">&#9851;</button>";
     }
+    return $out;
+}
+
+function unc_display_photoswipe() {
+    $out = '<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    <!-- Background of PhotoSwipe. 
+         It\'s a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don\'t modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                <!--  Controls are self-explanatory. Order can be changed. -->
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+';
     return $out;
 }
