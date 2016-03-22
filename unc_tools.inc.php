@@ -187,32 +187,43 @@ function unc_array_iterate_compact($array, $path = '') {
  * @return array
  */
 function unc_tools_images_list($folder) {
-    global $UNC_GALLERY;
     $files = array();
     foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
-        $file_date = unc_tools_image_date($file_path); // get image date from EXIF/IPCT
-        $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
-        $time_stamp = $dtime->getTimestamp(); // time stamp is easier to compare
-        $folder_info = pathinfo($file_path);
-        $date_str = unc_tools_folder_date($folder_info['dirname']);
-        $date_path = str_replace("-", "/", $date_str);
-        $file_name = $folder_info['basename'];
-        
-        $photo_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
-        $thumb_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
-        $image_size = getimagesize($file_path);
-        $files[$file_date] = array(
-            'file_name' => $file_name,
-            'file_width' => $image_size[0],
-            'file_height' => $image_size[1],
-            'file_path' => $file_path,
-            'thumb_url' => $thumb_url,
-            'file_url' => $photo_url,
-            'time_stamp' => $time_stamp,
-            'file_date' => $file_date,
-        );
+        $F = unc_tools_image_info_get($file_path);
+        $files[$F['file_Date']] = $F;
     }
     return $files;
+}
+
+/**
+ * Get all possible information about a single file
+ * 
+ * @global type $UNC_GALLERY
+ * @param type $file_path
+ */
+function unc_tools_image_info_get($file_path) {
+    global $UNC_GALLERY;
+    $file_date = unc_tools_image_date($file_path); // get image date from EXIF/IPCT
+    $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
+    $time_stamp = $dtime->getTimestamp(); // time stamp is easier to compare
+    $folder_info = pathinfo($file_path);
+    $date_str = unc_tools_folder_date($folder_info['dirname']);
+    $date_path = str_replace("-", "/", $date_str);
+    $file_name = $folder_info['basename'];
+
+    $photo_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
+    $thumb_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
+    $image_size = getimagesize($file_path);
+    $files[$file_date] = array(
+        'file_name' => $file_name,
+        'file_width' => $image_size[0],
+        'file_height' => $image_size[1],
+        'file_path' => $file_path,
+        'thumb_url' => $thumb_url,
+        'file_url' => $photo_url,
+        'time_stamp' => $time_stamp,
+        'file_date' => $file_date,
+    );
 }
 
 
