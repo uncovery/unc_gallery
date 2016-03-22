@@ -214,7 +214,7 @@ function unc_tools_image_info_get($file_path) {
     $photo_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
     $thumb_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
     $image_size = getimagesize($file_path);
-    $files[$file_date] = array(
+    $file  = array(
         'file_name' => $file_name,
         'file_width' => $image_size[0],
         'file_height' => $image_size[1],
@@ -224,6 +224,7 @@ function unc_tools_image_info_get($file_path) {
         'time_stamp' => $time_stamp,
         'file_date' => $file_date,
     );
+    return $file;
 }
 
 
