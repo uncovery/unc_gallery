@@ -310,7 +310,7 @@ function unc_display_folder_images() {
             continue;
         }
         $out .= "<div class=\"one_photo\">\n"
-            . unc_display_single_image($date_path, $F['file_name'], true, $D['file_date'])
+            . unc_display_single_image($date_path, $F['file_name'], true, $F['file_date'])
             . "</div>\n";
     }
 
