@@ -185,7 +185,7 @@ function unc_tools_images_list($folder) {
         $file_date = unc_tools_image_date($file_path);
         $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
         $time_stamp = $dtime->getTimestamp(); // time stamp is easier to compare
-        $folder_info = pathinfo($folder);
+        $folder_info = pathinfo($file_path);
         $date_str = unc_tools_folder_date($folder_info['dirname']);
         $date_path = str_replace("-", "/", $date_str);
         $file_name = $folder_info['filename'];
