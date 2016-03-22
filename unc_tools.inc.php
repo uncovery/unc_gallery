@@ -221,8 +221,9 @@ function unc_tools_image_info_get($file_path) {
         'file_path' => $file_path,
         'thumb_url' => $thumb_url,
         'file_url' => $photo_url,
-        'time_stamp' => $time_stamp,
-        'file_date' => $file_date,
+        'time_stamp' => $time_stamp, // linux time stamp
+        'file_date' => $file_date, // full date including time
+        'date_str' => substr($file_date, 0, 10), // only the day 0000-00-00
     );
     return $file;
 }
