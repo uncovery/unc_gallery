@@ -233,11 +233,11 @@ function unc_tools_image_info_get($file_path) {
     
     $D = $UNC_GALLERY['display'];
     if (isset($D['details'][$file_name])) {
-        $description_full = $D['details'][$file_name] . " ($file_name / $file_date)";
+        $description = $D['details'][$file_name] . " ($file_name / $file_date)";
     } else if ($D['description']) {
-        $description_full = $D['description'] . " ($file_name / $file_date)";
+        $description = $D['description'] . " ($file_name / $file_date)";
     } else {
-        $description_full = "File Name: $file_name Date: $file_date";
+        $description = "File Name: $file_name Date: $file_date";
     }
 
     $photo_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
@@ -253,7 +253,7 @@ function unc_tools_image_info_get($file_path) {
         'time_stamp' => $time_stamp, // linux time stamp
         'file_date' => $file_date, // full date including time
         'date_str' => substr($file_date, 0, 10), // only the day 0000-00-00
-        'description' => $description_full,
+        'description' => $description,
     );
     return $file;
 }
