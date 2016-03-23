@@ -307,15 +307,11 @@ function unc_display_folder_images() {
 }
 
 function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
-    global $UNC_GALLERY;
-    
     if (!$file_data) {
         $F = unc_tools_image_info_get($file_path);
     } else {
         $F = $file_data;
     }
-    
-    $D = $UNC_GALLERY['display'];
     
     if ($show_thumb) {
         $shown_image = $F['thumb_url'];
@@ -325,15 +321,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
         $class = 'featured_image';
     }
     
-    if (isset($D['details'][$F['file_name']])) {
-        $description_full = $D['details'][$F['file_name']] . " ({$F['file_name']} / {$F['file_date']})";
-    } else if ($D['description']) {
-        $description_full = $D['description'] . " ({$F['file_name']} / {$F['file_date']})";
-    } else {
-        $description_full = "File Name: {$F['file_name']} Date: {$F['file_date']}";
-    }
-
-    $out = "        <a href=\"{$F['file_url']}\" data-lightbox=\"gallery_{$F['date_str']}\" data-title=\"$description_full\" title=\"$description_full\">\n"
+    $out = "        <a href=\"{$F['file_url']}\" data-lightbox=\"gallery_{$F['date_str']}\" data-title=\"{$F['description']}\" title=\"{$F['description']}\">\n"
          . "            <img alt=\"{$F['file_name']}\" src=\"$shown_image\">\n"
          . "        </a>\n";
     if (is_admin()) {
@@ -348,8 +336,8 @@ function unc_display_photoswipe_js($files) {
     foreach ($files  as $F) {
        $out .= "
         src: 'path/to/image1.jpg',
-        w: 1024,
-        h: 768,
+        w: {$F['file_width']},
+        h: {$F['file_height']},
         msrc: 'path/to/small-image.jpg',
         title: 'Image Caption'";
     }
