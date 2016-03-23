@@ -197,7 +197,7 @@ function unc_tools_images_list($date_str) {
     $files = array();
     foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
         $F = unc_tools_image_info_get($file_path);
-        $files[$F['file_Date']] = $F;
+        $files[$F['file_date']] = $F;
     }
     return $files;
 }
