@@ -165,8 +165,12 @@ function unc_gallery_display_var_init($atts = array()) {
     } else if (in_array('datelist', $options)) {
         $UNC_GALLERY['display']['date_selector'] = 'datelist';
     }
-
-    $UNC_GALLERY['display']['file'] = unc_tools_filename_validate($a['file']);
+    if ($a['file']) {
+        $UNC_GALLERY['display']['file'] = unc_tools_filename_validate($a['file']);
+    } else {
+        $UNC_GALLERY['display']['file'] = false;
+        $UNC_GALLERY['display']['files'] = unc_tools_images_list($folder);
+    }
     return true;
 }
 
@@ -225,23 +229,16 @@ function unc_gallery_display_page() {
         } else {
             $file = $D['file'];
         }
-        $out = unc_display_single_image($date_path, $file, $thumb);
+        $file_path = $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $file;
+        $out = unc_display_image_html($file_path, $thumb, false);
     } else {
         $images = unc_display_folder_images();
-
-        $single_photo = '';
-        if ($D['featured_image']) {
-            $single_photo = "<div class=\"featured_photo\">\n"
-                . unc_display_single_image($date_path, $D['featured_image'], false)
-                . "</div>\n";
-        }
         $delete_link = '';
         $out .= "
             <div class=\"unc_gallery\">
                 $datepicker_div
                 $delete_link
                 <div id=\"photos\">
-        $single_photo
         $images
                 </div>
             </div>
@@ -265,12 +262,8 @@ function unc_display_folder_images() {
     $D = $UNC_GALLERY['display'];
 
     $date_str = $D['date'];
-    $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
 
-    $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
-    $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
-
-    $out = '';
+    $header = '';
     if (is_admin()) {
         $out .= "
         <span class=\"delete_folder_link\">
@@ -281,19 +274,14 @@ function unc_display_folder_images() {
         </span>\n";
     }
 
-    $dirs = array('.', '..');
-    if ($D['featured_image']) {
-        $skip_files = array_merge(array($D['featured_image']), $dirs);
-    } else {
-        $skip_files = $dirs;
-    }
-
     // get all the files in the folder with attributes
-    $files = unc_tools_images_list($curr_photo_folder);
+    $files = unc_tools_images_list($date_str);
     // sort by date
     ksort($files);
     
     // display except for skipped files and files out of time range
+    $images = '';
+    $featured = '';
     foreach ($files as $F) {
         if (in_array($F['file_name'], $skip_files)) {
             continue;
@@ -309,10 +297,17 @@ function unc_display_folder_images() {
             ($D['range']['end_time'] && ($D['range']['end_time'] < $F['time_stamp']))) { // or if there is an end and the file is later then skip
             continue;
         }
-        $out .= "<div class=\"one_photo\">\n"
-            . unc_display_single_image($date_path, $F['file_name'], true, $F['file_date'])
-            . "</div>\n";
+        if ($F['file_name'] == $D['featured_image']){ 
+            $featured .= "<div class=\"featured_photo\">\n"
+                . unc_display_image_html($F['file_path'], false, F)
+                . "</div>\n";
+        } else {
+            $images .= "<div class=\"one_photo\">\n"
+                . unc_display_image_html($F['file_path'], true, $F)
+                . "</div>\n";
+        }
     }
+    $out = $header . $featured . $images;
 
     if ($D['echo']) {
         ob_clean();
@@ -323,52 +318,38 @@ function unc_display_folder_images() {
     }
 }
 
-/**
- * return a single file from a date & filename
- * assumes the file exists
- *
- * @global type $UNC_GALLERY
- * @param type $date_str
- * @param type $file_name
- * @return boolean
- */
-function unc_display_single_image($date_path, $file_name, $show_thumb, $file_date = false) {
+function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
-
+    
+    if (!$file_data) {
+        $F = unc_tools_image_info_get($file_path);
+    } else {
+        $F = $file_data;
+    }
+    
     $D = $UNC_GALLERY['display'];
-
-    $photo_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
-    $thumb_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
-
+    
     if ($show_thumb) {
-        $shown_image = $thumb_url;
+        $shown_image = $F['thumb_url'];
         $class = '';
     } else {
-        $shown_image = $photo_url;
+        $shown_image = $F['file_url'];
         $class = 'featured_image';
     }
-
-    if (!$file_date) {
-        $file_path = unc_tools_image_path($date_path, $file_name);
-        $file_date = unc_tools_image_date($file_path);
-    }
-
-    $date_str = str_replace(DIRECTORY_SEPARATOR, "-", $date_path);
-    if (isset($D['details'][$file_name])) {
-        $description_full = $D['details'][$file_name] . " ($file_name / $file_date)";
+    
+    if (isset($D['details'][$F['file_name']])) {
+        $description_full = $D['details'][$F['file_name']] . " ({$F['file_name']} / {$F['file_date']})";
     } else if ($D['description']) {
-        $description_full = $D['description'] . " ($file_name / $file_date)";
+        $description_full = $D['description'] . " ({$F['file_name']} / {$F['file_date']})";
     } else {
-        $description_full = "File Name: $file_name Date: $file_date";
+        $description_full = "File Name: {$F['file_name']} Date: {$F['file_date']}";
     }
 
-    // we are using lightbox: http://lokeshdhakar.com/projects/lightbox2/
-    $out = "        <a href=\"$photo_url\" data-lightbox=\"gallery_$date_str\" data-title=\"$description_full\" title=\"$description_full\">\n"
-         . "            <img alt=\"$file_name\" src=\"$shown_image\">\n"
+    $out = "        <a href=\"{$F['file_url']}\" data-lightbox=\"gallery_{$F['date_str']}\" data-title=\"$description_full\" title=\"$description_full\">\n"
+         . "            <img alt=\"{$F['file_name']}\" src=\"$shown_image\">\n"
          . "        </a>\n";
     if (is_admin()) {
-        $out .= "         <button class=\"delete_image_link\" title=\"Delete Image\" onClick=\"delete_image('$file_name','$date_str')\">&#9851;</button>";
+        $out .= "         <button class=\"delete_image_link\" title=\"Delete Image\" onClick=\"delete_image('{$F['file_name']}','{$F['date_str']}')\">&#9851;</button>";
     }
     return $out;
 }

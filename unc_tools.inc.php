@@ -186,7 +186,14 @@ function unc_array_iterate_compact($array, $path = '') {
  * @param type $folder
  * @return array
  */
-function unc_tools_images_list($folder) {
+function unc_tools_images_list($date_str) {
+    global $UNC_GALLERY;
+    
+    // translate date string to folder
+    $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
+    $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
+    $folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
+    
     $files = array();
     foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
         $F = unc_tools_image_info_get($file_path);
