@@ -283,17 +283,6 @@ function unc_display_folder_images() {
     $images = '';
     $featured = '';
     foreach ($files as $F) {
-        // range
-        if (($D['range']['end_time'] && $D['range']['start_time']) && // only if both are set
-                ($D['range']['end_time'] < $D['range']['start_time'])) { // AND the end is before the start
-            if (($D['range']['end_time'] < $F['time_stamp'])
-                    && ($F['time_stamp'] < $D['range']['start_time'])) {  // then skip over the files inbetween end and start
-                continue;
-            }
-        } else if (($D['range']['start_time'] && ($F['time_stamp'] < $D['range']['start_time'])) || // if there is a start and the file is earlier
-            ($D['range']['end_time'] && ($D['range']['end_time'] < $F['time_stamp']))) { // or if there is an end and the file is later then skip
-            continue;
-        }
         if ($F['file_name'] == $D['featured_image']){ 
             $featured .= "<div class=\"featured_photo\">\n"
                 . unc_display_image_html($F['file_path'], false, $F)
@@ -304,7 +293,9 @@ function unc_display_folder_images() {
                 . "</div>\n";
         }
     }
-    $out = $header . $featured . $images;
+    $photoswipe = unc_display_photoswipe_js($files);
+    
+    $out = $header . $featured . $images . $photoswipe;
 
     if ($D['echo']) {
         ob_clean();
@@ -347,6 +338,20 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
          . "        </a>\n";
     if (is_admin()) {
         $out .= "         <button class=\"delete_image_link\" title=\"Delete Image\" onClick=\"delete_image('{$F['file_name']}','{$F['date_str']}')\">&#9851;</button>";
+    }
+    return $out;
+}
+
+function unc_display_photoswipe_js($files) {
+    $out = '';
+    
+    foreach ($files  as $F) {
+       $out .= "
+        src: 'path/to/image1.jpg',
+        w: 1024,
+        h: 768,
+        msrc: 'path/to/small-image.jpg',
+        title: 'Image Caption'";
     }
     return $out;
 }
