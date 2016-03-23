@@ -169,7 +169,7 @@ function unc_gallery_display_var_init($atts = array()) {
         $UNC_GALLERY['display']['file'] = unc_tools_filename_validate($a['file']);
     } else {
         $UNC_GALLERY['display']['file'] = false;
-        $UNC_GALLERY['display']['files'] = unc_tools_images_list($folder);
+        $UNC_GALLERY['display']['files'] = unc_tools_images_list($date_str);
     }
     return true;
 }
