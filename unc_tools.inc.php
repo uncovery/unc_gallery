@@ -194,10 +194,23 @@ function unc_tools_images_list($date_str) {
     $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
     $folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
     
+    $D = $UNC_GALLERY['display'];
+    
     $files = array();
     foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
         $F = unc_tools_image_info_get($file_path);
+        if (($D['range']['end_time'] && $D['range']['start_time']) && // only if both are set
+                ($D['range']['end_time'] < $D['range']['start_time'])) { // AND the end is before the start
+            if (($D['range']['end_time'] < $F['time_stamp'])
+                    && ($F['time_stamp'] < $D['range']['start_time'])) {  // then skip over the files inbetween end and start
+                continue;
+            }
+        } else if (($D['range']['start_time'] && ($F['time_stamp'] < $D['range']['start_time'])) || // if there is a start and the file is earlier
+            ($D['range']['end_time'] && ($D['range']['end_time'] < $F['time_stamp']))) { // or if there is an end and the file is later then skip
+            continue;
+        }
         $files[$F['file_date']] = $F;
+        
     }
     return $files;
 }
