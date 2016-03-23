@@ -283,9 +283,6 @@ function unc_display_folder_images() {
     $images = '';
     $featured = '';
     foreach ($files as $F) {
-        if (in_array($F['file_name'], $skip_files)) {
-            continue;
-        }
         // range
         if (($D['range']['end_time'] && $D['range']['start_time']) && // only if both are set
                 ($D['range']['end_time'] < $D['range']['start_time'])) { // AND the end is before the start
