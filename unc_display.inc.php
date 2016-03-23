@@ -341,7 +341,7 @@ function unc_display_photoswipe_js($files) {
         msrc: 'path/to/small-image.jpg',
         title: 'Image Caption'";
     }
-    return $out;
+    return '';
 }
 
 function unc_display_photoswipe() {
