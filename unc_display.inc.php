@@ -356,7 +356,8 @@ function unc_display_photoswipe_js($files) {
         };        
         var uncg_items = [';
     foreach ($files  as $F) {
-        $out .= "    {
+        $out .= "
+    {
         src: '{$F['file_url']}',
         w: {$F['file_width']},
         h: {$F['file_height']},
