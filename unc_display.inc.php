@@ -294,7 +294,7 @@ function unc_display_folder_images() {
         $i++;
     }
     $photoswipe = '';
-    if ($UNC_GALLERY['image_view_type'] == 'photoswipe') {
+    if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
         $photoswipe = unc_display_photoswipe_js($files);
     }
     
@@ -325,10 +325,10 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
         $shown_image = $F['file_url'];
         $class = 'featured_image';
     }
-    if ($UNC_GALLERY['image_view_type'] == 'photoswipe') {
+    if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
         $js_code = str_replace("-", "_", $D['date']);
         $gal_text = "onClick=\"unc_g_photoswipe_$js_code('{$F['index']}'); return false;\"";
-    } else {
+    } else if ($UNC_GALLERY['image_view_method'] == 'lightbox') {
         $gal_text = "data-lightbox=\"gallery_{$F['file_name']}\"";
     }
      

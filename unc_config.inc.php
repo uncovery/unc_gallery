@@ -66,9 +66,9 @@ $UNC_GALLERY['user_settings'] = array(
         'options' => array('calendar' => 'Calendar', 'datelist' => 'Date List'),
     ),
     'image_view_method' => array(
-        'help' => 'Do you want to use photoswipe (mobile enabled) or lightbox to view images?',
+        'help' => 'Do you want to use photoswipe (mobile enabled) or lightbox, or just an image link to view images?',
         'default' => 'photoswipe',
         'type' => 'dropdown',
-        'options' => array('photoswipe' => 'Photoswipe', 'lightbox' => 'Lightbox'),
+        'options' => array('photoswipe' => 'Photoswipe', 'lightbox' => 'Lightbox', 'none' => 'Direct image link'),
     ),
 );
