@@ -120,7 +120,7 @@ function unc_gallery_add_css_and_js() {
     wp_enqueue_script('unc_gallery_js', plugin_dir_url( __FILE__ ) . 'js/unc_gallery.js');
     wp_enqueue_style('unc_gallery_css', plugin_dir_url( __FILE__ ) . 'css/gallery.css');
 
-    if ($UNC_GALLERY['imge_view_type'] == 'lightbox') {
+    if ($UNC_GALLERY['image_view_type'] == 'lightbox') {
         // lightbox
         wp_register_script('unc_gallery_lightbox_js', plugin_dir_url( __FILE__ ) . 'js/lightbox.min.js', array(), '2.8.2', true);
         wp_enqueue_script('unc_gallery_lightbox_js');
