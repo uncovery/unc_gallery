@@ -108,6 +108,7 @@ function unc_gallery_plugin_uninstall() {
  *
  */
 function unc_gallery_add_css_and_js() {
+    global $UNC_GALLERY;
     // jquery etc
     wp_enqueue_script('jquery-ui');
     wp_enqueue_script('jquery-form');
@@ -119,16 +120,18 @@ function unc_gallery_add_css_and_js() {
     wp_enqueue_script('unc_gallery_js', plugin_dir_url( __FILE__ ) . 'js/unc_gallery.js');
     wp_enqueue_style('unc_gallery_css', plugin_dir_url( __FILE__ ) . 'css/gallery.css');
 
-    // lightbox
-    wp_register_script('unc_gallery_lightbox_js', plugin_dir_url( __FILE__ ) . 'js/lightbox.min.js', array(), '2.8.2', true);
-    wp_enqueue_script('unc_gallery_lightbox_js');
-    wp_enqueue_style('unc_gallery_lightbox_css', plugin_dir_url( __FILE__ ) . 'css/lightbox.min.css');
-    
-    //photoswipe
-    wp_register_script('unc_gallery_photoswipe_ui_js', plugin_dir_url( __FILE__ ) . 'js/photoswipe-ui-default.min.js', array(), '4.1.1', true);
-    wp_enqueue_script('unc_gallery_photoswipe_ui_js');
-    wp_register_script('unc_gallery_photoswipe_js', plugin_dir_url( __FILE__ ) . 'js/photoswipe.min.js', array(), '4.1.1', true);
-    wp_enqueue_script('unc_gallery_photoswipe_js');
-    wp_enqueue_style('unc_gallery_photoswipe_css', plugin_dir_url( __FILE__ ) . 'css/photoswipe.css');
-    wp_enqueue_style('unc_gallery_photoswipe_skin_css', plugin_dir_url( __FILE__ ) . 'css/default-skin.css');
+    if ($UNC_GALLERY['imge_view_type'] == 'lightbox') {
+        // lightbox
+        wp_register_script('unc_gallery_lightbox_js', plugin_dir_url( __FILE__ ) . 'js/lightbox.min.js', array(), '2.8.2', true);
+        wp_enqueue_script('unc_gallery_lightbox_js');
+        wp_enqueue_style('unc_gallery_lightbox_css', plugin_dir_url( __FILE__ ) . 'css/lightbox.min.css');
+    } else {
+        //photoswipe
+        wp_register_script('unc_gallery_photoswipe_ui_js', plugin_dir_url( __FILE__ ) . 'js/photoswipe-ui-default.min.js', array(), '4.1.1', true);
+        wp_enqueue_script('unc_gallery_photoswipe_ui_js');
+        wp_register_script('unc_gallery_photoswipe_js', plugin_dir_url( __FILE__ ) . 'js/photoswipe.min.js', array(), '4.1.1', true);
+        wp_enqueue_script('unc_gallery_photoswipe_js');
+        wp_enqueue_style('unc_gallery_photoswipe_css', plugin_dir_url( __FILE__ ) . 'css/photoswipe.css');
+        wp_enqueue_style('unc_gallery_photoswipe_skin_css', plugin_dir_url( __FILE__ ) . 'css/default-skin.css');
+    }
 }

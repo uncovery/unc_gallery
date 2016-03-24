@@ -245,7 +245,10 @@ function unc_gallery_display_page() {
             <span style=\"clear:both;\"></span>";
     }
     // remove the page tag from the original content and insert the new content
-    $out .= unc_display_photoswipe();
+    if ($UNC_GALLERY['imge_view_type'] == 'photoswipe') {
+        $out .= unc_display_photoswipe();
+    }
+
     return $out;
 }
 
@@ -295,7 +298,10 @@ function unc_display_folder_images() {
         }
         $i++;
     }
-    $photoswipe = unc_display_photoswipe_js($files);
+    $photoswipe = '';
+    if ($UNC_GALLERY['imge_view_type'] == 'photoswipe') {
+        $photoswipe = unc_display_photoswipe_js($files);
+    }
     
     $out = $header . $featured . $images . $photoswipe;
 
