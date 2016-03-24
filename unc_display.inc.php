@@ -279,7 +279,7 @@ function unc_display_folder_images() {
     // display except for skipped files and files out of time range
     $images = '';
     $featured = '';
-    $i = 0;
+    $i = 1;
     foreach ($files as $F) {
         $F['index'] = $i;
         if ($F['featured'] == true){ 
