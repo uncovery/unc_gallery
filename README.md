@@ -164,6 +164,10 @@ Lightbox is a simple display overlay with keyboard navigation in a centered wind
 Photoswipe is a more complex system with a full-screen display and is enabled 
 for touch devices such as mobile phones and tablets.
 
+| Lightbox | Photoswipe|
+|---------------------------------|----------------------------------|
+|![Lightbox](/images/screenshot-13.png)|![Photoswipe](/images/screenshot-12.png)|
+
 ## Known Bugs, upcoming features
 
 You can see known bugs and upcoming features on the project's
