@@ -316,6 +316,7 @@ function unc_display_folder_images() {
 
 function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     global $UNC_GALLERY;
+    $D = $UNC_GALLERY['display'];
     if (!$file_data) {
         $F = unc_tools_image_info_get($file_path);
     } else {
@@ -330,13 +331,13 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
         $class = 'featured_image';
     }
     if ($UNC_GALLERY['image_view_type'] == 'photoswipe') {
-        $gal_text = "onClick=\"unc_g_photoswipe('{$F['date_str']}'); return false;\"";
+        $gal_text = "onClick=\"unc_g_photoswipe_{$D['date']}('{$F['date_str']}'); return false;\"";
     } else {
         $gal_text = "data-lightbox=\"gallery_{$F['date_str']}\"";
     }
      
     
-    $out = "        <a href=\"{$F['file_url']}\"  $gal_text title=\"{$F['description']}\">\n"
+    $out = "        <a href=\"{$F['file_url']}\" $gal_text title=\"{$F['description']}\">\n"
          . "            <img alt=\"{$F['description']}\" src=\"$shown_image\">\n"
          . "        </a>\n";
     if (is_admin()) {
@@ -346,9 +347,12 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
 }
 
 function unc_display_photoswipe_js($files) {
+    global $UNC_GALLERY;
+    $D = $UNC_GALLERY['display'];
+    
     $out = '
 <script type="text/javascript">
-    function unc_g_photoswipe(index) {
+    function unc_g_photoswipe_' . $D['date'] . '(index) {
         var options = {
             index: index
         };        
@@ -362,7 +366,7 @@ function unc_display_photoswipe_js($files) {
         title: '{$F['description']}'
     },";
     }
-        $out .= "];
+    $out .= "];
         var pswpElement = document.querySelectorAll('.pswp')[0];
         var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, uncg_items, options);
         gallery.init();
