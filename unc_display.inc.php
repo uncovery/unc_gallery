@@ -246,7 +246,7 @@ function unc_gallery_display_page() {
     }
     // remove the page tag from the original content and insert the new content
     if ($UNC_GALLERY['image_view_type'] == 'photoswipe') {
-        $out .= unc_display_photoswipe();
+        add_action( 'wp_footer', 'unc_display_photoswipe' );
     }
 
     return $out;
