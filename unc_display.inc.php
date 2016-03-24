@@ -351,7 +351,7 @@ function unc_display_photoswipe_js($files) {
     }
         $out .= "];
         var pswpElement = document.querySelectorAll('.pswp')[0];
-        var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, items, options);
+        var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, uncg_items, options);
         gallery.init();
     }
 </script>";
