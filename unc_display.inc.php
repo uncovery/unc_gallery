@@ -354,7 +354,7 @@ function unc_display_photoswipe_js($files) {
         var options = {
             index: index
         };        
-        var uncg_items = [';
+        var uncg_items_' . $js_code . ' = [';
     foreach ($files  as $F) {
         $out .= "
     {
@@ -367,7 +367,7 @@ function unc_display_photoswipe_js($files) {
     }
     $out .= "];
         var pswpElement = document.querySelectorAll('.pswp')[0];
-        var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, uncg_items, options);
+        var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, uncg_items_' . $js_code . ', options);
         gallery.init();
     }
 </script>";
