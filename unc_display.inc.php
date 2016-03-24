@@ -282,9 +282,10 @@ function unc_display_folder_images() {
     // display except for skipped files and files out of time range
     $images = '';
     $featured = '';
+    $i = 0;
     foreach ($files as $F) {
         if ($F['file_name'] == $D['featured_image']){ 
-            $featured .= "<div class=\"featured_photo\">\n"
+            $featured .= "<div class=\"featured_photo\" onClick=\"unc_g_photoswipe($i)\">\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . "</div>\n";
         } else {
@@ -292,6 +293,7 @@ function unc_display_folder_images() {
                 . unc_display_image_html($F['file_path'], true, $F)
                 . "</div>\n";
         }
+        $i++;
     }
     $photoswipe = unc_display_photoswipe_js($files);
     
@@ -331,16 +333,24 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
 }
 
 function unc_display_photoswipe_js($files) {
-    $out = '';
-    
+    $out = 'function unc_g_photoswipe(index) {
+    var options = {
+        index: index
+    };        
+    var uncg_items = [';
     foreach ($files  as $F) {
-       $out .= "
-        src: 'path/to/image1.jpg',
+        $out .= "    {
+        src: '{$F['file_url']}',
         w: {$F['file_width']},
         h: {$F['file_height']},
-        msrc: 'path/to/small-image.jpg',
-        title: 'Image Caption'";
+        msrc: '{$F['thumb_url']}',
+        title: '{$F['description']}
+    },";
     }
+    $out .= "];
+    var pswpElement = document.querySelectorAll('.pswp')[0];
+    var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, items, options);
+    gallery.init();";
     return '';
 }
 
