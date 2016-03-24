@@ -268,7 +268,7 @@ function unc_display_folder_images() {
 
     $header = '';
     if (is_admin()) {
-        $out .= "
+        $header .= "
         <span class=\"delete_folder_link\">
             Sample shortcode for this day: <input type=\"text\" value=\"[unc_gallery date=&quot;$date_str&quot;]\">
             <a href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_str\">
