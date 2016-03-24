@@ -355,7 +355,7 @@ function unc_display_photoswipe_js($files) {
         gallery.init();
     }
 </script>";
-    return '';
+    return $out;
 }
 
 function unc_display_photoswipe() {
