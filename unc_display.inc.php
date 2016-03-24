@@ -333,11 +333,13 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
 }
 
 function unc_display_photoswipe_js($files) {
-    $out = 'function unc_g_photoswipe(index) {
-    var options = {
-        index: index
-    };        
-    var uncg_items = [';
+    $out = '
+<script type="text/javascript">
+    function unc_g_photoswipe(index) {
+        var options = {
+            index: index
+        };        
+        var uncg_items = [';
     foreach ($files  as $F) {
         $out .= "    {
         src: '{$F['file_url']}',
@@ -347,10 +349,12 @@ function unc_display_photoswipe_js($files) {
         title: '{$F['description']}
     },";
     }
-    $out .= "];
-    var pswpElement = document.querySelectorAll('.pswp')[0];
-    var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, items, options);
-    gallery.init();";
+        $out .= "];
+        var pswpElement = document.querySelectorAll('.pswp')[0];
+        var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, items, options);
+        gallery.init();
+    }
+</script>";
     return '';
 }
 
