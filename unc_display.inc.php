@@ -288,7 +288,7 @@ function unc_display_folder_images() {
     $i = 0;
     foreach ($files as $F) {
         if ($F['file_name'] == $D['featured_image']){ 
-            $featured .= "<div class=\"featured_photo\" onClick=\"unc_g_photoswipe($i)\">\n"
+            $featured .= "<div class=\"featured_photo\"\">\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . "</div>\n";
         } else {
@@ -315,6 +315,7 @@ function unc_display_folder_images() {
 }
 
 function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
+    global $UNC_GALLERY;
     if (!$file_data) {
         $F = unc_tools_image_info_get($file_path);
     } else {
@@ -328,9 +329,15 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
         $shown_image = $F['file_url'];
         $class = 'featured_image';
     }
+    if ($UNC_GALLERY['image_view_type'] == 'photoswipe') {
+        $gal_text = "onClick=\"unc_g_photoswipe({$F['date_str']})";
+    } else {
+        $gal_text = "data-lightbox=\"gallery_{$F['date_str']}\"";
+    }
+     
     
-    $out = "        <a href=\"{$F['file_url']}\" data-lightbox=\"gallery_{$F['date_str']}\" data-title=\"{$F['description']}\" title=\"{$F['description']}\">\n"
-         . "            <img alt=\"{$F['file_name']}\" src=\"$shown_image\">\n"
+    $out = "        <a href=\"{$F['file_url']}\"  $gal_text title=\"{$F['description']}\">\n"
+         . "            <img alt=\"{$F['description']}\" src=\"$shown_image\">\n"
          . "        </a>\n";
     if (is_admin()) {
         $out .= "         <button class=\"delete_image_link\" title=\"Delete Image\" onClick=\"delete_image('{$F['file_name']}','{$F['date_str']}')\">&#9851;</button>";
