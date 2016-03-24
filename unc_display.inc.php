@@ -284,7 +284,7 @@ function unc_display_folder_images() {
     $i = 0;
     foreach ($files as $F) {
         if ($F['file_name'] == $D['featured_image']){ 
-            $featured .= "<div class=\"featured_photo\"\">\n"
+            $featured .= "<div class=\"featured_photo\">\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . "</div>\n";
         } else {
