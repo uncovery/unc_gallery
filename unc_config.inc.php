@@ -65,8 +65,8 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'dropdown',
         'options' => array('calendar' => 'Calendar', 'datelist' => 'Date List'),
     ),
-    'imge_view_type' => array(
-        'help' => 'Do ypu want to use photoswipe or lightbox?.',
+    'image_view_type' => array(
+        'help' => 'Do you want to use photoswipe or lightbox to view images?',
         'default' => 'photoswipe',
         'type' => 'dropdown',
         'options' => array('photoswipe' => 'Photoswipe', 'lightbox' => 'Lightbox'),

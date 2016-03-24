@@ -245,7 +245,7 @@ function unc_gallery_display_page() {
             <span style=\"clear:both;\"></span>";
     }
     // remove the page tag from the original content and insert the new content
-    if ($UNC_GALLERY['imge_view_type'] == 'photoswipe') {
+    if ($UNC_GALLERY['image_view_type'] == 'photoswipe') {
         $out .= unc_display_photoswipe();
     }
 
@@ -299,7 +299,7 @@ function unc_display_folder_images() {
         $i++;
     }
     $photoswipe = '';
-    if ($UNC_GALLERY['imge_view_type'] == 'photoswipe') {
+    if ($UNC_GALLERY['image_view_type'] == 'photoswipe') {
         $photoswipe = unc_display_photoswipe_js($files);
     }
     
