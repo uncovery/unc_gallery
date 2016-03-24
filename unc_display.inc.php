@@ -325,6 +325,8 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
         $shown_image = $F['file_url'];
         $class = 'featured_image';
     }
+    
+    $gal_text = '';
     if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
         $js_code = str_replace("-", "_", $D['date']);
         $gal_text = "onClick=\"unc_g_photoswipe_$js_code('{$F['index']}'); return false;\"";
