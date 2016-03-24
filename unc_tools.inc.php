@@ -197,6 +197,7 @@ function unc_tools_images_list($date_str) {
     $D = $UNC_GALLERY['display'];
     
     $files = array();
+    $featured = false;
     foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
         $F = unc_tools_image_info_get($file_path);
         if (($D['range']['end_time'] && $D['range']['start_time']) && // only if both are set
@@ -209,9 +210,19 @@ function unc_tools_images_list($date_str) {
             ($D['range']['end_time'] && ($D['range']['end_time'] < $F['time_stamp']))) { // or if there is an end and the file is later then skip
             continue;
         }
-        $files[$F['file_date']] = $F;
-        
+        if ($F['file_name'] == $D['featured_image']){ 
+            $F['featured'] = true;
+            $featured = $F;
+        } else {
+            $F['featured'] = false;
+            $files[$F['file_date']] = $F;
+        }
     }
+    ksort($files);
+    if ($featured) {
+        array_unshift($files, $featured);
+    }
+    
     return $files;
 }
 

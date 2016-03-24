@@ -275,15 +275,13 @@ function unc_display_folder_images() {
 
     // get all the files in the folder with attributes
     $files = unc_tools_images_list($date_str);
-    // sort by date
-    ksort($files);
     
     // display except for skipped files and files out of time range
     $images = '';
     $featured = '';
     $i = 0;
     foreach ($files as $F) {
-        if ($F['file_name'] == $D['featured_image']){ 
+        if ($F['featured'] == true){ 
             $featured .= "<div class=\"featured_photo\">\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . "</div>\n";
