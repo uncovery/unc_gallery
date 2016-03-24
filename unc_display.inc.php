@@ -330,7 +330,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
         $class = 'featured_image';
     }
     if ($UNC_GALLERY['image_view_type'] == 'photoswipe') {
-        $gal_text = "onClick=\"unc_g_photoswipe({$F['date_str']})\"";
+        $gal_text = "onClick=\"unc_g_photoswipe('{$F['date_str']}'); return false;\"";
     } else {
         $gal_text = "data-lightbox=\"gallery_{$F['date_str']}\"";
     }
@@ -366,7 +366,6 @@ function unc_display_photoswipe_js($files) {
         var pswpElement = document.querySelectorAll('.pswp')[0];
         var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, uncg_items, options);
         gallery.init();
-        return false;
     }
 </script>";
     return $out;
