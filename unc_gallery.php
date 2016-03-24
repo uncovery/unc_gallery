@@ -133,5 +133,6 @@ function unc_gallery_add_css_and_js() {
         wp_enqueue_script('unc_gallery_photoswipe_js');
         wp_enqueue_style('unc_gallery_photoswipe_css', plugin_dir_url( __FILE__ ) . 'css/photoswipe.css');
         wp_enqueue_style('unc_gallery_photoswipe_skin_css', plugin_dir_url( __FILE__ ) . 'css/default-skin.css');
+        add_action( 'wp_footer', 'unc_display_photoswipe' );
     }
 }
