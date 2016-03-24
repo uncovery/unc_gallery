@@ -440,5 +440,5 @@ function unc_display_photoswipe() {
 
 </div>
 ';
-    return $out;
+    echo $out;
 }
