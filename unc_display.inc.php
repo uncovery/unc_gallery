@@ -281,6 +281,7 @@ function unc_display_folder_images() {
     $featured = '';
     $i = 0;
     foreach ($files as $F) {
+        $F['index'] = $i;
         if ($F['featured'] == true){ 
             $featured .= "<div class=\"featured_photo\">\n"
                 . unc_display_image_html($F['file_path'], false, $F)
@@ -326,7 +327,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     }
     if ($UNC_GALLERY['image_view_type'] == 'photoswipe') {
         $js_code = str_replace("-", "_", $D['date']);
-        $gal_text = "onClick=\"unc_g_photoswipe_$js_code('{$F['file_name']}'); return false;\"";
+        $gal_text = "onClick=\"unc_g_photoswipe_$js_code('{$F['index']}'); return false;\"";
     } else {
         $gal_text = "data-lightbox=\"gallery_{$F['file_name']}\"";
     }
