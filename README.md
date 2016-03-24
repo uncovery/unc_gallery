@@ -157,6 +157,13 @@ depending on your preference.
 |---------------------------------|----------------------------------|
 |![Calendar](/images/screenshot-7.png)|![Datelist](/images/screenshot-8.png)|
 
+### Image View Method
+
+You can chose between Photoswipe and Lightbox to show images when clicked on it.
+Lightbox is a simple display overlay with keyboard navigation in a centered window.
+Photoswipe is a more complex system with a full-screen display and is enabled 
+for touch devices such as mobile phones and tablets.
+
 ## Known Bugs, upcoming features
 
 You can see known bugs and upcoming features on the project's
