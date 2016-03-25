@@ -338,6 +338,7 @@ function unc_tools_date_latest() {
 
     $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
     $folders = unc_tools_recurse_folders($photo_folder);
+    var_dump($folders);
     if (count($folders) == 1 && $folders[0] == $photo_folder) {
         return false;
     }
