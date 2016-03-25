@@ -348,7 +348,11 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
 
 function unc_display_photoswipe_js($files) {
     global $post;
-    $slug = str_replace("-", "_", $post->post_name);
+    $slug = '';
+    if (isset($post->post_name)) {
+        $slug = str_replace("-", "_", $post->post_name);
+    }
+    
     $out = '
 <script type="text/javascript">
     function unc_g_photoswipe_' . $slug . '(index) {
