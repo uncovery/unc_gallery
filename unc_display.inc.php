@@ -191,9 +191,12 @@ function unc_gallery_display_page() {
     if ($D['date_description']) {
         $datepicker_div = "<span id=\"photodate\">Showing {$D['date']}</span>";
     }
+    $avail_dates = unc_tools_folder_list($photo_folder);
+    if (!$avail_dates) {
+        return "There are no images in the libray yet. Please upload some first.";
+    }
+    
     if ($D['date_selector'] == 'calendar') {
-        $avail_dates = unc_tools_folder_list($photo_folder);
-
         $out .= "\n     <script type=\"text/javascript\">
         var availableDates = [\"" . implode("\",\"", array_keys($avail_dates)) . "\"];
         var ajaxurl = \"" . admin_url('admin-ajax.php') . "\";
@@ -203,9 +206,8 @@ function unc_gallery_display_page() {
         </script>";
         $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"{$D['date']}\">";
     } else if ($D['date_selector'] == 'datelist') {
-        $folder_list = unc_tools_folder_list($photo_folder);
         $datepicker_div = "<select id=\"datepicker\" onchange=\"datelist_change()\">\n";
-        foreach ($folder_list as $folder_date => $folder_files) {
+        foreach ($avail_dates as $folder_date => $folder_files) {
             $counter = count($folder_files);
             $datepicker_div .= "<option value=\"$folder_date\">$folder_date ($counter)</option>\n";
         }
