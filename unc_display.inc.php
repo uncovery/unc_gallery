@@ -328,8 +328,9 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     
     $gal_text = '';
     if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
-        $js_code = str_replace("-", "_", $D['date']);
-        $gal_text = "onClick=\"unc_g_photoswipe_$js_code({$F['index']}); return false;\"";
+        global $post;
+        $slug = $post->post_name;
+        $gal_text = "onClick=\"unc_g_photoswipe_$slug({$F['index']}); return false;\"";
     } else if ($UNC_GALLERY['image_view_method'] == 'lightbox') {
         $gal_text = "data-lightbox=\"gallery_{$F['file_name']}\"";
     }
@@ -345,16 +346,15 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
 }
 
 function unc_display_photoswipe_js($files) {
-    global $UNC_GALLERY;
-    $D = $UNC_GALLERY['display'];
-    $js_code = str_replace("-", "_", $D['date']);
+    global $post;
+    $slug = $post->post_name;
     $out = '
 <script type="text/javascript">
-    function unc_g_photoswipe_' . $js_code . '(index) {
+    function unc_g_photoswipe_' . $slug . '(index) {
         var options = {
             index: index
         };        
-        var uncg_items_' . $js_code . ' = [';
+        var uncg_items_' . $slug . ' = [';
     foreach ($files  as $F) {
         $out .= "
     {
@@ -367,7 +367,7 @@ function unc_display_photoswipe_js($files) {
     }
     $out .= "];
         var pswpElement = document.querySelectorAll('.pswp')[0];
-        var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, uncg_items_$js_code, options);
+        var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, uncg_items_$slug, options);
         gallery.init();
     }
 </script>";
