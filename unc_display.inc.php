@@ -329,7 +329,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     $gal_text = '';
     if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
         $js_code = str_replace("-", "_", $D['date']);
-        $gal_text = "onClick=\"unc_g_photoswipe_$js_code('{$F['index']}'); return false;\"";
+        $gal_text = "onClick=\"unc_g_photoswipe_$js_code({$F['index']}); return false;\"";
     } else if ($UNC_GALLERY['image_view_method'] == 'lightbox') {
         $gal_text = "data-lightbox=\"gallery_{$F['file_name']}\"";
     }
