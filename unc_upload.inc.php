@@ -79,7 +79,11 @@ function unc_gallery_admin_upload() {
         <div class="image_upload_submit">
             <?php submit_button("Upload", "primary", "btnSubmit", false); ?>
         </div>
-
+        <hr>
+        Import photos from path on the server: <input type="text" id="import_path" name="import_path[]" class="import_path"/>
+        <button class="button button-primary" onclick="unc_gallery_generic_ajax('unc_gallery_import_path', 'import_path_result')">
+            Import
+        </button>
     </form>
     <?php
 }
