@@ -79,14 +79,11 @@ function unc_gallery_admin_upload() {
         <div class="image_upload_submit">
             <?php submit_button("Upload", "primary", "btnSubmit", false); ?>
         </div>
-    </form>
-    <h2>Import Images</h2>
-    <form id="importForm" method="POST" enctype="multipart/form-data">
-        Import photos from path on this server: <input type="text" id="import_path" name="import_path[]" class="import_path"/>
-        <button class="button button-primary" onclick="unc_gallery_import_images(); return false;">
+        <hr>
+        Import photos from path on the server: <input type="text" id="import_path" name="import_path[]" class="import_path"/>
+        <button class="button button-primary" onclick="unc_gallery_generic_ajax('unc_gallery_import_path', 'import_path_result')">
             Import
         </button>
-        <div id="import_targetLayer"></div>
     </form>
     <?php
 }
@@ -100,36 +97,22 @@ function unc_uploads_iterate_files() {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     // get the amount of files
-    // do we have an upload or an import?
-    $F = false;
-    $import_path = filter_input(INPUT_GET, 'import_path');
-    if (!is_null($import_path)) {
-        if (is_dir($import_path)) {
-            // iterate files in the path
-            unc_tools_import_enumerate($import_path);
-            $F = $UNC_GALLERY['import'];
-            $count = count($F["name"]);
-        } else {
-            echo $import_path . " cannot be accessed or does not exist! Make sure its readable by the apache user!";
-            wp_die();
-        }
-    } else if (empty($_FILES) && empty($_POST) && isset($_SERVER['REQUEST_METHOD']) && strtolower($_SERVER['REQUEST_METHOD']) == 'post'){ //catch file overload error...
+    if (empty($_FILES) && empty($_POST) && isset($_SERVER['REQUEST_METHOD']) && strtolower($_SERVER['REQUEST_METHOD']) == 'post'){ //catch file overload error...
             $postMax = ini_get('post_max_size'); //grab the size limits...
             echo "<p style=\"color: #F00;\">\nPlease note files larger than {$postMax} will result in this error!<br>Please be advised this is not a limitation in the CMS, This is a limitation of the hosting server.<br>For various reasons they limit the max size of uploaded files, if you have access to the php ini file you can fix this by changing the post_max_size setting.<br> If you can't then please ask your host to increase the size limits, or use the FTP uploaded form</p>"; // echo out error and solutions...
             wp_die(); //bounce back to the just filled out form.
-    } else {
-        $UNC_GALLERY['upload'] = $_FILES["userImage"];
-        $F = $_FILES["userImage"];
-        $count = count($F["name"]);
-        $ini_max = ini_get('max_file_uploads');
-        if ($count >= $ini_max) {
-            echo "Your server does not allow you to upload more than $ini_max files, you picked $count!";
-            wp_die();
-        }        
     }
+    $count = count($_FILES["userImage"]["name"]);
+
+    $ini_max = ini_get('max_file_uploads');
 
     if ($count < 1) {
         echo "No images found to upload";
+        wp_die();
+    }
+
+    if ($count >= $ini_max) {
+        echo "Your server does not allow you to upload more than $ini_max files, you picked $count!";
         wp_die();
     }
 
@@ -197,14 +180,7 @@ function unc_uploads_process_file($i, $overwrite) {
     //}
 
     // the FILE array from the server
-    
-    if (isset($UNC_GALLERY['import'])) {
-        $type = 'import';
-        $F = $UNC_GALLERY['import'];
-    } else {
-        $type = 'upload';
-        $F = $UNC_GALLERY['upload'];
-    }
+    $F = $_FILES["userImage"];
 
     // is there an error with the file?
     if ($F["error"][$i] > 0){
@@ -251,9 +227,7 @@ function unc_uploads_process_file($i, $overwrite) {
     $target_filename = $file_no_ext . "." . $extension;
 
     // get the current path of the temp name
-    if ($type == 'upload' && is_uploaded_file($F['tmp_name'][$i])) {
-        $sourcePath = $F['tmp_name'][$i];
-    } else if ($type == 'import' && is_file($F['tmp_name'][$i])) {
+    if (is_uploaded_file($F['tmp_name'][$i])) {
         $sourcePath = $F['tmp_name'][$i];
     } else {
         return array('date'=> false, 'action' => "Cannot find uploaded file {$F['tmp_name'][$i]}!");
@@ -309,11 +283,7 @@ function unc_uploads_process_file($i, $overwrite) {
             return array('date'=> false, 'action' => "Could not resize {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path");
         }
     } else {
-        if ($type == 'upload') { 
-            $rename_chk = move_uploaded_file($F['tmp_name'][$i], $new_path);
-        } else { // import
-            $rename_chk = rename($F['tmp_name'][$i], $new_path);
-        }
+        $rename_chk = move_uploaded_file($F['tmp_name'][$i], $new_path);
         if (!$rename_chk) {
             return array('date'=> false, 'action' => "Could not move {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path");
         }

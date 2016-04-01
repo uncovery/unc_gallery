@@ -139,31 +139,6 @@ function unc_tools_folder_delete_empty($path) {
 }
 
 /**
- * Make a list of all images in folder and subfolder
- *
- * @param type $path
- * @return type
- */
-function unc_tools_import_enumerate($path) {
-    global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
-
-    if (!is_admin()) {
-        return false;
-    }
-    foreach (glob($path . DIRECTORY_SEPARATOR . "*") as $file) {
-        if (is_dir($file)) { // recurse lower directory
-           unc_tools_import_enumerate($file);
-        } else {
-           $UNC_GALLERY['import']['tmp_name'][] = $file;
-           $UNC_GALLERY['import']['type'][] = mime_content_type($file);
-           $UNC_GALLERY['import']['name'][] = basename($file);
-           $UNC_GALLERY['import']['error'][] = 0;
-        }
-    }
-}
-
-/**
  * this converts an array of dates to UTC
  *
  * @param type $dates

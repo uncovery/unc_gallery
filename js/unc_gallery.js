@@ -97,20 +97,3 @@ Date.prototype.addMinutes= function(m){
     this.setMinutes(this.getMinutes()+m);
     return this;
 };
-
-function unc_gallery_import_images() {
-    var path = jQuery('#import_path').val();
-    jQuery('#import_targetLayer').html('');
-    jQuery.ajax({
-        url: ajaxurl,
-        method: 'GET',
-        dataType: 'text',
-        data: {action: 'unc_gallery_import_images', import_path: path},
-        complete: function (response) {
-            jQuery('#import_targetLayer').html(response.responseText);
-        },
-        error: function () {
-
-        }
-    });
-}
