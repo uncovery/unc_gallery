@@ -100,12 +100,13 @@ Date.prototype.addMinutes= function(m){
 
 function unc_gallery_import_images() {
     var path = jQuery('#import_path').val();
+    var overwrite = jQuery('#import_overwrite').val();
     jQuery('#import_targetLayer').html('');
     jQuery.ajax({
         url: ajaxurl,
         method: 'GET',
         dataType: 'text',
-        data: {action: 'unc_gallery_import_images', import_path: path},
+        data: {action: 'unc_gallery_import_images', import_path: path, overwrite: overwrite},
         complete: function (response) {
             jQuery('#import_targetLayer').html(response.responseText);
         },
