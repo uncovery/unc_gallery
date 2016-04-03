@@ -104,7 +104,7 @@ function unc_gallery_import_images() {
     jQuery('#import_targetLayer').html('');
     jQuery.ajax({
         url: ajaxurl,
-        method: 'GET',
+        method: 'POST',
         dataType: 'text',
         data: {action: 'unc_gallery_import_images', import_path: path, overwrite: overwrite},
         complete: function (response) {
