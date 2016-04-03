@@ -103,7 +103,7 @@ function unc_uploads_iterate_files() {
     // get the amount of files
     // do we have an upload or an import?
     $F = false;
-    $import_path = filter_input(INPUT_GET, 'import_path');
+    $import_path = filter_input(INPUT_POST, 'import_path');
     if (!is_null($import_path)) {
         if (is_dir($import_path)) {
             // iterate files in the path
