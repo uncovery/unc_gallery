@@ -82,7 +82,8 @@ function unc_gallery_admin_upload() {
     </form>
     <h2>Import Images</h2>
     <form id="importForm" method="POST" enctype="multipart/form-data">
-        Import photos from path on this server: <input type="text" id="import_path" name="import_path[]" class="import_path"/>
+        Import photos from path on this server: <input type="text" id="import_path" name="import_path[]" class="import_path"/><br>
+        <label>Overwrite existing files?</label><input type="checkbox" name="overwrite"><br><br>
         <button class="button button-primary" onclick="unc_gallery_import_images(); return false;">
             Import
         </button>
@@ -125,7 +126,7 @@ function unc_uploads_iterate_files() {
         if ($count >= $ini_max) {
             echo "Your server does not allow you to upload more than $ini_max files, you picked $count!";
             wp_die();
-        }        
+        }
     }
 
     if ($count < 1) {
@@ -197,7 +198,7 @@ function unc_uploads_process_file($i, $overwrite) {
     //}
 
     // the FILE array from the server
-    
+
     if (isset($UNC_GALLERY['import'])) {
         $type = 'import';
         $F = $UNC_GALLERY['import'];
@@ -309,10 +310,10 @@ function unc_uploads_process_file($i, $overwrite) {
             return array('date'=> false, 'action' => "Could not resize {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path");
         }
     } else {
-        if ($type == 'upload') { 
+        if ($type == 'upload') {
             $rename_chk = move_uploaded_file($F['tmp_name'][$i], $new_path);
         } else { // import
-            $rename_chk = rename($F['tmp_name'][$i], $new_path);
+            $rename_chk = copy($F['tmp_name'][$i], $new_path);
         }
         if (!$rename_chk) {
             return array('date'=> false, 'action' => "Could not move {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path");
