@@ -83,7 +83,7 @@ function unc_gallery_admin_upload() {
     <h2>Import Images</h2>
     <form id="importForm" method="POST" enctype="multipart/form-data">
         Import photos from path on this server: <input type="text" id="import_path" name="import_path[]" class="import_path"/><br>
-        <label>Overwrite existing files?</label><input type="checkbox" name="overwrite"><br><br>
+        <label>Overwrite existing files?</label><input id="import_overwrite" type="checkbox" name="overwrite"><br><br>
         <button class="button button-primary" onclick="unc_gallery_import_images(); return false;">
             Import
         </button>
