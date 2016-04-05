@@ -56,6 +56,7 @@ function unc_gallery_display_var_init($atts = array()) {
         'description' => false, // description for the whole day
         'details' => false, // description for individual files
         'echo' => false, // internal variable, used by AJAX call
+        'offset' => false, // offset for date string to cover photos after midnight
     ), $atts);
 
     $type = $a['type'];
@@ -276,7 +277,8 @@ function unc_display_folder_images() {
     }
 
     // get all the files in the folder with attributes
-    $files = unc_tools_images_list($date_str);
+    // this needs to include the
+    $files = $D['files'];
     
     // display except for skipped files and files out of time range
     $images = '';
