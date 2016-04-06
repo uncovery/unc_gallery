@@ -247,7 +247,9 @@ function unc_gallery_display_page() {
         $datepicker_div .="</select>\n";
     }
 
-    $date_path = unc_tools_date_path($D['date']);
+    
+    $date_path = unc_tools_date_path($D['dates'][0]);
+    // TODO: This should check all dates
     if (!$date_path) {
         return;
     }
@@ -295,7 +297,7 @@ function unc_display_folder_images() {
 
     $D = $UNC_GALLERY['display'];
 
-    $date_str = $D['date'];
+    $date_str = $D['dates'][0];
 
     $header = '';
     if (is_admin()) {

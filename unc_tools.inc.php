@@ -207,6 +207,8 @@ function unc_array_iterate_compact($array, $path = '') {
  * @return array
  */
 function unc_tools_date_span($date1, $date2) {
+    
+    
     if ($date1 < $date2) {
         $early = $date1;
         $later = $date2;
@@ -235,7 +237,7 @@ function unc_tools_date_span($date1, $date2) {
  * @param type $folder
  * @return array
  */
-function unc_tools_images_list($date_str) {
+function unc_tools_images_list() {
     global $UNC_GALLERY;
 
     $D = $UNC_GALLERY['display'];
