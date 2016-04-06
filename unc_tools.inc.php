@@ -200,6 +200,34 @@ function unc_array_iterate_compact($array, $path = '') {
 }
 
 /**
+ * create a list of all dates between 2 dates
+ * 
+ * @param string $date1 (date_str format)
+ * @param string $date2
+ * @return array
+ */
+function unc_tools_date_span($date1, $date2) {
+    if ($date1 < $date2) {
+        $early = $date1;
+        $later = $date2;
+    } else {
+        $early = $date2;
+        $later = $date1;
+    }
+    
+    $dates_arr = new DatePeriod(
+         new DateTime($early),
+         new DateInterval('P1D'),
+         new DateTime($later)
+    );  
+    $date_str_arr = array();
+    foreach($dates_arr as $date_obj) {
+        $date_str_arr[] = $date_obj->format("Y-m-d");
+    }
+    return $date_str_arr;
+}
+
+/**
  * Iterate all files in a folder and make a list of all the images with all the info
  * for them
  * 
@@ -209,34 +237,38 @@ function unc_array_iterate_compact($array, $path = '') {
  */
 function unc_tools_images_list($date_str) {
     global $UNC_GALLERY;
-    
-    // translate date string to folder
-    $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
-    $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
-    $folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
-    
+
     $D = $UNC_GALLERY['display'];
-    
+    $dates = $D['dates'];
+
     $files = array();
     $featured = false;
-    foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
-        $F = unc_tools_image_info_get($file_path);
-        if (($D['range']['end_time'] && $D['range']['start_time']) && // only if both are set
-                ($D['range']['end_time'] < $D['range']['start_time'])) { // AND the end is before the start
-            if (($D['range']['end_time'] < $F['time_stamp'])
-                    && ($F['time_stamp'] < $D['range']['start_time'])) {  // then skip over the files inbetween end and start
+    
+    foreach ($dates as $date_str) {
+        // translate date string to folder
+        $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
+        $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
+        $folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
+
+        foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
+            $F = unc_tools_image_info_get($file_path);
+            if (($D['range']['end_time'] && $D['range']['start_time']) && // only if both are set
+                    ($D['range']['end_time'] < $D['range']['start_time'])) { // AND the end is before the start
+                if (($D['range']['end_time'] < $F['time_stamp'])
+                        && ($F['time_stamp'] < $D['range']['start_time'])) {  // then skip over the files inbetween end and start
+                    continue;
+                }
+            } else if (($D['range']['start_time'] && ($F['time_stamp'] < $D['range']['start_time'])) || // if there is a start and the file is earlier
+                ($D['range']['end_time'] && ($D['range']['end_time'] < $F['time_stamp']))) { // or if there is an end and the file is later then skip
                 continue;
             }
-        } else if (($D['range']['start_time'] && ($F['time_stamp'] < $D['range']['start_time'])) || // if there is a start and the file is earlier
-            ($D['range']['end_time'] && ($D['range']['end_time'] < $F['time_stamp']))) { // or if there is an end and the file is later then skip
-            continue;
-        }
-        if ($F['file_name'] == $D['featured_image']){ 
-            $F['featured'] = true;
-            $featured = $F;
-        } else {
-            $F['featured'] = false;
-            $files[$F['file_date']] = $F;
+            if ($F['file_name'] == $D['featured_image']){ 
+                $F['featured'] = true;
+                $featured = $F;
+            } else {
+                $F['featured'] = false;
+                $files[$F['file_date']] = $F;
+            }
         }
     }
     ksort($files);
