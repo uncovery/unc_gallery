@@ -51,6 +51,9 @@ add_action('wp_ajax_unc_gallery_image_delete', 'unc_tools_image_delete');
 add_action('wp_ajax_unc_gallery_thumbnails_rebuild', 'unc_gallery_admin_rebuild_thumbs');
 add_action('wp_ajax_unc_gallery_delete_everything', 'unc_gallery_admin_delete_everything');
 
+// execute shortcodes in the excerpts
+add_filter('the_excerpt', 'do_shortcode');
+
 // get the settings from the system and set the global variables
 // this iterates the user settings that are supposed to be in the wordpress config
 // and gets them from there, setting the default if not available
