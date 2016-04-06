@@ -61,6 +61,20 @@ function unc_gallery_display_var_init($atts = array()) {
 
     $type = $a['type'];
 
+    // we convert the start time and end time to unix timestamp for better
+    // comparison
+    $UNC_GALLERY['display']['range'] = array('start_time' => false, 'end_time' => false);
+    foreach ($UNC_GALLERY['display']['range'] as $key => $value) {
+        if ($a[$key]) {
+            $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $a[$key]);
+            // TODO: catch here if the date is invalid
+            $UNC_GALLERY['display']['range'][$key] = $dtime->getTimestamp();
+            // get the date for the same
+            $var_name = 'date_' . $key;
+            $$var_name = substr($a[$key], 0, 10);
+        }
+    }
+       
 
     $featured_file = unc_tools_filename_validate($a['featured']);
     if ($featured_file) {
@@ -89,32 +103,50 @@ function unc_gallery_display_var_init($atts = array()) {
     // date
     $keywords = $UNC_GALLERY['keywords'];
     $date_raw = $a['date'];
-    if (!in_array($date_raw, $keywords['date'])) {
-        // lets REGEX
-        $date_str = unc_tools_validate_date($date_raw);
-        if (!$date_str) {
-            echo unc_tools_errormsg("Your date needs to be in the format '2016-01-31'");
-            return false;
-        }
-        $UNC_GALLERY['display']['date_description'] = false;
-    } else {
+    
+    if ($date_raw && in_array($date_raw, $keywords['date'])) { // we have a latest or random date
         // get the latest or a random date if required
-        $UNC_GALLERY['display']['date_description'] = true;
         if ($date_raw == 'latest') {
             $date_str = unc_tools_date_latest();
         } else if ($date_raw == 'random') {
             $date_str = unc_tools_date_random();
         }
-    }
-    $UNC_GALLERY['display']['date'] = $date_str;
-
-    // range
-    $UNC_GALLERY['display']['range'] = array('start_time' => false, 'end_time' => false);
-    foreach ($UNC_GALLERY['display']['range'] as $key => $value) {
-        if ($a[$key]) {
-            $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $a[$key]);
-            $UNC_GALLERY['display']['range'][$key] = $dtime->getTimestamp();
+        $UNC_GALLERY['display']['date_description'] = true;
+        $UNC_GALLERY['display']['dates'] = array($date_str);
+    } else if ($date_raw) {
+        $date_str = unc_tools_validate_date($date_raw);
+        if (!$date_str) {
+            echo unc_tools_errormsg("All dates needs to be in the format '2016-01-31'");
+            return false;
         }
+        $UNC_GALLERY['display']['date_description'] = false;
+        $UNC_GALLERY['display']['dates'] = array($date_str);        
+    } else if ($date_raw && strstr($date_raw, ",")) { // we have several dates in the string
+        $dates = explode(",", $date_raw);
+        // validate both dates
+        $date_str1 = unc_tools_validate_date(trim($dates[0]));
+        if (!$date_str1) {
+            echo unc_tools_errormsg("All dates needs to be in the format '2016-01-31'");
+            return false;
+        }
+        $date_str2 = unc_tools_validate_date(trim($dates[1]));
+        if (!$date_str2) {
+            echo unc_tools_errormsg("All dates needs to be in the format '2016-01-31'");
+            return false;
+        }
+        // create a list of dates between the 1st and the 2nd
+        $date_arr = unc_tools_date_span($dates[0], $dates[1]);
+        $UNC_GALLERY['display']['dates'] = $date_arr;
+        
+    } else if ($a['end_time'] && $a['start_time']) {
+        $date_arr = unc_tools_date_span($date_start_time, $date_end_time);
+        $UNC_GALLERY['display']['dates'] = $date_arr;
+    } else if ($a['end_time']) {
+        $date_str = $date_end_time;
+        $UNC_GALLERY['display']['dates'] = array($date_str);  
+    } else if ($a['start_time']) {
+        $date_str = $date_start_time;
+        $UNC_GALLERY['display']['dates'] = array($date_str);  
     }
 
     // details
@@ -170,7 +202,7 @@ function unc_gallery_display_var_init($atts = array()) {
         $UNC_GALLERY['display']['file'] = unc_tools_filename_validate($a['file']);
     } else {
         $UNC_GALLERY['display']['file'] = false;
-        $UNC_GALLERY['display']['files'] = unc_tools_images_list($date_str);
+        $UNC_GALLERY['display']['files'] = unc_tools_images_list();
     }
     return true;
 }
