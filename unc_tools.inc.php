@@ -237,12 +237,15 @@ function unc_tools_date_span($date1, $date2) {
  * @param type $folder
  * @return array
  */
-function unc_tools_images_list() {
+function unc_tools_images_list($D = false) {
     global $UNC_GALLERY;
 
-    $D = $UNC_GALLERY['display'];
-    $dates = $D['dates'];
+    if (!$D) {
+        $D = $UNC_GALLERY['display'];
+    }
 
+    $dates = $D['dates'];
+    
     $files = array();
     $featured = false;
     
@@ -253,7 +256,7 @@ function unc_tools_images_list() {
         $folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
 
         foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
-            $F = unc_tools_image_info_get($file_path);
+            $F = unc_tools_image_info_get($file_path, $D);
             if (($D['range']['end_time'] && $D['range']['start_time']) && // only if both are set
                     ($D['range']['end_time'] < $D['range']['start_time'])) { // AND the end is before the start
                 if (($D['range']['end_time'] < $F['time_stamp'])
@@ -287,7 +290,7 @@ function unc_tools_images_list() {
  * @global type $UNC_GALLERY
  * @param type $file_path
  */
-function unc_tools_image_info_get($file_path) {
+function unc_tools_image_info_get($file_path, $D = false) {
     global $UNC_GALLERY;
     $file_date = unc_tools_image_date($file_path); // get image date from EXIF/IPCT
     $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
@@ -297,10 +300,12 @@ function unc_tools_image_info_get($file_path) {
     $date_path = str_replace("-", "/", $date_str);
     $file_name = $folder_info['basename'];
     
-    $D = $UNC_GALLERY['display'];
+    if (!$D) {
+        $D = $UNC_GALLERY['display'];
+    }
     if (isset($D['details'][$file_name])) {
         $description = $D['details'][$file_name] . " ($file_name / $file_date)";
-    } else if ($D['description']) {
+    } else if (isset($D['description']) && $D['description']) {
         $description = $D['description'] . " ($file_name / $file_date)";
     } else {
         $description = "File Name: $file_name Date: $file_date";

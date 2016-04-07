@@ -66,6 +66,7 @@ function unc_gallery_display_var_init($atts = array()) {
     $UNC_GALLERY['display']['range'] = array('start_time' => false, 'end_time' => false);
     foreach ($UNC_GALLERY['display']['range'] as $key => $value) {
         if ($a[$key]) {
+            // convert to UNIX timestamp
             $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $a[$key]);
             // TODO: catch here if the date is invalid
             $UNC_GALLERY['display']['range'][$key] = $dtime->getTimestamp();
