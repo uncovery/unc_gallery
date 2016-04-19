@@ -75,7 +75,7 @@ function unc_gallery_display_var_init($atts = array()) {
             $$var_name = substr($a[$key], 0, 10);
         }
     }
-       
+
 
     $featured_file = unc_tools_filename_validate($a['featured']);
     if ($featured_file) {
@@ -104,7 +104,7 @@ function unc_gallery_display_var_init($atts = array()) {
     // date
     $keywords = $UNC_GALLERY['keywords'];
     $date_raw = $a['date'];
-    
+
     if ($date_raw && in_array($date_raw, $keywords['date'])) { // we have a latest or random date
         // get the latest or a random date if required
         if ($date_raw == 'latest') {
@@ -121,7 +121,7 @@ function unc_gallery_display_var_init($atts = array()) {
             return false;
         }
         $UNC_GALLERY['display']['date_description'] = false;
-        $UNC_GALLERY['display']['dates'] = array($date_str);        
+        $UNC_GALLERY['display']['dates'] = array($date_str);
     } else if ($date_raw && strstr($date_raw, ",")) { // we have several dates in the string
         $dates = explode(",", $date_raw);
         // validate both dates
@@ -138,16 +138,19 @@ function unc_gallery_display_var_init($atts = array()) {
         // create a list of dates between the 1st and the 2nd
         $date_arr = unc_tools_date_span($dates[0], $dates[1]);
         $UNC_GALLERY['display']['dates'] = $date_arr;
-        
+
     } else if ($a['end_time'] && $a['start_time']) {
         $date_arr = unc_tools_date_span($date_start_time, $date_end_time);
         $UNC_GALLERY['display']['dates'] = $date_arr;
     } else if ($a['end_time']) {
         $date_str = $date_end_time;
-        $UNC_GALLERY['display']['dates'] = array($date_str);  
+        $UNC_GALLERY['display']['dates'] = array($date_str);
     } else if ($a['start_time']) {
         $date_str = $date_start_time;
-        $UNC_GALLERY['display']['dates'] = array($date_str);  
+        $UNC_GALLERY['display']['dates'] = array($date_str);
+    } else { // no date set at all, take latest
+        $date_str = unc_tools_date_latest();
+        $UNC_GALLERY['display']['dates'] = array($date_str);
     }
 
     // details
@@ -213,6 +216,7 @@ function unc_gallery_display_page() {
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
 
     $D = $UNC_GALLERY['display'];
+    $date = $D['dates'][0];
 
     // do not let wp manipulate linebreaks
     remove_filter('the_content', 'wpautop');
@@ -223,22 +227,22 @@ function unc_gallery_display_page() {
     $datepicker_div = '';
     $out = '';
     if ($D['date_description']) {
-        $datepicker_div = "<span id=\"photodate\">Showing {$D['date']}</span>";
+        $datepicker_div = "<span id=\"photodate\">Showing $date</span>";
     }
     $avail_dates = unc_tools_folder_list($photo_folder);
     if (!$avail_dates) {
         return "There are no images in the libray yet. Please upload some first.";
     }
-    
+
     if ($D['date_selector'] == 'calendar') {
         $out .= "\n     <script type=\"text/javascript\">
         var availableDates = [\"" . implode("\",\"", array_keys($avail_dates)) . "\"];
         var ajaxurl = \"" . admin_url('admin-ajax.php') . "\";
         jQuery(document).ready(function($) {
-            datepicker_ready('{$D['date']}');
+            datepicker_ready('{$date}');
         });
         </script>";
-        $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"{$D['date']}\">";
+        $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"$date\">";
     } else if ($D['date_selector'] == 'datelist') {
         $datepicker_div = "<select id=\"datepicker\" onchange=\"datelist_change()\">\n";
         foreach ($avail_dates as $folder_date => $folder_files) {
@@ -248,7 +252,7 @@ function unc_gallery_display_page() {
         $datepicker_div .="</select>\n";
     }
 
-    
+
     $date_path = unc_tools_date_path($D['dates'][0]);
     // TODO: This should check all dates
     if (!$date_path) {
@@ -314,14 +318,14 @@ function unc_display_folder_images() {
     // get all the files in the folder with attributes
     // this needs to include the
     $files = $D['files'];
-    
+
     // display except for skipped files and files out of time range
     $images = '';
     $featured = '';
     $i = 0;
     foreach ($files as $F) {
         $F['index'] = $i;
-        if ($F['featured'] == true){ 
+        if ($F['featured'] == true){
             $featured .= "<div class=\"featured_photo\">\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . "</div>\n";
@@ -336,7 +340,7 @@ function unc_display_folder_images() {
     if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
         $photoswipe = unc_display_photoswipe_js($files);
     }
-    
+
     $out = $header . $featured . $images . $photoswipe;
 
     if ($D['echo']) {
@@ -355,7 +359,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     } else {
         $F = $file_data;
     }
-    
+
     if ($show_thumb) {
         $shown_image = $F['thumb_url'];
         $class = '';
@@ -363,7 +367,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
         $shown_image = $F['file_url'];
         $class = 'featured_image';
     }
-    
+
     $gal_text = '';
     if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
         global $post;
@@ -375,8 +379,8 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     } else if ($UNC_GALLERY['image_view_method'] == 'lightbox') {
         $gal_text = "data-lightbox=\"gallery_{$F['file_name']}\"";
     }
-     
-    
+
+
     $out = "        <a href=\"{$F['file_url']}\" $gal_text title=\"{$F['description']}\">\n"
          . "            <img alt=\"{$F['description']}\" src=\"$shown_image\">\n"
          . "        </a>\n";
@@ -392,13 +396,13 @@ function unc_display_photoswipe_js($files) {
     if (isset($post->post_name)) {
         $slug = str_replace("-", "_", $post->post_name);
     }
-    
+
     $out = '
 <script type="text/javascript">
     function unc_g_photoswipe_' . $slug . '(index) {
         var options = {
             index: index
-        };        
+        };
         var uncg_items_' . $slug . ' = [';
     foreach ($files  as $F) {
         $out .= "
@@ -423,14 +427,14 @@ function unc_display_photoswipe() {
     $out = '<!-- Root element of PhotoSwipe. Must have class pswp. -->
 <div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
 
-    <!-- Background of PhotoSwipe. 
+    <!-- Background of PhotoSwipe.
          It\'s a separate element as animating opacity is faster than rgba(). -->
     <div class="pswp__bg"></div>
 
     <!-- Slides wrapper with overflow:hidden. -->
     <div class="pswp__scroll-wrap">
 
-        <!-- Container that holds slides. 
+        <!-- Container that holds slides.
             PhotoSwipe keeps only 3 of them in the DOM to save memory.
             Don\'t modify these 3 pswp__item elements, data is added later on. -->
         <div class="pswp__container">
@@ -468,7 +472,7 @@ function unc_display_photoswipe() {
             </div>
 
             <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-                <div class="pswp__share-tooltip"></div> 
+                <div class="pswp__share-tooltip"></div>
             </div>
 
             <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
