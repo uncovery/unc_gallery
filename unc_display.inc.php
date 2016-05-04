@@ -27,7 +27,6 @@ function unc_gallery_apply($atts = array()) {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
 
-    unc_gallery_add_css_and_js();
     $check = unc_gallery_display_var_init($atts);
     if ($check) {
         return unc_gallery_display_page();
@@ -333,7 +332,8 @@ function unc_display_folder_images() {
     foreach ($files as $F) {
         $F['index'] = $i;
         if ($F['featured'] == true){
-            $featured .= "<div class=\"featured_photo\">\n"
+            $height_css = 'rows_' . $UNC_GALLERY['featured_size'];
+            $featured .= "<div class=\"featured_photo $height_css\">\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . "</div>\n";
         } else {
