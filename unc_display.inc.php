@@ -105,6 +105,14 @@ function unc_gallery_display_var_init($atts = array()) {
     $keywords = $UNC_GALLERY['keywords'];
     $date_raw = $a['date'];
 
+    if ($a['end_time']) {
+        $date_end_time = substr($a['end_time'], 0, 10);
+    }
+
+    if ($a['start_time']) {
+        $date_start_time = substr($a['start_time'], 0, 10);
+    }
+
     if ($date_raw && in_array($date_raw, $keywords['date'])) { // we have a latest or random date
         // get the latest or a random date if required
         if ($date_raw == 'latest') {
