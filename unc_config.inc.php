@@ -53,11 +53,11 @@ $UNC_GALLERY['user_settings'] = array(
         'default' => '75',
         'type' => 'text',
     ),
-    'time_offset' => array(
-        'help' => 'If you take photos after midnight and don\'t want them show on the next day,
-        add an offset here in one of <a href="http://php.net/manual/en/datetime.formats.relative.php">these</a> formats.',
-        'default' => '-6 hours',
-        'type' => 'text',
+    'featured_size' => array(
+        'help' => 'When featuring an image, how many rows should it cover in height?',
+        'default' => '4',
+        'type' => 'dropdown',
+        'options' => array('2' => '2 Rows', '3' => '3 Rows', '4' => '4 Rows', '5' => '5 Rows'),
     ),
     'admin_date_selector' => array(
         'help' => 'Chose if you want to have a calendar or a dropdown list for the Manage Images Admin page.',
