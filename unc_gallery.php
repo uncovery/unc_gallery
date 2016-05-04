@@ -51,6 +51,8 @@ add_action('wp_ajax_unc_gallery_image_delete', 'unc_tools_image_delete');
 add_action('wp_ajax_unc_gallery_thumbnails_rebuild', 'unc_gallery_admin_rebuild_thumbs');
 add_action('wp_ajax_unc_gallery_delete_everything', 'unc_gallery_admin_delete_everything');
 
+add_action( 'wp_enqueue_scripts', 'unc_gallery_add_css_and_js' );
+
 // execute shortcodes in the excerpts
 add_filter('the_excerpt', 'do_shortcode');
 
