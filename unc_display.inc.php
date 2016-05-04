@@ -47,7 +47,7 @@ function unc_gallery_display_var_init($atts = array()) {
 
     $a = shortcode_atts( array(
         'type' => 'day',    // display type
-        'date' => 'latest', // which date?
+        'date' => false, // which date?
         'file' => false,    // specifix file?
         'featured' => false,  // is there a featured file?
         'options' => false, // we cannot set it to an array here
@@ -103,7 +103,6 @@ function unc_gallery_display_var_init($atts = array()) {
 
     // date
     $keywords = $UNC_GALLERY['keywords'];
-    $date_raw = $a['date'];
 
     if ($a['end_time']) {
         $date_end_time = substr($a['end_time'], 0, 10);
@@ -112,26 +111,26 @@ function unc_gallery_display_var_init($atts = array()) {
     if ($a['start_time']) {
         $date_start_time = substr($a['start_time'], 0, 10);
     }
+    $UNC_GALLERY['display']['date_description'] = false; // false by default, only true if not set explicitly (latest or random date)
 
-    if ($date_raw && in_array($date_raw, $keywords['date'])) { // we have a latest or random date
+    if ($a['date'] && in_array($a['date'], $keywords['date'])) { // we have a latest or random date
         // get the latest or a random date if required
-        if ($date_raw == 'latest') {
+        if ($a['date'] == 'latest') {
             $date_str = unc_tools_date_latest();
-        } else if ($date_raw == 'random') {
+        } else if ($a['date'] == 'random') {
             $date_str = unc_tools_date_random();
         }
         $UNC_GALLERY['display']['date_description'] = true;
         $UNC_GALLERY['display']['dates'] = array($date_str);
-    } else if ($date_raw) {
-        $date_str = unc_tools_validate_date($date_raw);
+    } else if ($a['date']) {
+        $date_str = unc_tools_validate_date($a['date']);
         if (!$date_str) {
             echo unc_tools_errormsg("All dates needs to be in the format '2016-01-31'");
             return false;
         }
-        $UNC_GALLERY['display']['date_description'] = false;
         $UNC_GALLERY['display']['dates'] = array($date_str);
-    } else if ($date_raw && strstr($date_raw, ",")) { // we have several dates in the string
-        $dates = explode(",", $date_raw);
+    } else if ($a['date'] && strstr($a['date'], ",")) { // we have several dates in the string
+        $dates = explode(",", $a['date']);
         // validate both dates
         $date_str1 = unc_tools_validate_date(trim($dates[0]));
         if (!$date_str1) {
