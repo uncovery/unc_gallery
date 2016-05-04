@@ -233,7 +233,7 @@ function unc_uploads_process_file($i, $overwrite) {
     }
 
     // get imagetype
-    $exif_imagetype = exif_imagetype($F['tmp_name'][$i]);
+    $exif_imagetype = $image_check[2];
     if (!$exif_imagetype) {
         return array('date'=> false, 'action' => "Could not determine image type of file " . $F['name'][$i] . ", upload cancelled!");
     }
