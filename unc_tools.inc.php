@@ -201,27 +201,30 @@ function unc_array_iterate_compact($array, $path = '') {
 
 /**
  * create a list of all dates between 2 dates
- * 
+ *
  * @param string $date1 (date_str format)
  * @param string $date2
  * @return array
  */
 function unc_tools_date_span($date1, $date2) {
-    
-    
+    global $UNC_GALLERY;
+    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    // we try to sort the dates
     if ($date1 < $date2) {
         $early = $date1;
         $later = $date2;
+    } else if ($date1 == $date2) {
+        return array($date1);
     } else {
         $early = $date2;
         $later = $date1;
     }
-    
+
     $dates_arr = new DatePeriod(
          new DateTime($early),
          new DateInterval('P1D'),
          new DateTime($later)
-    );  
+    );
     $date_str_arr = array();
     foreach($dates_arr as $date_obj) {
         $date_str_arr[] = $date_obj->format("Y-m-d");
@@ -232,7 +235,7 @@ function unc_tools_date_span($date1, $date2) {
 /**
  * Iterate all files in a folder and make a list of all the images with all the info
  * for them
- * 
+ *
  * @global type $UNC_GALLERY
  * @param type $folder
  * @return array
@@ -245,10 +248,10 @@ function unc_tools_images_list($D = false) {
     }
 
     $dates = $D['dates'];
-    
+
     $files = array();
     $featured = false;
-    
+
     foreach ($dates as $date_str) {
         // translate date string to folder
         $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
@@ -267,7 +270,7 @@ function unc_tools_images_list($D = false) {
                 ($D['range']['end_time'] && ($D['range']['end_time'] < $F['time_stamp']))) { // or if there is an end and the file is later then skip
                 continue;
             }
-            if ($F['file_name'] == $D['featured_image']){ 
+            if ($F['file_name'] == $D['featured_image']){
                 $F['featured'] = true;
                 $featured = $F;
             } else {
@@ -280,13 +283,13 @@ function unc_tools_images_list($D = false) {
     if ($featured) {
         array_unshift($files, $featured);
     }
-    
+
     return $files;
 }
 
 /**
  * Get all possible information about a single file
- * 
+ *
  * @global type $UNC_GALLERY
  * @param type $file_path
  */
@@ -299,7 +302,7 @@ function unc_tools_image_info_get($file_path, $D = false) {
     $date_str = unc_tools_folder_date($folder_info['dirname']);
     $date_path = str_replace("-", "/", $date_str);
     $file_name = $folder_info['basename'];
-    
+
     if (!$D) {
         $D = $UNC_GALLERY['display'];
     }
