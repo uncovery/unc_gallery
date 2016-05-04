@@ -92,7 +92,22 @@
 
 .unc_gallery .featured_photo img {
     float:left;
+}
+
+.unc_gallery .featured_photo .rows_2 img {
+    height: 245px;
+}
+
+.unc_gallery .featured_photo .rows_3 img {
+    height: 370px;
+}
+
+.unc_gallery .featured_photo .rows_4 img {
     height: 495px;
+}
+
+.unc_gallery .featured_photo .rows_5 img {
+    height: 620px;
 }
 
 .unc_gallery .delete_folder_link {
