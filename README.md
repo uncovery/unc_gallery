@@ -117,7 +117,7 @@ swipe through the photos if the display method is photoswipe or lightbox.
 
 You can choose to show field on top of your gallery that allows the user to
 display a different date's images. You can chose between a calendar and a date
-list in a dropdown.
+list in a dropdown. You cannot display more than one of those per page!
 
 |Sample screenshot of the calendar|Sample screenshot of the datelist:|
 |---------------------------------|----------------------------------|
