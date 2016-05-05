@@ -78,7 +78,7 @@
     padding-top: 5px;
 }
 
-.unc_gallery #photos {
+.unc_gallery .photos {
     padding-top: 5px;
 }
 
@@ -86,12 +86,14 @@
     float:left;
     position: relative;
     overflow: auto;
-    margin-left: 5px;
+    margin-right: 6px;
     margin-bottom: 5px;
 }
 
 .unc_gallery .featured_photo img {
     float:left;
+    margin-right: 6px;
+    margin-bottom: 5px;
 }
 
 .unc_gallery .rows_2 img {
@@ -108,6 +110,26 @@
 
 .unc_gallery .rows_5 img {
     height: 620px;
+}
+
+.unc_gallery .limit_rows_2 {
+    max-height: 245px;
+    overflow: hidden;
+}
+
+.unc_gallery .limit_rows_3 {
+    max-height: 370px;
+    overflow: hidden;
+}
+
+.unc_gallery .limit_rows_4 {
+    max-height: 495px;
+    overflow: hidden;
+}
+
+.unc_gallery .limit_rows_5 {
+    max-height: 620px;
+    overflow: hidden;
 }
 
 .unc_gallery .delete_folder_link {

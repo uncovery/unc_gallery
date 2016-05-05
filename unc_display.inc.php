@@ -56,6 +56,7 @@ function unc_gallery_display_var_init($atts = array()) {
         'details' => false, // description for individual files
         'echo' => false, // internal variable, used by AJAX call
         'offset' => false, // offset for date string to cover photos after midnight
+        'limit_rows' => false,
     ), $atts);
 
     $type = $a['type'];
@@ -99,6 +100,7 @@ function unc_gallery_display_var_init($atts = array()) {
     }
 
     $UNC_GALLERY['display']['description'] = $a['description'];
+    $UNC_GALLERY['display']['limit_rows'] = $a['limit_rows'];
 
     // date
     $keywords = $UNC_GALLERY['keywords'];
@@ -240,6 +242,14 @@ function unc_gallery_display_page() {
         return "There are no images in the libray yet. Please upload some first.";
     }
 
+    // we need a unique ID for datepicker div targets
+    /* global $post;
+    $slug = 'ID_';
+    if (isset($post->post_name)) {
+        $slug .= str_replace("-", "_", $post->post_name);
+    }
+     */
+
     if ($D['date_selector'] == 'calendar') {
         $out .= "\n     <script type=\"text/javascript\">
         var availableDates = [\"" . implode("\",\"", array_keys($avail_dates)) . "\"];
@@ -250,7 +260,7 @@ function unc_gallery_display_page() {
         </script>";
         $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"$date\">";
     } else if ($D['date_selector'] == 'datelist') {
-        $datepicker_div = "<select id=\"datepicker\" onchange=\"datelist_change()\">\n";
+        $datepicker_div = "<select id=\"datepicker\" onchange=\"datelist_change($slug)\">\n";
         foreach ($avail_dates as $folder_date => $folder_files) {
             $counter = count($folder_files);
             $datepicker_div .= "<option value=\"$folder_date\">$folder_date ($counter)</option>\n";
@@ -277,16 +287,21 @@ function unc_gallery_display_page() {
         } else {
             $file = $D['file'];
         }
-        $file_path = $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $file;
+        $file_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $file;
         $out = unc_display_image_html($file_path, $thumb, false);
     } else {
+
         $images = unc_display_folder_images();
         $delete_link = '';
+        $limit_rows = '';
+        if ($D['limit_rows']) {
+            $limit_rows = 'limit_rows_' . $D['limit_rows'];
+        }
         $out .= "
             <div class=\"unc_gallery\">
                 $datepicker_div
                 $delete_link
-                <div id=\"photos\">
+                <div class=\"photos $limit_rows\" id=\"datepicker_target\">
         $images
                 </div>
             </div>

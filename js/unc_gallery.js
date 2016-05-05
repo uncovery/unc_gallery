@@ -19,7 +19,7 @@ function datepicker_select(dateText, inst) {
         dataType: 'text',
         data: {action: 'unc_gallery_datepicker', date: dateText},
         complete: function (response) {
-            jQuery('#photos').html(response.responseText);
+            jQuery('#datepicker_target').html(response.responseText);
             jQuery('#photodate').html("Showing " + dateText);
         },
         error: function () {
@@ -39,7 +39,7 @@ function datepicker_ready(defaultdate) {
 
 function datelist_change() {
     var datelist_value = jQuery('#datepicker').val();
-    datepicker_select(datelist_value);
+    datepicker_select(datelist_value, inst);
 }
 
 function delete_image(file_name, rel_date) {
@@ -51,7 +51,7 @@ function delete_image(file_name, rel_date) {
             dataType: 'text',
             data: {action: 'unc_gallery_image_delete', date: rel_date, file_name: file_name},
             complete: function (response) {
-                jQuery('#photos').html(response.responseText);
+                jQuery('#datepicker_target').html(response.responseText);
             },
             error: function () {
 
