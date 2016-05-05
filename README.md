@@ -182,3 +182,11 @@ for touch devices such as mobile phones and tablets.
 
 You can see known bugs and upcoming features on the project's
 ![Issue page on Github](https://github.com/uncovery/unc_gallery/issues)
+
+## Credits
+
+This plugin uses the following libraries:
+
+[Photoswipe] (http://photoswipe.com/)
+[Lightbox] (http://lokeshdhakar.com/projects/lightbox2/)
+[Parsedown] (http://parsedown.org)
