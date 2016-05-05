@@ -313,7 +313,7 @@ function unc_tools_image_info_get($file_path, $D = false) {
     } else if (isset($D['description']) && $D['description']) {
         $description = $D['description'] . " ($file_name / $file_date)";
     } else {
-        $description = "File Name: $file_name; Date: $file_date;";
+        $description = "<b>File Name:</b> $file_name; <b>Date:</b> $file_date;";
     }
 
     $photo_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
@@ -384,7 +384,7 @@ function unc_tools_file_desc($F) {
     foreach ($exif_codes as $desc => $C) {
         $desc_nice = ucwords(str_replace("_", " ", $desc));
         if (isset($F[$desc])) {
-            $out .= "$desc_nice: {$F[$desc]}; ";
+            $out .= "<b>$desc_nice:</b>&nbsp;{$F[$desc]}; ";
         }
     }
     return $out;

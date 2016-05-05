@@ -404,8 +404,9 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
         $gal_text = "data-lightbox=\"gallery_{$F['file_name']}\"";
     }
 
+    $dec = strip_tags($F['description']);
 
-    $out = "        <a href=\"{$F['file_url']}\" $gal_text title=\"{$F['description']}\">\n"
+    $out = "        <a href=\"{$F['file_url']}\" $gal_text title=\"$dec\">\n"
          . "            <img alt=\"{$F['description']}\" src=\"$shown_image\">\n"
          . "        </a>\n";
     if (is_admin()) {
