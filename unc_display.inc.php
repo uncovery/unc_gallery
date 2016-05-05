@@ -123,15 +123,12 @@ function unc_gallery_display_var_init($atts = array()) {
         }
         $UNC_GALLERY['display']['date_description'] = true;
         $UNC_GALLERY['display']['dates'] = array($date_str);
-    } else if ($a['date']) {
-        $date_str = unc_tools_validate_date($a['date']);
-        if (!$date_str) {
-            echo unc_tools_errormsg("All dates needs to be in the format '2016-01-31'");
-            return false;
-        }
-        $UNC_GALLERY['display']['dates'] = array($date_str);
     } else if ($a['date'] && strstr($a['date'], ",")) { // we have several dates in the string
         $dates = explode(",", $a['date']);
+        if (count($dates) > 2) {
+            echo unc_tools_errormsg("You can only enter 2 dates!");
+            return false;
+        }
         // validate both dates
         $date_str1 = unc_tools_validate_date(trim($dates[0]));
         if (!$date_str1) {
@@ -146,7 +143,13 @@ function unc_gallery_display_var_init($atts = array()) {
         // create a list of dates between the 1st and the 2nd
         $date_arr = unc_tools_date_span($dates[0], $dates[1]);
         $UNC_GALLERY['display']['dates'] = $date_arr;
-
+    } else if ($a['date']) {
+        $date_str = unc_tools_validate_date($a['date']);
+        if (!$date_str) {
+            echo unc_tools_errormsg("All dates needs to be in the format '2016-01-31'");
+            return false;
+        }
+        $UNC_GALLERY['display']['dates'] = array($date_str);
     } else if ($a['end_time'] && $a['start_time']) {
         $date_arr = unc_tools_date_span($date_start_time, $date_end_time);
         $UNC_GALLERY['display']['dates'] = $date_arr;
@@ -258,7 +261,7 @@ function unc_gallery_display_page() {
             datepicker_ready('{$date}');
         });
         </script>";
-        $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"$date\">";
+        $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"$date\" size=\"10\">";
     } else if ($D['date_selector'] == 'datelist') {
         $datepicker_div = "<select id=\"datepicker\" onchange=\"datelist_change($slug)\">\n";
         foreach ($avail_dates as $folder_date => $folder_files) {

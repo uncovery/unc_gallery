@@ -44,7 +44,28 @@ set in the short code
 `[unc_gallery]` This will display the full, latest day. Add additional codes
 inside the brackets to modify the display.
 
-### Additional items
+### Picking a date/time
+
+#### `date="latest|random|2016-10-30"`
+
+This will show all photos of one specific date.
+You can use either `latest`, `random` or a date in the format `yyyy-mm-dd`.
+
+#### `date="2016-10-15,2016-10-16"`
+
+This will show all photos of the first date, the second date and all inbetween.
+
+#### `start_time="2016-10-30 20:32:00" end_time="2016-10-30 21:40:29"`
+
+This will show all photos between the two points in time. This needs to be in
+the format `yyyy-mm-dd hh:mm:ss`, 24h notation. You can enter different dates. Usage:
+
+* `start_time="2016-10-30 20:32:00`: hide everything before 20:32, show the rest of that day
+* `end_time="2016-10-30 21:40:29"`: hide everything after 21:40:29, show the rest of that day
+* `start_time="2016-10-30 20:00:00" end_time="2016-10-30 21:00:00"`: Show only the hour 20:00-21:20
+* `end_time="2016-10-30 20:00:00" start_time="2016-10-30 21:00:00"`: Hide the hour 20:00-21:20
+
+### Other features
 
 #### `type="day|image|thumb"`
 
@@ -52,11 +73,6 @@ You can user either `day`, `image` or `thumb` as type.
 `day` will display all images of that day, `image` a single image in full size
 and `thumb` the image with a link to the large version. Default is `day` in case
 the type is not used.
-
-#### `date="latest|random|2016-10-30"`
-
-You can use either `latest`, `random` or a date in the format `yyyy-mm-dd`. If
-the `date` is not used, the latest date will be displayed.
 
 #### `file="latest|random|2016-10-30"`
 
@@ -90,15 +106,12 @@ image is `filename.jpg:Description;`. Make sure that the last description does
 not have NOT have a colon `;` in the end. Also, no double quotes `"` or line breaks
 can be used in the details.
 
-#### `start_time="2016-10-30 20:32:00" end_time="2016-10-30 21:40:29"`
+#### `limit_rows="3"`
 
-This allows you to show only images from a certain time span. It needs to be in
-the format `yyyy-mm-dd hh:mm:ss`, 24h notation. Usage:
-
-* `start_time="2016-10-30 20:32:00`: hide everything before 20:32
-* `end_time="2016-10-30 21:40:29"`: hide everything after 21:40:29
-* `start_time="2016-10-30 20:00:00" end_time="2016-10-30 21:00:00"`: Show only the hour 20:00-21:20
-* `end_time="2016-10-30 20:00:00" start_time="2016-10-30 21:00:00"`: Hide the hour 20:00-21:20
+This will hide all photos except for the first 3 rows. Options are 2,3,4 or 5.
+This is helpful for use in post excerpts. Please note that the rest of the photos
+will still be loaded by the browser, but is simply hidden. Also, the user can still
+swipe through the photos if the display method is photoswipe or lightbox.
 
 #### `options="calendar|datelist"`
 
@@ -137,14 +150,11 @@ be compressed with the quality set for this value.  The lowest value is `1` with
 the lowest quality and the smallest files. The highest number is `100` with the
 largest file size and the highest quality.
 
-### Time Offset
+## Featured Size
 
-If you take photos until after midnight, but do not want those photos to show as
-a different date, set this to a negative value (e.g. `-6 hours`). With this
-example, all images between 6:00 in the morning of Sunday until 5:59 Monday morning
-will be considered to be taken on Sunday. This applies for photos on upload.
-If you want to change this for individual days, change the setting before uploading
-images and then change it back after the upload.
+How many image rows tall should a featured image be? You can select 2,3,4 or 5 rows.
+It's recommended to chose a smaller number if the majority of your images are landscape
+format.
 
 ### Admin Date Selector
 
@@ -161,7 +171,7 @@ depending on your preference.
 
 You can chose between Photoswipe and Lightbox to show images when clicked on it.
 Lightbox is a simple display overlay with keyboard navigation in a centered window.
-Photoswipe is a more complex system with a full-screen display and is enabled 
+Photoswipe is a more complex system with a full-screen display and is enabled
 for touch devices such as mobile phones and tablets.
 
 | Lightbox | Photoswipe|
