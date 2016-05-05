@@ -71,4 +71,51 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'dropdown',
         'options' => array('photoswipe' => 'Photoswipe', 'lightbox' => 'Lightbox', 'none' => 'Direct image link'),
     ),
+    'show_exif_data' => array(
+        'help' => 'Do you want to show EXIF data for shutter speed, aperture etc?',
+        'default' => 'yes',
+        'type' => 'dropdown',
+        'options' => array('yes' => 'Yes', 'no' => 'No'),
+    ),
+);
+
+// exif data to be looked for
+// codes from http://www.exiv2.org/tags.html
+$UNC_GALLERY['exif_codes'] = array(
+    'camera_manuf' => array(
+        'hex' => '0x010F',
+        'key' => 'Make',
+        'conversion' => false,
+        'unit' => false,
+    ),
+    'camera_model' => array(
+        'hex' => '0x0110',
+        'key' => 'Model',
+        'conversion' => false,
+        'unit' => false,
+    ),
+    'exposure_time' => array(
+        'hex' => '0x829A',
+        'key' => 'ExposureTime',
+        'conversion' => false,
+        'unit' => 'sec.',
+    ),
+    'f' => array(
+        'hex' => '0x829D',
+        'key' => 'FNumber',
+        'conversion' => 'unc_tools_divide_string',
+        'unit' => false,
+    ),
+    'focal_length' => array(
+        'hex' => '0x920A',
+        'key' => 'FocalLength',
+        'conversion' => 'unc_tools_divide_string',
+        'unit' => 'mm',
+    ),
+    'lens' => array(
+        'hex' => '0xA434',
+        'key' => 'LensModel',
+        'conversion' => false,
+        'unit' => false,
+    ),
 );

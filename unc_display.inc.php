@@ -340,7 +340,6 @@ function unc_display_folder_images() {
     }
 
     // get all the files in the folder with attributes
-    // this needs to include the
     $files = $D['files'];
 
     // display except for skipped files and files out of time range
@@ -416,7 +415,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
 }
 
 function unc_display_photoswipe_js($files) {
-    global $post;
+    global $post, $UNC_GALLERY;
     $slug = '';
     if (isset($post->post_name)) {
         $slug = str_replace("-", "_", $post->post_name);
@@ -430,13 +429,18 @@ function unc_display_photoswipe_js($files) {
         };
         var uncg_items_' . $slug . ' = [';
     foreach ($files  as $F) {
+        if ($UNC_GALLERY['show_exif_data'] == 'yes') {
+            $desc = $F['description'] . " " . unc_tools_file_desc($F);
+        } else {
+            $desc = $F['description'];
+        }
         $out .= "
     {
         src: '{$F['file_url']}',
         w: {$F['file_width']},
         h: {$F['file_height']},
         msrc: '{$F['thumb_url']}',
-        title: \"{$F['description']}\"
+        title: \"$desc\"
     },";
     }
     $out .= "];

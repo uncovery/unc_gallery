@@ -292,6 +292,7 @@ function unc_tools_images_list($D = false) {
  *
  * @global type $UNC_GALLERY
  * @param type $file_path
+ * @param type $D
  */
 function unc_tools_image_info_get($file_path, $D = false) {
     global $UNC_GALLERY;
@@ -302,6 +303,7 @@ function unc_tools_image_info_get($file_path, $D = false) {
     $date_str = unc_tools_folder_date($folder_info['dirname']);
     $date_path = str_replace("-", "/", $date_str);
     $file_name = $folder_info['basename'];
+    $exif = unc_tools_exif_data($file_path);
 
     if (!$D) {
         $D = $UNC_GALLERY['display'];
@@ -311,16 +313,13 @@ function unc_tools_image_info_get($file_path, $D = false) {
     } else if (isset($D['description']) && $D['description']) {
         $description = $D['description'] . " ($file_name / $file_date)";
     } else {
-        $description = "File Name: $file_name Date: $file_date";
+        $description = "File Name: $file_name; Date: $file_date;";
     }
 
     $photo_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
     $thumb_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
-    $image_size = getimagesize($file_path);
-    $file  = array(
+    $file = array(
         'file_name' => $file_name,
-        'file_width' => $image_size[0],
-        'file_height' => $image_size[1],
         'file_path' => $file_path,
         'thumb_url' => $thumb_url,
         'file_url' => $photo_url,
@@ -329,7 +328,66 @@ function unc_tools_image_info_get($file_path, $D = false) {
         'date_str' => substr($file_date, 0, 10), // only the day 0000-00-00
         'description' => $description,
     );
-    return $file;
+    $out = array_merge($file, $exif);
+    return $out;
+}
+
+/**
+ * Get data from the EXIF values, convert it
+ *
+ * @param type $image_path
+ * @return string
+ */
+function unc_tools_exif_data($image_path) {
+    global $UNC_GALLERY;
+    $exif_codes = $UNC_GALLERY['exif_codes'];
+
+    $exif = exif_read_data($image_path);
+    // var_dump($exif);
+    $data = array(
+        'file_width' => $exif['COMPUTED']['Width'],
+        'file_height' => $exif['COMPUTED']['Height'],
+    );
+    foreach ($exif_codes as $desc => $C) {
+        $hex_tag =  'UndefinedTag:' . $C['hex'];
+        if (isset($exif[$C['key']])) {
+            $val = $exif[$C['key']];
+        } else if (isset($exif[$hex_tag])) {
+            $val = $exif[$hex_tag];
+        } else {
+            // value not found, skip it
+            continue;
+        }
+        if ($C['conversion']) {
+            $func = $C['conversion'];
+            $val_conv = $func($val);
+        } else {
+            $val_conv = $val;
+        }
+        if ($C['unit']) {
+            $val_conv .= $C['unit'];
+        }
+        $data[$desc] = $val_conv;
+    }
+    return $data;
+}
+
+/**
+ * Assemble a file description from EXIF values
+ *
+ * @param type $F
+ */
+function unc_tools_file_desc($F) {
+    global $UNC_GALLERY;
+    $exif_codes = $UNC_GALLERY['exif_codes'];
+    $out = '';
+    foreach ($exif_codes as $desc => $C) {
+        $desc_nice = ucwords(str_replace("_", " ", $desc));
+        if (isset($F[$desc])) {
+            $out .= "$desc_nice: {$F[$desc]}; ";
+        }
+    }
+    return $out;
 }
 
 
@@ -772,6 +830,16 @@ function unc_tools_date_path($date) {
         return false;
     }
     return $date_str;
+}
+
+/**
+ * This takes a string such as '2/10' and evaluates the result as a mathematical function.
+ * @param type $string
+ */
+function unc_tools_divide_string($string) {
+    $f = explode("/", $string);
+    $result = $f[0] / $f[1];
+    return number_format($result, 1);
 }
 
 
