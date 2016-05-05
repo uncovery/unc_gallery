@@ -263,7 +263,7 @@ function unc_gallery_display_page() {
         </script>";
         $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"$date\" size=\"10\">";
     } else if ($D['date_selector'] == 'datelist') {
-        $datepicker_div = "<select id=\"datepicker\" onchange=\"datelist_change($slug)\">\n";
+        $datepicker_div = "<select id=\"datepicker\" onchange=\"datelist_change()\">\n";
         foreach ($avail_dates as $folder_date => $folder_files) {
             $counter = count($folder_files);
             $datepicker_div .= "<option value=\"$folder_date\">$folder_date ($counter)</option>\n";
