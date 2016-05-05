@@ -4,7 +4,7 @@ A Wordpress-plugin that displays photo galleries.
 ## General Info
 
 This plugin specializes in displaying photos of a certain date or a certain time
-of a single day. It takes away the need to handle each photo individually. The
+span. It takes away the need to handle each photo individually. The
 admin can simply upload all images in a batch and they will be automatically
 sorted by date.
 
