@@ -41,7 +41,6 @@ if (is_admin()){ // admin actions
 }
 // shortcode for the [unc_gallery] replacements
 add_shortcode('unc_gallery', 'unc_gallery_apply');
-// initialize the plugin, create the upload folder
 // this activates the returns without header & footer on upload Ajax POST
 add_action('wp_ajax_unc_gallery_uploads', 'unc_uploads_iterate_files');
 add_action('wp_ajax_unc_gallery_import_images', 'unc_uploads_iterate_files');
@@ -55,6 +54,9 @@ add_action( 'wp_enqueue_scripts', 'unc_gallery_add_css_and_js' );
 
 // execute shortcodes in the excerpts
 add_filter('the_excerpt', 'do_shortcode');
+
+// execute shortcodes in the RSS feeds:
+add_filter("the_content_feed", "do_shortcode");
 
 // get the settings from the system and set the global variables
 // this iterates the user settings that are supposed to be in the wordpress config
