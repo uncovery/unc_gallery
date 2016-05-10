@@ -220,6 +220,11 @@ function unc_tools_date_span($date1, $date2) {
         $later = $date1;
     }
 
+    // let's make sure the later date is the full date if no time is given
+    if (strlen($later) == 10) {
+        $later .= " 23:59:59";
+    }
+
     $dates_arr = new DatePeriod(
          new DateTime($early),
          new DateInterval('P1D'),
@@ -257,7 +262,6 @@ function unc_tools_images_list($D = false) {
         $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
         $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
         $folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
-
         foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
             $F = unc_tools_image_info_get($file_path, $D);
             if (($D['range']['end_time'] && $D['range']['start_time']) && // only if both are set
