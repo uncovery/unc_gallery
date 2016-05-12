@@ -3,7 +3,7 @@ Contributors: uncovery
 Tags: gallery, photos, photo
 Requires at least: 4.4.2
 Tested up to: 4.4.2
-Stable tag: 2.0
+Stable tag: 3.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -35,6 +35,14 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 1. This is the second screen shot
 
 == Changelog ==
+
+= 3.1 = 
+
+1. no more date needed if start / end time given
+1. rss feed display fixed
+1. added EXIF photo data reader
+1. featured image row height option
+1. bug fixes
 
 = 2.0 =
 
