@@ -154,7 +154,12 @@ largest file size and the highest quality.
 
 How many image rows tall should a featured image be? You can select 2,3,4 or 5 rows.
 It's recommended to chose a smaller number if the majority of your images are landscape
-format.
+format. You can set this to dynamic to enable orientation-specific scaling. 
+
+## Orientation specific scaling (Featured size for portrait/landscape)
+
+Same as above, but the system will automatically detect if the featured image is landscape
+or portrait dimension (wider than high or the opposite) and scale the picture according to that.
 
 ### Admin Date Selector
 

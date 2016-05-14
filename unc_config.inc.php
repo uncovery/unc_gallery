@@ -49,7 +49,7 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'text',
     ),
     'picture_quality' => array(
-        'help' => 'The desired thumbnail quality. Has to be a number between 1 (worst, smallest file) to 100 (best, largest file). This applies only if the images are resized with the above setting.',
+        'help' => 'The desired picture quality. Has to be a number between 1 (worst, smallest file) to 100 (best, largest file). This applies only if the images are resized with the above setting.',
         'default' => '75',
         'type' => 'text',
     ),
