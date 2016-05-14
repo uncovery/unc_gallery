@@ -345,11 +345,23 @@ function unc_display_folder_images() {
     // display except for skipped files and files out of time range
     $images = '';
     $featured = '';
+
     $i = 0;
     foreach ($files as $F) {
         $F['index'] = $i;
         if ($F['featured'] == true){
-            $height_css = 'rows_' . $UNC_GALLERY['featured_size'];
+            // select size for featured images
+            if ($UNC_GALLERY['featured_size'] <> 'dynamic') {
+                $feat_size = $UNC_GALLERY['featured_size'];
+            } else {
+                if ($F['orientation'] == 'portrait') {
+                    $feat_size = $UNC_GALLERY['featured_size_for_portrait'];
+                } else {
+                    $feat_size = $UNC_GALLERY['featured_size_for_landscape'];
+                }
+            }
+            
+            $height_css = 'rows_' . $feat_size;
             $featured .= "<div class=\"featured_photo $height_css\">\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . "</div>\n";

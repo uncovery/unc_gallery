@@ -59,7 +59,7 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'dropdown',
         'options' => array('2' => '2 Rows', '3' => '3 Rows', '4' => '4 Rows', '5' => '5 Rows', 'dynamic' => 'dynamic'),
     ),
-    'featured_size_for_portraits' => array(
+    'featured_size_for_portrait' => array(
         'help' => 'When featuring an image, how many rows should it cover in height in case it is higher than wide? You need to set "Featured Size" to "dynamic" to enable this.',
         'default' => '4',
         'type' => 'dropdown',

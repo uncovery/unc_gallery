@@ -320,7 +320,7 @@ function unc_tools_image_info_get($file_path, $D = false) {
     }
 
     $orientation = 'landscape';
-    if ($exif['file_width'] > $exif['file_height']) {
+    if ($exif['file_width'] < $exif['file_height']) {
         $orientation = 'portrait';
     }
 
