@@ -220,7 +220,6 @@ function unc_tools_date_span($date1, $date2) {
         $later = $date1;
     }
 
-    // let's make sure the later date is the full date if no time is given
     if (strlen($later) == 10) {
         $later .= " 23:59:59";
     }
@@ -320,6 +319,11 @@ function unc_tools_image_info_get($file_path, $D = false) {
         $description = "<b>File Name:</b> $file_name; <b>Date:</b> $file_date;";
     }
 
+    $orientation = 'landscape';
+    if ($exif['file_width'] > $exif['file_height']) {
+        $orientation = 'portrait';
+    }
+
     $photo_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
     $thumb_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
     $file = array(
@@ -331,7 +335,9 @@ function unc_tools_image_info_get($file_path, $D = false) {
         'file_date' => $file_date, // full date including time
         'date_str' => substr($file_date, 0, 10), // only the day 0000-00-00
         'description' => $description,
+        'orientation' => $orientation,
     );
+
     $out = array_merge($file, $exif);
     return $out;
 }
@@ -747,6 +753,7 @@ function unc_tools_folder_list($base_folder) {
 function unc_tools_image_delete() {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+
     if (!is_admin()) {
         ob_clean();
         echo "You are not admin!";
@@ -768,14 +775,28 @@ function unc_tools_image_delete() {
         $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name,
     );
     foreach ($paths as $path) {
+
         if (file_exists($path)) {
-            unlink($path);
+            $check = unlink($path);
+            if ($check) {
+                ob_clean();
+                echo "File Deleted!";
+            } else {
+                ob_clean();
+                echo "File delete failed!";
+                wp_die();
+            }
         } else {
+            ob_clean();
             echo "File name $path could not be found!";
+            wp_die();
         }
     }
+
     unc_tools_folder_delete_empty($UNC_GALLERY['upload_path']);
     unc_display_ajax_folder();
+    XMPP_ERROR_send_msg("delete5");
+
 }
 
 /**
