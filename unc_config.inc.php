@@ -54,8 +54,20 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'text',
     ),
     'featured_size' => array(
-        'help' => 'When featuring an image, how many rows should it cover in height?',
+        'help' => 'When featuring an image, how many rows should it cover in height? Chose "dynamic" if you want a orientation-specific size instead',
         'default' => '4',
+        'type' => 'dropdown',
+        'options' => array('2' => '2 Rows', '3' => '3 Rows', '4' => '4 Rows', '5' => '5 Rows', 'dynamic' => 'dynamic'),
+    ),
+    'featured_size_for_portraits' => array(
+        'help' => 'When featuring an image, how many rows should it cover in height in case it is higher than wide? You need to set "Featured Size" to "dynamic" to enable this.',
+        'default' => '4',
+        'type' => 'dropdown',
+        'options' => array('2' => '2 Rows', '3' => '3 Rows', '4' => '4 Rows', '5' => '5 Rows'),
+    ),
+    'featured_size_for_landscape' => array(
+        'help' => 'When featuring an image, how many rows should it cover in height in case it is wider than high? You need to set "Featured Size" to "dynamic" to enable this.',
+        'default' => '3',
         'type' => 'dropdown',
         'options' => array('2' => '2 Rows', '3' => '3 Rows', '4' => '4 Rows', '5' => '5 Rows'),
     ),
@@ -104,6 +116,12 @@ $UNC_GALLERY['exif_codes'] = array(
         'hex' => '0x829D',
         'key' => 'FNumber',
         'conversion' => 'unc_tools_divide_string',
+        'unit' => false,
+    ),
+    'iso' => array(
+        'hex' => '0x8827',
+        'key' => 'ISOSpeedRatings',
+        'conversion' => false,
         'unit' => false,
     ),
     'focal_length' => array(
