@@ -37,7 +37,7 @@ function datepicker_ready(defaultdate) {
     });
 }
 
-function datelist_change() {
+function datelist_change(inst) {
     var datelist_value = jQuery('#datepicker').val();
     datepicker_select(datelist_value, inst);
 }
