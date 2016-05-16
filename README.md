@@ -94,7 +94,8 @@ description is added to it if set. Example of a description set to "Don't panic"
 
 This will, in case you did not use `image` or `thumb` as a `type`, show the image
 used here as a featured image for the date, at the left edge and larger. It will
-not appear again among the other, smaller images.
+not appear again among the other, smaller images. You can also add several of them
+by separating them with commas (do not add spaces!): `featured="filename1.jpg,filename2.jpg"`
 Sample screenshot of a featured image:
 
 ![Sample screenshot of a featured image](/images/screenshot-5.png)
@@ -154,7 +155,7 @@ largest file size and the highest quality.
 
 How many image rows tall should a featured image be? You can select 2,3,4 or 5 rows.
 It's recommended to chose a smaller number if the majority of your images are landscape
-format. You can set this to dynamic to enable orientation-specific scaling. 
+format. You can set this to dynamic to enable orientation-specific scaling.
 
 ## Orientation specific scaling (Featured size for portrait/landscape)
 
