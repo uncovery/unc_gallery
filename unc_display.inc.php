@@ -230,7 +230,6 @@ function unc_gallery_display_var_init($atts = array()) {
         $slug = $slug . count($UNC_GALLERY['slugs']);
     }
     $UNC_GALLERY['slugs'][] = $slug;
-    XMPP_ERROR_send_msg($UNC_GALLERY['slugs']);
     $UNC_GALLERY['display']['slug'] = $slug;
 
     return true;
