@@ -26,7 +26,7 @@ if (file_exists('/home/includes/xmpp_error/xmpp_error.php')) {
     require_once('/home/includes/xmpp_error/xmpp_error.php');
     $XMPP_ERROR['config']['project_name'] = 'unc_gallery';
     $XMPP_ERROR['config']['enabled'] = true;
-    $XMPP_ERROR['config']['ignore_warnings'] = array('jaxl', 'iwp-client', 'multi-column-tag-map', 'wp-spamfree');
+    $XMPP_ERROR['config']['ignore_warnings'] = array('jaxl', 'iwp-client', 'multi-column-tag-map', 'wp-spamfree', 'plugin.php');
     $XMPP_ERROR['config']['track_globals'] = array('UNC_GALLERY');
 }
 // actions on activating and deactivating the plugin
