@@ -220,12 +220,15 @@ function unc_gallery_display_var_init($atts = array()) {
         $UNC_GALLERY['display']['files'] = unc_tools_images_list();
     }
 
+    // this is needed to the JS function calls used for the displays
     $slug = '';
     if (isset($post->post_name)) {
         $slug = str_replace("-", "_", $post->post_name);
     } else {
         $slug = 'none';
     }
+    // we list all the slugs to make sure we do not re-use
+    // practically we could just use incremental numbers, but debugging is easier with a name
     if (isset($UNC_GALLERY['slugs']) && in_array($slug, $UNC_GALLERY['slugs'])) {
         $slug = $slug . count($UNC_GALLERY['slugs']);
     }
