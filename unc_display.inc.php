@@ -41,7 +41,7 @@ function unc_gallery_apply($atts = array()) {
  * @return type
  */
 function unc_gallery_display_var_init($atts = array()) {
-    global $UNC_GALLERY;
+    global $UNC_GALLERY, $post;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
 
     $a = shortcode_atts( array(
@@ -219,6 +219,20 @@ function unc_gallery_display_var_init($atts = array()) {
         $UNC_GALLERY['display']['file'] = false;
         $UNC_GALLERY['display']['files'] = unc_tools_images_list();
     }
+
+    $slug = '';
+    if (isset($post->post_name)) {
+        $slug = str_replace("-", "_", $post->post_name);
+    } else {
+        $slug = 'none';
+    }
+    if (isset($UNC_GALLERY['slugs']) && in_array($slug, $UNC_GALLERY['slugs'])) {
+        $slug = $slug . count($UNC_GALLERY['slugs']);
+    }
+    $UNC_GALLERY['slugs'][] = $slug;
+    XMPP_ERROR_send_msg($UNC_GALLERY['slugs']);
+    $UNC_GALLERY['display']['slug'] = $slug;
+
     return true;
 }
 
@@ -360,7 +374,7 @@ function unc_display_folder_images() {
                     $feat_size = $UNC_GALLERY['featured_size_for_landscape'];
                 }
             }
-            
+
             $height_css = 'rows_' . $feat_size;
             $featured .= "<div class=\"featured_photo $height_css\">\n"
                 . unc_display_image_html($F['file_path'], false, $F)
@@ -406,11 +420,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
 
     $gal_text = '';
     if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
-        global $post;
-        $slug = '';
-        if (isset($post->post_name)) {
-            $slug = str_replace("-", "_", $post->post_name);
-        }
+        $slug = $UNC_GALLERY['display']['slug'];
         $gal_text = "onClick=\"unc_g_photoswipe_$slug({$F['index']}); return false;\"";
     } else if ($UNC_GALLERY['image_view_method'] == 'lightbox') {
         $gal_text = "data-lightbox=\"gallery_{$F['file_name']}\"";
@@ -428,12 +438,9 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
 }
 
 function unc_display_photoswipe_js($files) {
-    global $post, $UNC_GALLERY;
-    $slug = '';
-    if (isset($post->post_name)) {
-        $slug = str_replace("-", "_", $post->post_name);
-    }
+    global $UNC_GALLERY;
 
+    $slug = $UNC_GALLERY['display']['slug'];
     $out = '
 <script type="text/javascript">
     function unc_g_photoswipe_' . $slug . '(index) {
