@@ -398,7 +398,6 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     $file_date = unc_tools_image_date($image_file_path);
     $UNC_GALLERY['debug'][]["Read image date result"] = $file_date;
 
-
     $new_image = imagecreatetruecolor($new_width, $new_height); // create a blank canvas
     $old_image = $imgcreatefrom($image_file_path); // take the old image to memort
     $resize_check = imagecopyresized($new_image, $old_image, 0, 0, 0, 0, $new_width, $new_height, $original_width, $original_height); // resize it

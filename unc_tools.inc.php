@@ -254,7 +254,7 @@ function unc_tools_images_list($D = false) {
     $dates = $D['dates'];
 
     $files = array();
-    $featured = false;
+    $featured_list = array();
 
     foreach ($dates as $date_str) {
         // translate date string to folder
@@ -273,9 +273,9 @@ function unc_tools_images_list($D = false) {
                 ($D['range']['end_time'] && ($D['range']['end_time'] < $F['time_stamp']))) { // or if there is an end and the file is later then skip
                 continue;
             }
-            if ($F['file_name'] == $D['featured_image']){
+            if (in_array($F['file_name'], $D['featured_image'])) {
                 $F['featured'] = true;
-                $featured = $F;
+                $featured_list[] = $F;
             } else {
                 $F['featured'] = false;
                 $files[$F['file_date']] = $F;
@@ -283,10 +283,9 @@ function unc_tools_images_list($D = false) {
         }
     }
     ksort($files);
-    if ($featured) {
-        array_unshift($files, $featured);
+    foreach ($featured_list as $feat) {
+        array_unshift($files, $feat);
     }
-
     return $files;
 }
 

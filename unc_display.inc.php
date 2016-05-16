@@ -32,7 +32,6 @@ function unc_gallery_apply($atts = array()) {
         return unc_gallery_display_page();
     }
 }
-
 /**
  * Process and validate $UNC_GALLERY['display'] settings
  *
@@ -77,21 +76,25 @@ function unc_gallery_display_var_init($atts = array()) {
     }
 
 
-    $featured_file = unc_tools_filename_validate($a['featured']);
-    if ($featured_file) {
-        $UNC_GALLERY['display']['featured_image'] = $a['featured']; // TODO: Sanitize & verify filename
+    // several featured
+    // we do not need to validate featured files since we only compare with the list
+    // of found files in a folder
+    if (strstr($a['featured'], ",")) {
+        $UNC_GALLERY['display']['featured_image'] = explode(",", trim($a['featured']));
+    } else if ($a['featured']) {
+        $UNC_GALLERY['display']['featured_image'] = array(trim($a['featured']));
     } else {
-        $UNC_GALLERY['display']['featured_image'] = false;
+        $UNC_GALLERY['display']['featured_image'] = array();
     }
 
     // there can be several options, separated by space
     if (!$a['options']) {
         $options = array();
     } else {
-        $options = explode(" ", $a['options']);
+        $options = explode(" ", trim($a['options']));
     }
     $UNC_GALLERY['options'] = $options;
-    $UNC_GALLERY['display']['echo'] = $a['echo'];
+    $UNC_GALLERY['display']['echo'] = trim($a['echo']);
 
     // icon or image?
     $thumb = false;
@@ -99,18 +102,18 @@ function unc_gallery_display_var_init($atts = array()) {
         $thumb = true;
     }
 
-    $UNC_GALLERY['display']['description'] = $a['description'];
-    $UNC_GALLERY['display']['limit_rows'] = $a['limit_rows'];
+    $UNC_GALLERY['display']['description'] = trim($a['description']);
+    $UNC_GALLERY['display']['limit_rows'] = trim($a['limit_rows']);
 
     // date
     $keywords = $UNC_GALLERY['keywords'];
 
     if ($a['end_time']) {
-        $date_end_time = substr($a['end_time'], 0, 10);
+        $date_end_time = substr(trim($a['end_time']), 0, 10);
     }
 
     if ($a['start_time']) {
-        $date_start_time = substr($a['start_time'], 0, 10);
+        $date_start_time = substr(trim($a['start_time']), 0, 10);
     }
     $UNC_GALLERY['display']['date_description'] = false; // false by default, only true if not set explicitly (latest or random date)
 
@@ -365,7 +368,7 @@ function unc_display_folder_images() {
     $i = 0;
     foreach ($files as $F) {
         $F['index'] = $i;
-        if ($F['featured'] == true){
+        if ($F['featured']){
             // select size for featured images
             if ($UNC_GALLERY['featured_size'] <> 'dynamic') {
                 $feat_size = $UNC_GALLERY['featured_size'];
