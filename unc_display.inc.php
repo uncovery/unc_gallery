@@ -56,6 +56,7 @@ function unc_gallery_display_var_init($atts = array()) {
         'echo' => false, // internal variable, used by AJAX call
         'offset' => false, // offset for date string to cover photos after midnight
         'limit_rows' => false,
+        'debug' => false,
     ), $atts);
 
     $type = $a['type'];
@@ -87,6 +88,9 @@ function unc_gallery_display_var_init($atts = array()) {
         $UNC_GALLERY['display']['featured_image'] = array();
     }
 
+    // debug or not?
+    $UNC_GALLERY['display']['debug'] = $a['debug'];
+    
     // there can be several options, separated by space
     if (!$a['options']) {
         $options = array();
