@@ -1,8 +1,12 @@
 === Uncovery Gallery ===
-Contributors: uncovery
+Author: uncovery
+Author URI: https://uncovery.net
+Plugin Name: Uncovery Gallery
+Plugin URI: https://uncovery.net/about
 Tags: gallery, photos, photo
 Requires at least: 4.5.2
 Tested up to: 4.5.2
+Version: 3.2.1
 Stable tag: 3.2.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
