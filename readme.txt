@@ -1,8 +1,9 @@
 === Uncovery Gallery ===
 Author: uncovery
+Contributors: uncovery
 Author URI: https://uncovery.net
 Plugin Name: Uncovery Gallery
-Plugin URI: https://uncovery.net/about
+Plugin URI: https://github.com/uncovery/unc_gallery
 Tags: gallery, photos, photo
 Requires at least: 4.5.2
 Tested up to: 4.5.2
@@ -11,7 +12,7 @@ Stable tag: 3.2.2
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Creates date-based photo galleries.
+A simple, self-generating, date-based gallery with bulk uploading
 
 == Description ==
 
