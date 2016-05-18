@@ -6,8 +6,8 @@ Plugin URI: https://uncovery.net/about
 Tags: gallery, photos, photo
 Requires at least: 4.5.2
 Tested up to: 4.5.2
-Version: 3.2.1
-Stable tag: 3.2.1
+Version: 3.2.2
+Stable tag: 3.2.2
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -35,6 +35,10 @@ such as posts or pages in the basic format [unc_gallery date="2006-03-30"].
 1. A sample gallery without featured images
 
 == Changelog ==
+
+= 3.2.2 =
+
+Plugin description update, version name fix
 
 = 3.2.1 =
 
