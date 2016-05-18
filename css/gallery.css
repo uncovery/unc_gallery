@@ -98,18 +98,22 @@
 
 .unc_gallery .rows_2 img {
     height: 245px;
+    width: auto;
 }
 
 .unc_gallery .rows_3 img {
     height: 370px;
+    width: auto;
 }
 
 .unc_gallery .rows_4 img {
     height: 495px;
+    width: auto;
 }
 
 .unc_gallery .rows_5 img {
     height: 620px;
+    width: auto;
 }
 
 .unc_gallery .limit_rows_2 {
