@@ -4,7 +4,7 @@ Contributors: uncovery
 Author URI: https://uncovery.net
 Plugin Name: Uncovery Gallery
 Plugin URI: https://github.com/uncovery/unc_gallery
-Tags: gallery, photos, photo
+Tags: gallery, photos, photo, gallery, photoblog, date
 Requires at least: 4.5.2
 Tested up to: 4.5.2
 Version: 3.2.2
@@ -39,6 +39,11 @@ Additional features include:
 1. Upload the plugin files to the `/wp-content/plugins/unc_gallery` directory, or install the plugin through the WordPress plugins screen directly.
 1. Activate the plugin through the 'Plugins' screen in WordPress
 1. Use the Uncovery Gallery screen to configure it and upload photos
+
+= Uninstall =
+
+Please note that while deactivating the plugin has no bad consequences, deleting it will also delete all
+uploaded photos from the server!
 
 == Screenshots ==
 
