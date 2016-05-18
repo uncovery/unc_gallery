@@ -191,6 +191,6 @@ You can see known bugs and upcoming features on the project's
 
 This plugin uses the following libraries:
 
-[Photoswipe] (http://photoswipe.com/)
-[Lightbox] (http://lokeshdhakar.com/projects/lightbox2/)
-[Parsedown] (http://parsedown.org)
+* [Photoswipe] (http://photoswipe.com/)
+* [Lightbox] (http://lokeshdhakar.com/projects/lightbox2/)
+* [Parsedown] (http://parsedown.org)
