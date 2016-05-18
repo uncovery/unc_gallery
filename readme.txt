@@ -16,14 +16,23 @@ A simple, self-generating, date-based gallery with bulk uploading
 
 == Description ==
 
-This plugin specializes in displaying photos of a certain date or a certain time
-of a single day. It takes away the need to handle each photo individually. The
-admin can simply upload all images in a batch and they will be automatically
-sorted by date.
+This plugin specializes in displaying all photos of a certain date or between any two points in time.
+It takes away the need to handle each photo individually. The admin can simply
+upload all images in a batch and the system will recognise the date and time the pictures were taken.
 
 The galleries are then displayed by inserting a short code into any wordpress element
 such as posts or pages in the basic format [unc_gallery date="2006-03-30"].
 
+This plugin is specially made for photo bloggers often often post several images of a certain event
+such as a hike, a trip, a dive or concert without having to touch every single image individually.
+
+Additional features include:
+
+* featured photos: show one or more photos larger than others
+* dynamic dates: show the latest, first or random dates
+* date picker: let the user pick the date themselves
+* seamless re-uploading: any photo can be re-uploaded anytime with a better/different version
+* EXIF data: The photo description can include automatically generated photo data such as ISO, F-stop etc.
 
 == Installation ==
 
