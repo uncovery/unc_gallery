@@ -34,6 +34,9 @@ the or the latest
 * Dynamic date: Instead of showing a specific date, show random or latest
 * Descriptions: Whole days and individual photos can have specific description
 set in the short code
+* Re-Uploads: If you want to update a picture with a new version, simply re-upload it and it will be updated
+in the posts where the photos is shown automatically.
+* EXIF data: The photo description can show automatically generated photo data such as ISO, F-stop etc.
 
 ## Shortcodes
 

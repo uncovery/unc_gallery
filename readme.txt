@@ -32,7 +32,7 @@ Additional features include:
 * dynamic dates: show the latest, first or random dates
 * date picker: let the user pick the date themselves
 * seamless re-uploading: any photo can be re-uploaded anytime with a better/different version
-* EXIF data: The photo description can include automatically generated photo data such as ISO, F-stop etc.
+* EXIF data: The photo description can show automatically generated photo data such as ISO, F-stop etc.
 
 == Installation ==
 
