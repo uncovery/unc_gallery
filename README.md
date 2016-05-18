@@ -28,7 +28,7 @@ There are several additional options beyond this basic format:
 
 * Time Limits: Define a specific time span during the day to be displayed instead of
 the whole day, several whole days or any photo between any two points in time
-* Featured photo: Display one photo at the start and larger than the other photos
+* Featured photo: Display one or several photos at the start and larger than the other photos
 * One Photo only: Show only one photo of one day. Either a specific photo, random,
 the or the latest
 * Dynamic date: Instead of showing a specific date, show random or latest
