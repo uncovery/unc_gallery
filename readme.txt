@@ -1,9 +1,9 @@
 === Uncovery Gallery ===
 Contributors: uncovery
 Tags: gallery, photos, photo
-Requires at least: 4.4.2
-Tested up to: 4.4.2
-Stable tag: 3.1
+Requires at least: 4.5.2
+Tested up to: 4.5.2
+Stable tag: 3.2
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,7 +36,12 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 
 == Changelog ==
 
-= 3.1 = 
+= 3.2 =
+
+1. You can now have several featured images
+1. You can now have several galleries on one page without photoswipe breaking
+
+= 3.1 =
 
 1. no more date needed if start / end time given
 1. rss feed display fixed
@@ -47,9 +52,7 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 = 2.0 =
 
 Add Photoswipe as a display option
-
 Bug fixes
-
 
 = 1.0 =
 
