@@ -34,6 +34,8 @@ such as posts or pages in the basic format [unc_gallery date="2006-03-30"].
 == Screenshots ==
 
 1. A sample gallery without featured images
+2. A sample gallery with featured images
+3. The admin options screen
 
 == Changelog ==
 
