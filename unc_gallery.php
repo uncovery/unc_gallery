@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: Uncovery Gallery
-Plugin URI:  https://github.com/uncovery/unc_gallery
-Description: A simple, self-generating, date-based gallery
-Version:     0.3
+Plugin URI:  https://uncovery.net/about
+Description: A simple, self-generating, date-based gallery with bulk uploading
+Version:     3.2.2
 Author:      Uncovery
 Author URI:  http://uncovery.net
 License:     GPL2
@@ -26,7 +26,7 @@ if (file_exists('/home/includes/xmpp_error/xmpp_error.php')) {
     require_once('/home/includes/xmpp_error/xmpp_error.php');
     $XMPP_ERROR['config']['project_name'] = 'unc_gallery';
     $XMPP_ERROR['config']['enabled'] = true;
-    $XMPP_ERROR['config']['ignore_warnings'] = array('jaxl', 'iwp-client', 'multi-column-tag-map', 'wp-spamfree', 'plugin.php');
+    $XMPP_ERROR['config']['ignore_warnings'] = array('jaxl', 'iwp-client', 'multi-column-tag-map', 'wp-spamfree', 'plugin.php', 'akismet');
     $XMPP_ERROR['config']['track_globals'] = array('UNC_GALLERY');
 }
 // actions on activating and deactivating the plugin
