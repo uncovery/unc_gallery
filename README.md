@@ -22,14 +22,12 @@ case you changed them without going through delete & replace processes.
 
 ## Features
 
-* Time shift: If photos are generally also taken after midnight, a time shift
-can be applied to all photos to make sure they do not appear as photos of the next day.
 * Photo and Thumbnail resizing: The admin can choose the quality and size of thumbnails.
 
 There are several additional options beyond this basic format:
 
 * Time Limits: Define a specific time span during the day to be displayed instead of
-the whole day
+the whole day, several whole days or any photo between any two points in time
 * Featured photo: Display one photo at the start and larger than the other photos
 * One Photo only: Show only one photo of one day. Either a specific photo, random,
 the or the latest
