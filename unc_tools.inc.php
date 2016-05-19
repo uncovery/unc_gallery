@@ -352,7 +352,7 @@ function unc_tools_exif_data($image_path) {
     $exif_codes = $UNC_GALLERY['exif_codes'];
 
     $exif = exif_read_data($image_path);
-    // var_dump($exif);
+
     $data = array(
         'file_width' => $exif['COMPUTED']['Width'],
         'file_height' => $exif['COMPUTED']['Height'],
@@ -364,7 +364,6 @@ function unc_tools_exif_data($image_path) {
         } else if (isset($exif[$hex_tag])) {
             $val = $exif[$hex_tag];
         } else {
-            // value not found, skip it
             continue;
         }
         if ($C['conversion']) {
@@ -957,4 +956,95 @@ class iptc {
         @unlink($this->file); #delete if exists
         imagejpeg($img,$this->file,100);
     }
+}
+
+// source: https://surniaulula.com/2013/04/09/read-adobe-xmp-xml-in-php/
+
+// $xml = $adobeXMP->get_xmp_array( $adobeXMP->get_xmp_raw( get_attached_file( $pid ) ) );
+
+function get_xmp_array($filepath) {
+    global $UNC_GALLERY;
+    $max_size = 512000;     // maximum size read (500k)
+    $chunk_size = 65536;    // read 64k at a time
+    $start_tag = '<x:xmpmeta';
+    $end_tag = '</x:xmpmeta>';
+    $cache_file = $UNC_GALLERY['xmp_cache_dir'] . DIRECTORY_SEPARATOR . md5($filepath) . '.xml';
+    $xmp_raw = null;
+
+    if (!is_dir($UNC_GALLERY['xmp_cache_dir'])) {
+        $mkdir_chk = mkdir($UNC_GALLERY['xmp_cache_dir']);
+        if (!$mkdir_chk) {
+            echo unc_tools_errormsg("could not create folder XMP cache folder at " . $UNC_GALLERY['xmp_cache_dir']);
+            return false;
+        }
+    }
+
+    if (file_exists($cache_file) &&
+        filemtime($cache_file) > filemtime($filepath) &&
+        $cache_fh = fopen($cache_file, 'rb')) {
+
+        $xmp_raw = fread($cache_fh, filesize($cache_file));
+        fclose($cache_fh);
+    } else if ($file_fh = fopen($filepath, 'rb')) {
+        $chunk = '';
+        $file_size = filesize( $filepath );
+        while (($file_pos = ftell( $file_fh ) ) < $file_size  && $file_pos < $max_size ) {
+            $chunk .= fread( $file_fh, $chunk_size );
+            if (($end_pos = strpos( $chunk, $end_tag)) !== false) {
+                if (($start_pos = strpos( $chunk, $start_tag)) !== false) {
+
+                    $xmp_raw = substr($chunk, $start_pos, $end_pos - $start_pos + strlen($end_tag));
+                    $cache_fh = fopen($cache_file, 'wb');
+
+                    if ($cache_fh) {
+                        fwrite($cache_fh, $xmp_raw);
+                        fclose($cache_fh);
+                    }
+                }
+                break;  // stop reading after finding the xmp data
+            }
+        }
+        fclose( $file_fh );
+    }
+
+    $xmp_arr = array();
+
+    $key_arr = array(
+        'Creator Email' => '<Iptc4xmpCore:CreatorContactInfo[^>]+?CiEmailWork="([^"]*)"',
+        'Owner Name'    => '<rdf:Description[^>]+?aux:OwnerName="([^"]*)"',
+        'Creation Date' => '<rdf:Description[^>]+?xmp:CreateDate="([^"]*)"',
+        'Modification Date'     => '<rdf:Description[^>]+?xmp:ModifyDate="([^"]*)"',
+        'Label'         => '<rdf:Description[^>]+?xmp:Label="([^"]*)"',
+        'Credit'        => '<rdf:Description[^>]+?photoshop:Credit="([^"]*)"',
+        'Source'        => '<rdf:Description[^>]+?photoshop:Source="([^"]*)"',
+        'Headline'      => '<rdf:Description[^>]+?photoshop:Headline="([^"]*)"',
+        'City'          => '<rdf:Description[^>]+?photoshop:City="([^"]*)"',
+        'State'         => '<rdf:Description[^>]+?photoshop:State="([^"]*)"',
+        'Country'       => '<rdf:Description[^>]+?photoshop:Country="([^"]*)"',
+        'Country Code'  => '<rdf:Description[^>]+?Iptc4xmpCore:CountryCode="([^"]*)"',
+        'Location'      => '<rdf:Description[^>]+?Iptc4xmpCore:Location="([^"]*)"',
+        'Title'         => '<dc:title>\s*<rdf:Alt>\s*(.*?)\s*<\/rdf:Alt>\s*<\/dc:title>',
+        'Description'   => '<dc:description>\s*<rdf:Alt>\s*(.*?)\s*<\/rdf:Alt>\s*<\/dc:description>',
+        'Creator'       => '<dc:creator>\s*<rdf:Seq>\s*(.*?)\s*<\/rdf:Seq>\s*<\/dc:creator>',
+        'Keywords'      => '<dc:subject>\s*<rdf:Bag>\s*(.*?)\s*<\/rdf:Bag>\s*<\/dc:subject>',
+        'Hierarchical Keywords' => '<lr:hierarchicalSubject>\s*<rdf:Bag>\s*(.*?)\s*<\/rdf:Bag>\s*<\/lr:hierarchicalSubject>'
+    );
+
+    foreach ($key_arr as $key => $regex ) {
+        $match = false;
+        // get a single text string
+        $xmp_arr[$key] = preg_match( "/$regex/is", $xmp_raw, $match ) ? $match[1] : '';
+
+        // if string contains a list, then re-assign the variable as an array with the list elements
+        $xmp_arr[$key] = preg_match_all( "/<rdf:li[^>]*>([^>]*)<\/rdf:li>/is", $xmp_arr[$key], $match ) ? $match[1] : $xmp_arr[$key];
+
+        // hierarchical keywords need to be split into a third dimension
+        if (!empty($xmp_arr[$key]) && $key == 'Hierarchical Keywords') {
+            foreach ($xmp_arr[$key] as $li => $val) {
+                $xmp_arr[$key][$li] = explode( '|', $val );
+            }
+            unset($li, $val);
+        }
+    }
+    return $xmp_arr;
 }
