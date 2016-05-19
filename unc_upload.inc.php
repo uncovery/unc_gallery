@@ -333,6 +333,12 @@ function unc_uploads_process_file($i, $overwrite) {
     } else if (!$action) {
         $action = 'written';
     }
+
+    $check_xmp = unc_xmp_write_raw($new_path);
+    if (!$check_xmp) {
+        return array('date' => false, 'action' => "Could not write XMP data to file");
+    }
+
     return array('date'=> $date_str, 'action' => $target_filename . ": " . $action);
 }
 

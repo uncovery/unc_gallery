@@ -90,7 +90,7 @@ function unc_gallery_display_var_init($atts = array()) {
 
     // debug or not?
     $UNC_GALLERY['display']['debug'] = $a['debug'];
-    
+
     // there can be several options, separated by space
     if (!$a['options']) {
         $options = array();
@@ -458,11 +458,16 @@ function unc_display_photoswipe_js($files) {
         };
         var uncg_items_' . $slug . ' = [';
     foreach ($files  as $F) {
+        $desc = $F['description'];
+
         if ($UNC_GALLERY['show_exif_data'] == 'yes') {
-            $desc = $F['description'] . " " . unc_tools_file_desc($F);
-        } else {
-            $desc = $F['description'];
+            $desc .= unc_tools_file_desc($F);
         }
+
+        if ($UNC_GALLERY['show_keywords'] == 'yes' && isset($F['keywords'])) {
+            $desc .= '<b>Tags:</b> ' . $F['keywords'];
+        }
+
         $out .= "
     {
         src: '{$F['file_url']}',

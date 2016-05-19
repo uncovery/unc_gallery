@@ -338,6 +338,14 @@ function unc_tools_image_info_get($file_path, $D = false) {
     );
 
     $out = array_merge($file, $exif);
+
+    if ($UNC_GALLERY['show_keywords'] == 'yes') {
+        $keywords = unc_tools_xmp_get_keywords($file_path);
+        if ($keywords) {
+            $out['keywords'] = $keywords;
+        }
+    }
+
     return $out;
 }
 
@@ -966,13 +974,13 @@ class iptc {
  * @param type $filepath
  * @return boolean
  */
-function get_xmp_array($filepath) {
+function unc_xmp_write_raw($filepath) {
     global $UNC_GALLERY;
     $max_size = 1240000; // maximum size read (1MB)
     $chunk_size = 65536; // read 64k at a time
     $start_tag = '<x:xmpmeta';
     $end_tag = '</x:xmpmeta>';
-    $cache_file = $UNC_GALLERY['xmp_cache_dir'] . DIRECTORY_SEPARATOR . md5($filepath) . '.xml';
+    $cache_file = $UNC_GALLERY['xmp_cache_dir'] . DIRECTORY_SEPARATOR . md5($filepath) . '.xmp.php';
     $xmp_raw = null;
 
     if (!is_dir($UNC_GALLERY['xmp_cache_dir'])) {
@@ -983,33 +991,43 @@ function get_xmp_array($filepath) {
         }
     }
 
+    // we have the data already, nothing to do.
     if (file_exists($cache_file) && filemtime($cache_file) > filemtime($filepath) && $cache_fh = fopen($cache_file, 'rb')) {
-        $xmp_raw = fread($cache_fh, filesize($cache_file));
-        fclose($cache_fh);
-    } else if ($file_fh = fopen($filepath, 'rb')) {
+        // $xmp_raw = fread($cache_fh, filesize($cache_file));
+        // fclose($cache_fh);
+        return true;
+    } else if ($file_fh = fopen($filepath, 'rb')) { // let's get the data
         $chunk = '';
         $file_size = filesize( $filepath );
         while (($file_pos = ftell( $file_fh ) ) < $file_size  && $file_pos < $max_size ) {
             $chunk .= fread( $file_fh, $chunk_size );
             if (($end_pos = strpos($chunk, $end_tag)) !== false) {
                 if (($start_pos = strpos( $chunk, $start_tag)) !== false) {
-
                     $xmp_raw = substr($chunk, $start_pos, $end_pos - $start_pos + strlen($end_tag));
-                    $cache_fh = fopen($cache_file, 'wb');
-
-                    if ($cache_fh) {
-                        fwrite($cache_fh, $xmp_raw);
-                        fclose($cache_fh);
-                    }
                 }
                 break;  // stop reading after finding the xmp data
             }
         }
         fclose($file_fh);
+        // convert to php
+        $xmp_arr = unc_xmp_get_array($xmp_raw);
+        $check = unc_array2file($xmp_arr, 'xmp_arr', $cache_file);
+        if ($check) {
+            return true;
+        } else {
+            echo unc_tools_errormsg("could not write XMP cache file at " . $cache_file);
+            return false;
+        }
     }
+}
 
-    $xmp_arr = array();
-
+/**
+ * convert raw XMP data into a PHP array
+ *
+ * @param type $xmp_raw
+ * @return type
+ */
+function unc_xmp_get_array($xmp_raw) {
     $key_arr = array(
         'Creator Email' => '<Iptc4xmpCore:CreatorContactInfo[^>]+?CiEmailWork="([^"]*)"',
         'Owner Name'    => '<rdf:Description[^>]+?aux:OwnerName="([^"]*)"',
@@ -1048,4 +1066,68 @@ function get_xmp_array($filepath) {
         }
     }
     return $xmp_arr;
+}
+
+function unc_tools_xmp_get_keywords($file_path) {
+    global $UNC_GALLERY, $xmp_arr;
+    $cache_file = $UNC_GALLERY['xmp_cache_dir'] . DIRECTORY_SEPARATOR . md5($file_path) . '.xmp.php';
+    if (!file_exists($cache_file)) {
+        return false;
+    }
+    $xmp_arr = array();
+    include_once($cache_file);
+    if (!isset($xmp_arr['Keywords'])) {
+        return false;
+    }
+    $keys = $xmp_arr['Keywords'];
+    $keys_string = implode(", ", $keys);
+    return $keys_string;
+}
+
+/**
+ * Convert an array to a printable text and save to file
+ *
+ * @param type $data
+ * @param type $array_name
+ * @param type $file
+ * @return string
+ */
+function unc_array2file($data, $array_name, $file) {
+    $out = '<?php' . "\n"
+        . '$' . $array_name . " = array(\n"
+        . unc_array2file_line($data, 0)
+        . ");";
+    return file_put_contents($file, $out);
+}
+
+function unc_array2file_line($array, $layer, $val_change_func = false) {
+    $in_text = unc_array2file_indent($layer);
+    $out = "";
+    foreach ($array as $key => $value) {
+        if ($val_change_func) {
+            $value = $val_change_func($key, $value);
+        }
+        $out .=  "$in_text'$key' => ";
+        if (is_array($value)) {
+            $layer++;
+            $out .= "array(\n"
+                . unc_array2file_line($value, $layer,  $val_change_func)
+                . "$in_text),\n";
+            $layer--;
+        } else if(is_numeric($value)) {
+            $out .= "$value,\n";
+        } else {
+            $out .= "'$value',\n";
+        }
+    }
+    return $out;
+}
+
+function unc_array2file_indent($layer) {
+    $text = '    ';
+    $out = '';
+    for ($i=0; $i<=$layer; $i++) {
+        $out .= $text;
+    }
+    return $out;
 }

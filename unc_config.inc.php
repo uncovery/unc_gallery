@@ -90,6 +90,12 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'dropdown',
         'options' => array('yes' => 'Yes', 'no' => 'No'),
     ),
+    'show_keywords' => array(
+        'help' => 'Did you assign keywords to your phots (in Lightroom for example) and want to show them?',
+        'default' => 'yes',
+        'type' => 'dropdown',
+        'options' => array('yes' => 'Yes', 'no' => 'No'),
+    )
 );
 
 // exif data to be looked for
