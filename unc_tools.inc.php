@@ -958,14 +958,18 @@ class iptc {
     }
 }
 
-// source: https://surniaulula.com/2013/04/09/read-adobe-xmp-xml-in-php/
-
-// $xml = $adobeXMP->get_xmp_array( $adobeXMP->get_xmp_raw( get_attached_file( $pid ) ) );
-
+/**
+ * Code to read XMP file contents from files
+ * source: https://surniaulula.com/2013/04/09/read-adobe-xmp-xml-in-php/
+ *
+ * @global type $UNC_GALLERY
+ * @param type $filepath
+ * @return boolean
+ */
 function get_xmp_array($filepath) {
     global $UNC_GALLERY;
-    $max_size = 512000;     // maximum size read (500k)
-    $chunk_size = 65536;    // read 64k at a time
+    $max_size = 1240000; // maximum size read (1MB)
+    $chunk_size = 65536; // read 64k at a time
     $start_tag = '<x:xmpmeta';
     $end_tag = '</x:xmpmeta>';
     $cache_file = $UNC_GALLERY['xmp_cache_dir'] . DIRECTORY_SEPARATOR . md5($filepath) . '.xml';
