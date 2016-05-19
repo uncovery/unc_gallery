@@ -983,10 +983,7 @@ function get_xmp_array($filepath) {
         }
     }
 
-    if (file_exists($cache_file) &&
-        filemtime($cache_file) > filemtime($filepath) &&
-        $cache_fh = fopen($cache_file, 'rb')) {
-
+    if (file_exists($cache_file) && filemtime($cache_file) > filemtime($filepath) && $cache_fh = fopen($cache_file, 'rb')) {
         $xmp_raw = fread($cache_fh, filesize($cache_file));
         fclose($cache_fh);
     } else if ($file_fh = fopen($filepath, 'rb')) {
@@ -994,7 +991,7 @@ function get_xmp_array($filepath) {
         $file_size = filesize( $filepath );
         while (($file_pos = ftell( $file_fh ) ) < $file_size  && $file_pos < $max_size ) {
             $chunk .= fread( $file_fh, $chunk_size );
-            if (($end_pos = strpos( $chunk, $end_tag)) !== false) {
+            if (($end_pos = strpos($chunk, $end_tag)) !== false) {
                 if (($start_pos = strpos( $chunk, $start_tag)) !== false) {
 
                     $xmp_raw = substr($chunk, $start_pos, $end_pos - $start_pos + strlen($end_tag));
@@ -1008,7 +1005,7 @@ function get_xmp_array($filepath) {
                 break;  // stop reading after finding the xmp data
             }
         }
-        fclose( $file_fh );
+        fclose($file_fh);
     }
 
     $xmp_arr = array();
