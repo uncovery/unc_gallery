@@ -8,6 +8,7 @@ global $UNC_GALLERY;
 
 $UNC_GALLERY['upload'] = "unc_gallery";
 $UNC_GALLERY['upload_path'] = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $UNC_GALLERY['upload'];
+$UNC_GALLERY['xmp_cache_dir'] = plugin_dir_path( __FILE__ ) . 'xmp_cache';
 $UNC_GALLERY['photos'] = "photos";
 $UNC_GALLERY['thumbnails'] = "thumbs";
 $UNC_GALLERY['settings_prefix'] = 'unc_gallery_';
