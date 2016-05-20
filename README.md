@@ -23,9 +23,6 @@ case you changed them without going through delete & replace processes.
 ## Features
 
 * Photo and Thumbnail resizing: The admin can choose the quality and size of thumbnails.
-
-There are several additional options beyond this basic format:
-
 * Time Limits: Define a specific time span during the day to be displayed instead of
 the whole day, several whole days or any photo between any two points in time
 * Featured photo: Display one or several photos at the start and larger than the other photos
@@ -37,6 +34,7 @@ set in the short code
 * Re-Uploads: If you want to update a picture with a new version, simply re-upload it and it will be updated
 in the posts where the photos is shown automatically.
 * EXIF data: The photo description can show automatically generated photo data such as ISO, F-stop etc.
+* XMP data: Display keywords added by Adobe Lightroom or other software
 
 ## Shortcodes
 
@@ -65,6 +63,8 @@ the format `yyyy-mm-dd hh:mm:ss`, 24h notation. You can enter different dates. U
 * `end_time="2016-10-30 21:40:29"`: hide everything after 21:40:29, show the rest of that day
 * `start_time="2016-10-30 20:00:00" end_time="2016-10-30 21:00:00"`: Show only the hour 20:00-21:20
 * `end_time="2016-10-30 20:00:00" start_time="2016-10-30 21:00:00"`: Hide the hour 20:00-21:20
+
+If you have multiple gaps during a day, you need to use several [unc_gallery ...] tags on the same page/post
 
 ### Other features
 
@@ -187,13 +187,12 @@ for touch devices such as mobile phones and tablets.
 
 ## Known Bugs, upcoming features
 
-You can see known bugs and upcoming features on the project's
-![Issue page on Github](https://github.com/uncovery/unc_gallery/issues)
+You can see known bugs and upcoming features on the project's [issue page on Github](https://github.com/uncovery/unc_gallery/issues)
 
 ## Credits
 
 This plugin uses the following libraries:
 
-* [Photoswipe] (http://photoswipe.com/)
-* [Lightbox] (http://lokeshdhakar.com/projects/lightbox2/)
-* [Parsedown] (http://parsedown.org)
+* [Photoswipe](http://photoswipe.com/)
+* [Lightbox](http://lokeshdhakar.com/projects/lightbox2/)
+* [Parsedown](http://parsedown.org)
