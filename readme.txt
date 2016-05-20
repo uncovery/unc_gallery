@@ -12,7 +12,7 @@ Stable tag: 3.2.2
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A simple, self-generating, date-based gallery with bulk uploading
+A simple, self-generating, auto-tagging, date-based gallery with bulk uploading, perfect for photo blogging.
 
 == Description ==
 
@@ -23,8 +23,10 @@ upload all images in a batch and the system will recognise the date and time the
 The galleries are then displayed by inserting a short code into any wordpress element
 such as posts or pages in the basic format [unc_gallery date="2006-03-30"].
 
-This plugin is specially made for photo bloggers often often post several images of a certain event
+This plugin is specially made for photo bloggers who often often post several images of a certain event
 such as a hike, a trip, a dive or concert without having to touch every single image individually.
+
+Kaywords added in Adobe Lightroom etc. can be directly used on the website to tag photos and posts.
 
 Additional features include:
 
@@ -58,6 +60,8 @@ uploaded photos from the server!
 1. featured images that do not fit on the screen with the fixed height are now shrunken to maintain the aspect ratio
 1. better image delete-link in image manager
 1. made the location of the admin menu optional between settings or sidebar
+1. refresh the admin image manager after uploads
+1. better formatting for the admin settings help text
 
 = 3.2.2 =
 
