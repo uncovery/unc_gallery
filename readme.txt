@@ -56,6 +56,7 @@ uploaded photos from the server!
 = 3.3 =
 
 1. featured images that do not fit on the screen with the fixed height are now shrunken to maintain the aspect ratio
+1. better image delete-link in image manager
 
 = 3.2.2 =
 
