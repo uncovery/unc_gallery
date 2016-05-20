@@ -48,6 +48,19 @@ function unc_gallery_admin_upload() {
                 });
                 function success(response){
                     jQuery('#targetLayer').html(response); // fill the right element with a response
+                    // try to refresh the image list
+                    jQuery.ajax({
+                        url: ajaxurl,
+                        method: 'GET',
+                        dataType: 'text',
+                        data: {action: 'unc_gallery_images_refresh'},
+                        complete: function (response2) {
+                            jQuery('#datepicker_target').html(response2.responseText);
+                        },
+                        error: function () {
+
+                        }
+                    });
                 }
                 function uploadProgress(event, position, total, percentComplete) {
                     jQuery("#progress-bar").width(percentComplete + '%');
