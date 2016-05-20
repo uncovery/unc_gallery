@@ -57,6 +57,7 @@ uploaded photos from the server!
 
 1. featured images that do not fit on the screen with the fixed height are now shrunken to maintain the aspect ratio
 1. better image delete-link in image manager
+1. made the location of the admin menu optional between settings or sidebar
 
 = 3.2.2 =
 

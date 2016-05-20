@@ -6,15 +6,28 @@ if (!defined('WPINC')) {
 }
 
 function unc_gallery_admin_menu() {
+    global $UNC_GALLERY;
     // the main page where we manage the options
-    $main_options_page_hook_suffix = add_menu_page(
-        'Uncovery Gallery Options', // $page_title,
-        'Uncovery Gallery', // $menu_title,
-        'manage_options', // $capability,
-        'unc_gallery_admin_menu', // $menu_slug,
-        'unc_gallery_admin_settings' // $function, $icon_url, $position
-    );
+
+    if (isset($UNC_GALLERY['settings_location']) && $UNC_GALLERY['settings_location'] == 'submenu') {
+        $main_options_page_hook_suffix = add_options_page(
+            'Uncovery Gallery Options',
+            'Uncovery Gallery',
+            'manage_options',
+            'unc_gallery_admin_menu',
+            'unc_gallery_admin_settings'
+        );
+    } else {
+        $main_options_page_hook_suffix = add_menu_page(
+            'Uncovery Gallery Options', // $page_title,
+            'Uncovery Gallery', // $menu_title,
+            'manage_options', // $capability,
+            'unc_gallery_admin_menu', // $menu_slug,
+            'unc_gallery_admin_settings' // $function, $icon_url, $position
+        );
+    }
     add_action('admin_print_scripts-' . $main_options_page_hook_suffix, 'unc_gallery_add_css_and_js');
+
 }
 
 

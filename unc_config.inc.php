@@ -95,7 +95,13 @@ $UNC_GALLERY['user_settings'] = array(
         'default' => 'yes',
         'type' => 'dropdown',
         'options' => array('yes' => 'Yes', 'no' => 'No'),
-    )
+    ),
+    'settings_location' => array(
+        'help' => 'Do you want the admin screen of this plugin to be shown as a menu entry in the sidebar or a sub-menu of the settings menu?',
+        'default' => 'sidebar',
+        'type' => 'dropdown',
+        'options' => array('sidebar' => 'Show in Sidebar', 'submenu' => 'Show in the Settings'),
+    ),
 );
 
 // exif data to be looked for
