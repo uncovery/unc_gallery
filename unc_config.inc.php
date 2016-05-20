@@ -55,7 +55,7 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'text',
     ),
     'featured_size' => array(
-        'help' => 'When featuring an image, how many rows should it cover in height? Chose "dynamic" if you want a orientation-specific size instead',
+        'help' => 'When featuring an image, how many rows should it cover in height? Chose "dynamic" if you want a orientation-specific size instead.',
         'default' => '4',
         'type' => 'dropdown',
         'options' => array('2' => '2 Rows', '3' => '3 Rows', '4' => '4 Rows', '5' => '5 Rows', 'dynamic' => 'dynamic'),
