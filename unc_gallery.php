@@ -47,6 +47,7 @@ add_action('wp_ajax_unc_gallery_import_images', 'unc_uploads_iterate_files');
 add_action('wp_ajax_nopriv_unc_gallery_datepicker', 'unc_display_ajax_folder');
 add_action('wp_ajax_unc_gallery_datepicker', 'unc_display_ajax_folder');
 add_action('wp_ajax_unc_gallery_image_delete', 'unc_tools_image_delete');
+add_action('wp_ajax_unc_gallery_images_refresh', 'unc_gallery_images_refresh');
 add_action('wp_ajax_unc_gallery_thumbnails_rebuild', 'unc_gallery_admin_rebuild_thumbs');
 add_action('wp_ajax_unc_gallery_delete_everything', 'unc_gallery_admin_delete_everything');
 
