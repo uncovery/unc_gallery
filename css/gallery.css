@@ -147,23 +147,25 @@
     width: 250px;
 }
 
+.one_photo .delete_image_link{
+    display:none;
+}
+
+.one_photo:hover .delete_image_link {
+    display:inline-block;
+}
+
 .unc_gallery .delete_image_link {
     background-color:transparent;
-    -moz-border-radius:39px;
-    -webkit-border-radius:39px;
-    border-radius:39px;
-    display:inline-block;
     border: 0px;
     cursor:pointer;
-    color:#ff0000;
-    font-family:Arial;
-    font-size:20px;
-    padding:3px 5px;
+    padding:0px;
     text-decoration:none;
     position: absolute;
-    right: 5px;
-    top:0px;
+    right: 2px;
+    top:2px;
 }
+
 
 .unc_gallery .delete_image_link:hover {
     background-color:transparent;
