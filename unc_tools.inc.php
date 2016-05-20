@@ -398,7 +398,7 @@ function unc_tools_file_desc($F) {
     $exif_codes = $UNC_GALLERY['exif_codes'];
     $out = '';
     foreach ($exif_codes as $desc => $C) {
-        $desc_nice = ucwords(str_replace("_", " ", $desc));
+        $desc_nice = ucwords(str_replace("_", "&nbsp;", $desc));
         if (isset($F[$desc])) {
             $out .= "<b>$desc_nice:</b>&nbsp;{$F[$desc]}; ";
         }
