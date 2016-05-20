@@ -48,7 +48,7 @@ function unc_gallery_admin_upload() {
                 });
                 function success(response){
                     jQuery('#targetLayer').html(response); // fill the right element with a response
-                    // try to refresh the image list
+                    // also refresh the image list
                     jQuery.ajax({
                         url: ajaxurl,
                         method: 'GET',
