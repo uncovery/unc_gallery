@@ -436,12 +436,13 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     }
 
     $dec = strip_tags($F['description']);
-
     $out = "        <a href=\"{$F['file_url']}\" $gal_text title=\"$dec\">\n"
-         . "            <img alt=\"$dec\" src=\"$shown_image\">\n"
-         . "        </a>\n";
+        . "            <img alt=\"$dec\" src=\"$shown_image\">\n"
+        . "        </a>\n";
     if (is_admin()) {
-        $out .= "         <button class=\"delete_image_link\" title=\"Delete Image\" onClick=\"delete_image('{$F['file_name']}','{$F['date_str']}')\">&#9851;</button>";
+        $out .= "         <button class=\"delete_image_link\" title=\"Delete Image\" onClick=\"delete_image('{$F['file_name']}','{$F['date_str']}')\">
+            <img src=\"" . plugin_dir_url( __FILE__ ) . "/images/delete.png\" width=\"20px\" height=\"20px\">
+            </button>";
     }
     return $out;
 }
