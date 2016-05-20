@@ -17,6 +17,16 @@ function unc_display_ajax_folder() {
 }
 
 /**
+ * displays the admin images after an upload
+ *
+ * @return type
+ */
+function unc_gallery_images_refresh() {
+    unc_gallery_display_var_init(array('echo' => true));
+    return unc_display_folder_images();
+}
+
+/**
  * This is the core function that actually is called when a shortcode
  * is parsed
  *
