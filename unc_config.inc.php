@@ -61,16 +61,22 @@ $UNC_GALLERY['user_settings'] = array(
         'options' => array('2' => '2 Rows', '3' => '3 Rows', '4' => '4 Rows', '5' => '5 Rows', 'dynamic' => 'dynamic'),
     ),
     'featured_size_for_portrait' => array(
-        'help' => 'When featuring an image, how many rows should it cover in height in case it is higher than wide? You need to set "Featured Size" to "dynamic" to enable this.',
+        'help' => 'When featuring an image, how many image rows should it cover in height in case it is higher than wide? You need to set "Featured Size" to "dynamic" to enable this.',
         'default' => '4',
         'type' => 'dropdown',
         'options' => array('2' => '2 Rows', '3' => '3 Rows', '4' => '4 Rows', '5' => '5 Rows'),
     ),
     'featured_size_for_landscape' => array(
-        'help' => 'When featuring an image, how many rows should it cover in height in case it is wider than high? You need to set "Featured Size" to "dynamic" to enable this.',
+        'help' => 'When featuring an image, how many image rows should it cover in height in case it is wider than high? You need to set "Featured Size" to "dynamic" to enable this.',
         'default' => '3',
         'type' => 'dropdown',
         'options' => array('2' => '2 Rows', '3' => '3 Rows', '4' => '4 Rows', '5' => '5 Rows'),
+    ),
+    'featured_size_for_mixed_sizes' => array(
+        'help' => 'When featuring several images of different orientations, how many image rows should they cover? If you do not want to show them all the same size, choose "dynamic".',
+        'default' => '3',
+        'type' => 'dropdown',
+        'options' => array('2' => '2 Rows', '3' => '3 Rows', '4' => '4 Rows', '5' => '5 Rows', 'dynamic' => 'dynamic'),
     ),
     'admin_date_selector' => array(
         'help' => 'Chose if you want to have a calendar or a dropdown list for the Manage Images Admin page.',
