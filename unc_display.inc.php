@@ -378,13 +378,20 @@ function unc_display_folder_images() {
     // display except for skipped files and files out of time range
     $images = '';
     $featured = '';
+    
+    $featured_fixed = false;
+    if ($UNC_GALLERY['featured_size_for_mixed_sizes'] <> 'dynamic' && count($D['featured_image']) > 1) {
+        $featured_fixed = $UNC_GALLERY['featured_size_for_mixed_sizes'];
+    }
 
     $i = 0;
     foreach ($files as $F) {
         $F['index'] = $i;
         if ($F['featured']){
             // select size for featured images
-            if ($UNC_GALLERY['featured_size'] <> 'dynamic') {
+            if ($featured_fixed) {
+                $feat_size = $featured_fixed;
+            } else if ($UNC_GALLERY['featured_size'] <> 'dynamic') {
                 $feat_size = $UNC_GALLERY['featured_size'];
             } else {
                 if ($F['orientation'] == 'portrait') {
