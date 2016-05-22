@@ -1076,10 +1076,14 @@ function unc_tools_xmp_get_keywords($file_path) {
     }
     $xmp_arr = array();
     include_once($cache_file);
-    if (!isset($xmp_arr['Keywords'])) {
+    if (!isset($xmp_arr['Keywords']) || $xmp_arr['Keywords'] == array()) {
+        return false;
+    }
+    if (!is_array($xmp_arr['Keywords']) && strlen($xmp_arr['Keywords']) == 0) {
         return false;
     }
     $keys = $xmp_arr['Keywords'];
+    XMPP_ERROR_trace("keys", var_export($keys, true));
     $keys_string = implode(", ", $keys);
     return $keys_string;
 }
@@ -1117,7 +1121,8 @@ function unc_array2file_line($array, $layer, $val_change_func = false) {
         } else if(is_numeric($value)) {
             $out .= "$value,\n";
         } else {
-            $out .= "'$value',\n";
+            $safe_val = addslashes($value);
+            $out .= "'$safe_val',\n";
         }
     }
     return $out;
