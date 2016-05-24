@@ -75,7 +75,7 @@ function unc_date_folder_delete($date_str) {
     $date_folder = date_format($date_obj, "Y{$fstr}m{$fstr}d");
 
     // we have 2 paths, images adn thumbs
-    $path_arr = array($UNC_GALLERY['photos'], $UNC_GALLERY['thumbnails']);
+    $path_arr = array($UNC_GALLERY['photos'], $UNC_GALLERY['thumbnails'], $UNC_GALLERY['file_data']);
     // iterate both
     foreach ($path_arr as $img_folder) {
         // now let's get the path of that date
