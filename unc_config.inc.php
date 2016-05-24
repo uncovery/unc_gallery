@@ -108,6 +108,12 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'dropdown',
         'options' => array('sidebar' => 'Show in Sidebar', 'submenu' => 'Show in the Settings'),
     ),
+    'uninstall_deletes_images' => array(
+        'help' => 'Do you want your images removed from the server when you uninstall the plugin?',
+        'default' => 'yes',
+        'type' => 'dropdown',
+        'options' => array('yes' => 'Yes, delete!', 'no' => 'No, keep the images!'),
+    ),
 );
 
 // exif data to be looked for

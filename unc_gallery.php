@@ -3,7 +3,7 @@
 Plugin Name: Uncovery Gallery
 Plugin URI:  https://uncovery.net/about
 Description: A simple, self-generating, date-based gallery with bulk uploading
-Version:     3.2.2
+Version:     3.3
 Author:      Uncovery
 Author URI:  http://uncovery.net
 License:     GPL2
@@ -99,8 +99,11 @@ function unc_gallery_plugin_deactivate() {
 
 function unc_gallery_plugin_uninstall() {
     global $UNC_GALLERY;
-    // delete all images
-    unc_gallery_recurse_files($UNC_GALLERY['upload_path'], 'unlink', 'rmdir');
+    // delete all images optional
+
+    if ($UNC_GALLERY['uninstall_deletes_images'] == 'yes') {
+        unc_gallery_recurse_files($UNC_GALLERY['upload_path'], 'unlink', 'rmdir');
+    }
 
     //delete all settings properly
     $prefix = $UNC_GALLERY['settings_prefix'];
