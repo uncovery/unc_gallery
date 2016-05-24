@@ -1,4 +1,9 @@
 <?php
+/*
+ * ATTENTION: These settings are not to be changed by the user.
+ * These are simply constants and other items used by the plugin.
+ * Use the config in the admin screen instead.
+ */
 
 if (!defined('WPINC')) {
     die;
@@ -9,9 +14,10 @@ global $UNC_GALLERY;
 $UNC_GALLERY['upload'] = "unc_gallery";
 $UNC_GALLERY['upload_path'] = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $UNC_GALLERY['upload'];
 $UNC_GALLERY['xmp_cache_dir'] = plugin_dir_path( __FILE__ ) . 'xmp_cache';
-$UNC_GALLERY['photos'] = "photos";
-$UNC_GALLERY['thumbnails'] = "thumbs";
-$UNC_GALLERY['settings_prefix'] = 'unc_gallery_';
+$UNC_GALLERY['photos'] = "photos";                  // subfolder of upload_path where the photos go in
+$UNC_GALLERY['thumbnails'] = "thumbs";              // subfolder of upload_path where the thumbs go in
+$UNC_GALLERY['file_data'] = "file_data";            // subfolder of upload_path where the file data goes in
+$UNC_GALLERY['settings_prefix'] = 'unc_gallery_';   // internal prefix for the config storage.
 
 // options for displays
 $UNC_GALLERY['keywords'] = array(
