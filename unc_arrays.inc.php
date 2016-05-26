@@ -8,11 +8,16 @@
  * @param type $file
  * @return string
  */
-function unc_array2file($data, $array_name, $file) {
-    $out = '<?php' . "\n"
-        . '$' . $array_name . " = array(\n"
-        . unc_array2file_line($data, 0)
-        . ");";
+function unc_array2file($data, $array_name, $file, $global = false) {
+    if ($global) {
+        $out = '<?php' . "\n";
+        $out .= "global $$array_name;\n";
+        $out .= '$' . $array_name . "['$global'] = array(\n";
+    } else {
+        $out = '<?php' . "\n";
+        $out .= '$' . $array_name . " = array(\n";
+    }
+    $out .= unc_array2file_line($data, 0) . ");";   
     return file_put_contents($file, $out);
 }
 

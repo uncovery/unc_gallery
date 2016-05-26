@@ -1,7 +1,7 @@
 <?php
 
 
-function unc_image_info_read($file_path) {
+function unc_image_info_read($file_path, $D = false) {
     global $UNC_GALLERY, $UNC_FILE_DATA;
     
     $folder_info = pathinfo($file_path);
@@ -16,11 +16,26 @@ function unc_image_info_read($file_path) {
         unc_image_info_write($file_path);
     }
     
-    $file_data = false;
-    include_once($data_path);
+    $UNC_FILE_DATA[$file_name] = false;
+    require($data_path);
+    if ($UNC_FILE_DATA[$file_name] == false) {
+        XMPP_ERROR_trace("File data failed", $file_name);
+    }
     
-    $UNC_FILE_DATA[$file_name] = $file_data;
-    return true;
+    if (!$D) {
+        $D = $UNC_GALLERY['display'];
+    }
+    $file_date = $UNC_FILE_DATA[$file_name]['file_date'];
+    if (isset($D['details'][$file_name])) {
+        $description = $D['details'][$file_name] . " ($file_name / $file_date)";
+    } else if (isset($D['description']) && $D['description']) {
+        $description = $D['description'] . " ($file_name / $file_date)";
+    } else {
+        $description = "<b>File Name:</b> $file_name; <b>Date:</b> $file_date;";
+    }    
+    $UNC_FILE_DATA[$file_name]['description'] = $description;
+    
+    return $UNC_FILE_DATA[$file_name]; 
 }
 
 /**
@@ -57,7 +72,6 @@ function unc_image_info_write($file_path) {
     
     $data_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['file_data'] . DIRECTORY_SEPARATOR . $date_path . DIRECTORY_SEPARATOR . $file_name . ".php";
     
-    $data = array();
     $data = array(
         'file_name' => $file_name,
         'file_path' => $file_path,
@@ -73,7 +87,7 @@ function unc_image_info_write($file_path) {
     );
     
     // write the file
-    unc_array2file($data, 'file_data', $data_path);
+    unc_array2file($data, 'UNC_FILE_DATA', $data_path, $file_name);
     
     return true;
 }

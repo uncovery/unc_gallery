@@ -241,7 +241,8 @@ function unc_tools_images_list($D = false) {
         $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
         $folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
         foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
-            $F = unc_tools_image_info_get($file_path, $D);
+            XMPP_ERROR_trace("Feed check", $file_path);
+            $F = unc_image_info_read($file_path, $D);
             if (($D['range']['end_time'] && $D['range']['start_time']) && // only if both are set
                     ($D['range']['end_time'] < $D['range']['start_time'])) { // AND the end is before the start
                 if (($D['range']['end_time'] < $F['time_stamp'])
@@ -289,17 +290,6 @@ function unc_tools_image_info_get($file_path, $D = false) {
     $file_name = $folder_info['basename'];
     $exif = unc_exif_get($file_path);
 
-    if (!$D) {
-        $D = $UNC_GALLERY['display'];
-    }
-    if (isset($D['details'][$file_name])) {
-        $description = $D['details'][$file_name] . " ($file_name / $file_date)";
-    } else if (isset($D['description']) && $D['description']) {
-        $description = $D['description'] . " ($file_name / $file_date)";
-    } else {
-        $description = "<b>File Name:</b> $file_name; <b>Date:</b> $file_date;";
-    }
-
     $orientation = 'landscape';
     if ($exif['file_width'] < $exif['file_height']) {
         $orientation = 'portrait';
@@ -315,7 +305,6 @@ function unc_tools_image_info_get($file_path, $D = false) {
         'time_stamp' => $time_stamp, // linux time stamp
         'file_date' => $file_date, // full date including time
         'date_str' => substr($file_date, 0, 10), // only the day 0000-00-00
-        'description' => $description,
         'orientation' => $orientation,
     );
     

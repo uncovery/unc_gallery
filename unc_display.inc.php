@@ -489,8 +489,8 @@ function unc_display_photoswipe_js($files) {
         $out .= "
     {
         src: '{$F['file_url']}',
-        w: {$F['file_width']},
-        h: {$F['file_height']},
+        w: {$F['exif']['file_width']},
+        h: {$F['exif']['file_height']},
         msrc: '{$F['thumb_url']}',
         title: \"$desc\"
     },";
