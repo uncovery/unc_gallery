@@ -86,7 +86,8 @@ function unc_gallery_admin_init() {
  * @param type $A
  */
 function unc_gallery_setting_text_field_render($A) {
-    $out = "<input type='text' name='{$A['setting']}' value='{$A['value']}'></td><td>{$A['help']} <strong>Default:</strong>&nbsp;'{$A['default']}'\n";
+    $def_text = str_replace(" ", '&nbsp;', $A['default']);
+    $out = "<input type='text' name='{$A['setting']}' value='{$A['value']}'></td><td>{$A['help']} <strong>Default:</strong>&nbsp;'$def_text'\n";
     echo $out;
 }
 
@@ -103,7 +104,8 @@ function unc_gallery_setting_drodown_render($A) {
         }
         $out .= "<option value=\"$option\" $sel>$text</option>\n";
     }
-    $out .= "</select></td><td>{$A['help']} <strong>Default:</strong>&nbsp;'{$A['options'][$A['default']]}'\n";
+    $def_text = str_replace(" ", '&nbsp;', $A['options'][$A['default']]);
+    $out .= "</select></td><td>{$A['help']} <strong>Default:</strong>&nbsp;'$def_text'\n";
     echo $out;
 }
 
@@ -118,14 +120,15 @@ function unc_gallery_setting_multiple_render($A) {
         if (in_array($option, $A['value'])) {
             $sel = 'checked="checked"';
         }
-        $out .= "<input type=\"checkbox\" name=\"{$A['setting']}[$option]\" value=\"$option\" $sel>$text<br>\n";
+        $out .= "<input type=\"checkbox\" name=\"{$A['setting']}[$option]\" value=\"$option\" $sel>&nbsp;$text<br>\n";
     }
     $def_arr = array();
     foreach ($A['default'] as $def) {
         $def_arr[] = $A['options'][$def];
     }
     $defaults = implode("', '", $def_arr);
-    $out .= "</td><td>{$A['help']} <strong>Default:</strong>&nbsp;'$defaults'\n";
+    $def_text = str_replace(" ", '&nbsp;', $defaults);
+    $out .= "</td><td>{$A['help']} <strong>Default:</strong>&nbsp;'$def_text'\n";
     echo $out;
 }
 
