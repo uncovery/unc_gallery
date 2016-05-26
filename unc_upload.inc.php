@@ -236,7 +236,7 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // let's make sure the image is not 0-size
     if ($original_width == 0 || $original_height == 0) {
-        echo unc_tools_errormsg("Image size {$F['name'][$i]} = 0");
+        echo unc_display_errormsg("Image size {$F['name'][$i]} = 0");
         return false;
     }
 
@@ -274,7 +274,7 @@ function unc_uploads_process_file($i, $overwrite) {
     }
 
     // we need the exif date to know when the image was taken
-    $date_str = unc_tools_image_date($sourcePath);
+    $date_str = unc_image_date($sourcePath);
     if (!$date_str) {
         return array('date'=> false, 'action' => "Cannot read EXIF or IPCT of file $sourcePath");
     }
@@ -376,7 +376,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     // this exit check is a bit redundant since we did that before with the uploaded file
     $arr_image_details = getimagesize($image_file_path); // pass id to thumb name
     if (!$arr_image_details) {
-        echo unc_tools_errormsg("Failed to get image size of $image_file_path");
+        echo unc_display_errormsg("Failed to get image size of $image_file_path");
         return false;
     }
     $original_width = $arr_image_details[0];
@@ -410,11 +410,8 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     $img_generator = "Image" . $extension;
     $imgcreatefrom = "ImageCreateFrom" . $image_ext;
 
-    $UNC_GALLERY['debug'][]['$img_generator'] = $img_generator;
-    $UNC_GALLERY['debug'][]['$imgcreatefrom'] = $imgcreatefrom;
-
     // get original file date
-    $file_date = unc_tools_image_date($image_file_path);
+    $file_date = unc_image_date($image_file_path);
     $UNC_GALLERY['debug'][]["Read image date result"] = $file_date;
 
     $new_image = imagecreatetruecolor($new_width, $new_height); // create a blank canvas
@@ -433,8 +430,8 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
 
     // write ipct date
     if ($file_date) {
-        unc_tools_image_ipct_date_write($target_file_path, $file_date);
-        $new_file_date = unc_tools_image_date($target_file_path);
+        unc_ipct_date_write($target_file_path, $file_date);
+        $new_file_date = unc_image_date($target_file_path);
         $UNC_GALLERY['debug'][]["check IPCT result"] = $new_file_date;
     }
 

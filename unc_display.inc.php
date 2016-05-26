@@ -143,18 +143,18 @@ function unc_gallery_display_var_init($atts = array()) {
     } else if ($a['date'] && strstr($a['date'], ",")) { // we have several dates in the string
         $dates = explode(",", $a['date']);
         if (count($dates) > 2) {
-            echo unc_tools_errormsg("You can only enter 2 dates!");
+            echo unc_display_errormsg("You can only enter 2 dates!");
             return false;
         }
         // validate both dates
         $date_str1 = unc_tools_validate_date(trim($dates[0]));
         if (!$date_str1) {
-            echo unc_tools_errormsg("All dates needs to be in the format '2016-01-31'");
+            echo unc_display_errormsg("All dates needs to be in the format '2016-01-31'");
             return false;
         }
         $date_str2 = unc_tools_validate_date(trim($dates[1]));
         if (!$date_str2) {
-            echo unc_tools_errormsg("All dates needs to be in the format '2016-01-31'");
+            echo unc_display_errormsg("All dates needs to be in the format '2016-01-31'");
             return false;
         }
         // create a list of dates between the 1st and the 2nd
@@ -163,7 +163,7 @@ function unc_gallery_display_var_init($atts = array()) {
     } else if ($a['date']) {
         $date_str = unc_tools_validate_date($a['date']);
         if (!$date_str) {
-            echo unc_tools_errormsg("All dates needs to be in the format '2016-01-31'");
+            echo unc_display_errormsg("All dates needs to be in the format '2016-01-31'");
             return false;
         }
         $UNC_GALLERY['display']['dates'] = array($date_str);
@@ -188,13 +188,13 @@ function unc_gallery_display_var_init($atts = array()) {
         // explode by colon
         $file_details = explode(";", $details_raw);
         if (count($file_details) == 0) {
-            echo unc_tools_errormsg("File details are invalid!");
+            echo unc_display_errormsg("File details are invalid!");
             return;
         }
         foreach ($file_details as $file_detail) {
             $tmp_arr = explode(":", $file_detail);
             if (count($tmp_arr) !== 2) {
-                echo unc_tools_errormsg("File details are invalid!");
+                echo unc_display_errormsg("File details are invalid!");
                 return;
             }
             $details_filename = trim($tmp_arr[0]);
@@ -205,14 +205,14 @@ function unc_gallery_display_var_init($atts = array()) {
 
     // options
     if (!isset($keywords['type'][$type])) {
-        echo unc_tools_errormsg("You have an invalid type value in your tag."
+        echo unc_display_errormsg("You have an invalid type value in your tag."
             . "<br>Valid options are: " . implode(", ", $keywords['type']));
         return false;
     }
     $possible_type_options = $keywords['type'][$type];
     foreach ($UNC_GALLERY['options'] as $option) {
         if (!in_array($option, $possible_type_options)) {
-            echo unc_tools_errormsg("You have an invalid option for the display type \"option\" in your tag."
+            echo unc_display_errormsg("You have an invalid option for the display type \"option\" in your tag."
                 . "<br>Valid options are: " . implode(", ", $keywords['type'][$type]));
             return false;
         }
@@ -365,7 +365,7 @@ function unc_display_folder_images() {
     if (is_admin()) {
         $header .= "
         <span class=\"delete_folder_link\">
-            Sample shortcode for this day: <input type=\"text\" value=\"[unc_gallery date=&quot;$date_str&quot;]\">
+            Sample shortcode for this day: <input id=\"short_code_sample\" onClick=\"SelectAll('short_code_sample');\" type=\"text\" value=\"[unc_gallery date=&quot;$date_str&quot;]\">
             <a href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_str\">
                 Delete Date: $date_str
             </a>
@@ -378,7 +378,7 @@ function unc_display_folder_images() {
     // display except for skipped files and files out of time range
     $images = '';
     $featured = '';
-    
+
     $featured_fixed = false;
     if ($UNC_GALLERY['featured_size_for_mixed_sizes'] <> 'dynamic' && count($D['featured_image']) > 1) {
         $featured_fixed = $UNC_GALLERY['featured_size_for_mixed_sizes'];
@@ -502,6 +502,10 @@ function unc_display_photoswipe_js($files) {
     }
 </script>";
     return $out;
+}
+
+function unc_display_errormsg($error) {
+    return "<div class=\"unc_gallery_error\">ERROR: $error</div>";
 }
 
 function unc_display_photoswipe() {

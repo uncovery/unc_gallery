@@ -42,7 +42,7 @@ function unc_date_folder_create($date_str) {
             if (!file_exists($base_folder)) {
                 $mkdir_chk = mkdir($base_folder);
                 if (!$mkdir_chk) {
-                    echo unc_tools_errormsg("could not create folder $base_folder");
+                    echo unc_display_errormsg("could not create folder $base_folder");
                     return false;
                 } else {
                     // echo "Created folder $base_folder<br>";
@@ -67,7 +67,7 @@ function unc_date_folder_delete($date_str) {
 
     $date_obj = new DateTime($date_str);
     if (!$date_obj) {
-        return unc_tools_errormsg("Invalid date folder!");
+        return unc_display_errormsg("Invalid date folder!");
     }
     // convert date to folder string
     $fstr = DIRECTORY_SEPARATOR;
@@ -82,7 +82,7 @@ function unc_date_folder_delete($date_str) {
         $base_folder = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $img_folder . DIRECTORY_SEPARATOR . $date_folder;
         if (!file_exists($base_folder)) {
             // the folder does not exist, so let's not delete anything
-            return unc_tools_errormsg("Folder $base_folder could not be deleted!");
+            return unc_display_errormsg("Folder $base_folder could not be deleted!");
         }
         $out .= "Deleting folder $img_folder/$date_folder:<br>";
         $it = new RecursiveDirectoryIterator($base_folder, RecursiveDirectoryIterator::SKIP_DOTS);
@@ -177,27 +177,6 @@ function unc_display_fix_timezones($dates) {
     return $new_dates;
 }
 
-/**
- * this display a multi-dimensional array as an HTML list
- *
- * @param type $array
- * @param string $path
- * @return string
- */
-function unc_array_iterate_compact($array, $path = '') {
-    if (!is_array(($array))) {
-        return "$array";
-    }
-    $out = "\n<ul>";
-    foreach ($array as $element => $content) {
-        $out .= "\n<li>$element \n";
-        $path .= "/" . $element;
-        $out .= unc_array_iterate_compact($content, $path);
-        $out .= "</li>";
-    }
-    $out .= "</ul>";
-    return $out;
-}
 
 /**
  * create a list of all dates between 2 dates
@@ -298,14 +277,14 @@ function unc_tools_images_list($D = false) {
  */
 function unc_tools_image_info_get($file_path, $D = false) {
     global $UNC_GALLERY;
-    $file_date = unc_tools_image_date($file_path); // get image date from EXIF/IPCT
+    $file_date = unc_image_date($file_path); // get image date from EXIF/IPCT
     $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
     $time_stamp = $dtime->getTimestamp(); // time stamp is easier to compare
     $folder_info = pathinfo($file_path);
     $date_str = unc_tools_folder_date($folder_info['dirname']);
-    $date_path = str_replace("-", "/", $date_str);
+    $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
     $file_name = $folder_info['basename'];
-    $exif = unc_tools_exif_data($file_path);
+    $exif = unc_exif_get($file_path);
 
     if (!$D) {
         $D = $UNC_GALLERY['display'];
@@ -336,57 +315,11 @@ function unc_tools_image_info_get($file_path, $D = false) {
         'description' => $description,
         'orientation' => $orientation,
     );
-
+    
     $out = array_merge($file, $exif);
-
-    if ($UNC_GALLERY['show_keywords'] == 'yes') {
-        $keywords = unc_tools_xmp_get_keywords($file_path);
-        if ($keywords) {
-            $out['keywords'] = $keywords;
-        }
-    }
-
     return $out;
 }
 
-/**
- * Get data from the EXIF values, convert it
- *
- * @param type $image_path
- * @return string
- */
-function unc_tools_exif_data($image_path) {
-    global $UNC_GALLERY;
-    $exif_codes = $UNC_GALLERY['exif_codes'];
-
-    $exif = exif_read_data($image_path);
-
-    $data = array(
-        'file_width' => $exif['COMPUTED']['Width'],
-        'file_height' => $exif['COMPUTED']['Height'],
-    );
-    foreach ($exif_codes as $desc => $C) {
-        $hex_tag =  'UndefinedTag:' . $C['hex'];
-        if (isset($exif[$C['key']])) {
-            $val = $exif[$C['key']];
-        } else if (isset($exif[$hex_tag])) {
-            $val = $exif[$hex_tag];
-        } else {
-            continue;
-        }
-        if ($C['conversion']) {
-            $func = $C['conversion'];
-            $val_conv = $func($val);
-        } else {
-            $val_conv = $val;
-        }
-        if ($C['unit']) {
-            $val_conv .= $C['unit'];
-        }
-        $data[$desc] = $val_conv;
-    }
-    return $data;
-}
 
 /**
  * Assemble a file description from EXIF values
@@ -397,7 +330,7 @@ function unc_tools_file_desc($F) {
     global $UNC_GALLERY;
     $exif_codes = $UNC_GALLERY['exif_codes'];
     $out = '';
-    foreach ($exif_codes as $desc => $C) {
+    foreach ($exif_codes as $desc) {
         $desc_nice = ucwords(str_replace("_", "&nbsp;", $desc));
         if (isset($F[$desc])) {
             $out .= "<b>$desc_nice:</b>&nbsp;{$F[$desc]}; ";
@@ -523,7 +456,7 @@ function unc_tools_file_latest($date_path) {
     foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file) {
         // found a sub-folder, go deeper
         if (!is_dir($file)) {
-            $file_date = unc_tools_image_date($file);
+            $file_date = unc_image_date($file);
             $paths[$file_date] = $file;
         }
     }
@@ -573,10 +506,6 @@ function unc_tools_folder_date($folder) {
     return $new_date_str;
 }
 
-function unc_tools_errormsg($error) {
-    return "<div class=\"unc_gallery_error\">ERROR: $error</div>";
-}
-
 /**
  * convert ini_get values in M/G values to bytes for JS comparison
  *
@@ -615,103 +544,7 @@ function unc_tools_image_path($date_path, $file_name) {
     return $file_path;
 }
 
-/**
- * Get the date of an image, first EXIF, then IPCT
- *
- * @global type $UNC_GALLERY
- * @param type $file_path
- * @return boolean
- */
-function unc_tools_image_date($file_path) {
-    global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
-    $exif = unc_tools_image_exif_date($file_path);
-    if (!$exif) {
-        $UNC_GALLERY['debug'][]["image date check"] = "exif failed, getting ipct";
-        $ipct = unc_tools_image_ipct_date($file_path);
-        if ($ipct) {
-            return $ipct;
-        } else {
-            $UNC_GALLERY['debug'][]["image date check"] = "ipct failed, bail!";
-            return false;
-        }
-    } else {
-        return $exif;
-    }
-}
 
-/**
- * Get the EXIF date of a file based on date & filename only
- *
- * @global type $UNC_GALLERY
- * @param type $date_path
- * @param type $file_name
- * @return type
- */
-function unc_tools_image_exif_date($file_path) {
-    global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
-    $exif_data = exif_read_data($file_path);
-    // if EXIF Invalid, try IPICT
-    if (!$exif_data || !isset($exif_data['DateTimeOriginal'])) {
-        return false;
-    }
-    $file_date = $exif_data['DateTimeOriginal'];
-    $search_pattern = '/(\d\d\d\d):(\d\d):(\d\d \d\d:\d\d:\d\d)/';
-    $replace_pattern = '$1-$2-$3';
-    $fixed_date = preg_replace($search_pattern, $replace_pattern, $file_date);
-    return $fixed_date;
-}
-
-
-/**
- * Get the IPCT date of an image
- *
- * @global type $UNC_GALLERY
- * @param type $file_path
- * @return boolean
- */
-function unc_tools_image_ipct_date($file_path) {
-    global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
-    $ipct_obj = new IPTC($file_path);
-
-    $ipct_date = $ipct_obj->get(IPTC_CREATED_DATE); //  '20160220',
-    $ipct_time = $ipct_obj->get(IPTC_CREATED_TIME); //  '235834',
-    $UNC_GALLERY['debug'][]["IPCT Dump"] = $ipct_obj->dump();
-    if (strlen($ipct_date . $ipct_time) != 14) {
-        return false;
-    }
-    $search_pattern = '/(\d\d\d\d)(\d\d)(\d\d) (\d\d)(\d\d)(\d\d)/';
-    $replace_pattern = '$1-$2-$3 $4:$5:$6';
-    $fixed_date = preg_replace($search_pattern, $replace_pattern, "$ipct_date $ipct_time");
-    return $fixed_date;
-}
-
-/**
- * Write the IPCT date to an image
- *
- * @global type $UNC_GALLERY
- * @param type $file_path
- * @param type $date_str
- */
-function unc_tools_image_ipct_date_write($file_path, $date_str) {
-    global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
-    // convert date_str to IPCT
-    $search_pattern = '/(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)/';
-    $date_pattern = '$1$2$3';
-    $ipct_date = preg_replace($search_pattern, $date_pattern, $date_str);
-    $time_pattern = '$4$5$6';
-    $ipct_time = preg_replace($search_pattern, $time_pattern, $date_str);
-
-    $UNC_GALLERY['debug'][]["wirting IPCT"] = "$ipct_date / $ipct_time";
-    // write IPICT Date / time
-    $taget_ipct_obj = new iptc($file_path);
-    $taget_ipct_obj->set(IPTC_CREATED_DATE, $ipct_date);
-    $taget_ipct_obj->set(IPTC_CREATED_TIME, $ipct_time);
-    $taget_ipct_obj->write();
-}
 
 /**
  * Enumerate the fodlers with images to display the datepicker properly.
@@ -776,14 +609,17 @@ function unc_tools_image_delete() {
     $date_wrong = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
     $date_str = str_replace("-", DIRECTORY_SEPARATOR, $date_wrong);
 
-    $paths = array(
-        $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['thumbnails'] . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name,
-        $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name,
-    );
-    foreach ($paths as $path) {
 
-        if (file_exists($path)) {
-            $check = unlink($path);
+    $paths = array(
+        $UNC_GALLERY['thumbnails'],
+        $UNC_GALLERY['upload_path'],
+        $UNC_GALLERY['file_data'],
+    );
+
+    foreach ($paths as $path) {
+        $full_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $path . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name;
+        if (file_exists($full_path)) {
+            $check = unlink($full_path);
             if ($check) {
                 ob_clean();
                 echo "File Deleted!";
@@ -853,11 +689,11 @@ function unc_tools_date_path($date) {
         $date_str = $date_obj->format($format);
         $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
         if (!file_exists($photo_folder . DIRECTORY_SEPARATOR . $date_str)) {
-            echo unc_tools_errormsg("Date not found (folder does not exist) $photo_folder/$date_str");
+            echo unc_display_errormsg("Date not found (folder does not exist) $photo_folder/$date_str");
             return false;
         }
     } else {
-        echo unc_tools_errormsg("Date not found (invalid date)");
+        echo unc_display_errormsg("Date not found (invalid date)");
         return false;
     }
     return $date_str;
@@ -871,268 +707,4 @@ function unc_tools_divide_string($string) {
     $f = explode("/", $string);
     $result = $f[0] / $f[1];
     return number_format($result, 1);
-}
-
-
-define("IPTC_CREATED_DATE", "055");
-define("IPTC_CREATED_TIME", "060");
-/**
- * Class to write IPTC data to a file
- * Source: http://php.net/manual/en/function.iptcembed.php
- */
-class iptc {
-    var $meta=Array();
-    var $hasmeta=false;
-    var $file=false;
-
-    function iptc($filename) {
-        global $UNC_GALLERY;
-        $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
-        $info = false;
-        getimagesize($filename, $info);
-        $this->hasmeta = isset($info["APP13"]);
-        if ($this->hasmeta) {
-            $this->meta = iptcparse($info["APP13"]);
-        }
-        $this->file = $filename;
-    }
-
-    function set($tag, $data) {
-        global $UNC_GALLERY;
-        $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
-        $this->meta ["2#$tag"]= Array( $data );
-        $this->hasmeta=true;
-    }
-
-    function get($tag) {
-        return isset($this->meta["2#$tag"]) ? $this->meta["2#$tag"][0] : false;
-    }
-
-    function dump() {
-        return var_export($this->meta, true);
-    }
-
-    function binary() {
-        $iptc_new = '';
-        foreach (array_keys($this->meta) as $s) {
-            $tag = str_replace("2#", "", $s);
-            $iptc_new .= $this->iptc_maketag(2, $tag, $this->meta[$s][0]);
-        }
-        return $iptc_new;
-    }
-
-    function iptc_maketag($rec,$dat,$val) {
-        $len = strlen($val);
-        if ($len < 0x8000) {
-            return chr(0x1c).chr($rec).chr($dat)
-                . chr($len >> 8)
-                . chr($len & 0xff)
-                . $val;
-        } else {
-            return chr(0x1c).chr($rec).chr($dat)
-                . chr(0x80).chr(0x04)
-                . chr(($len >> 24) & 0xff)
-                . chr(($len >> 16) & 0xff)
-                . chr(($len >> 8 ) & 0xff)
-                . chr(($len ) & 0xff)
-                . $val;
-        }
-    }
-    function write() {
-        global $UNC_GALLERY;
-        $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
-        if(!function_exists('iptcembed')) {
-            $UNC_GALLERY['debug'][]['iptcembed'] = "Does not exist!!";
-            return false;
-        }
-        $mode = 0;
-        $content = iptcembed($this->binary(), $this->file, $mode);
-        $filename = $this->file;
-
-        @unlink($filename); #delete if exists
-
-        $fp = fopen($filename, "w");
-        fwrite($fp, $content);
-        fclose($fp);
-    }
-
-    #requires GD library installed
-    function removeAllTags() {
-        $this->hasmeta=false;
-        $this->meta=Array();
-        $img = imagecreatefromstring(implode(file($this->file)));
-        @unlink($this->file); #delete if exists
-        imagejpeg($img,$this->file,100);
-    }
-}
-
-/**
- * Code to read XMP file contents from files
- * source: https://surniaulula.com/2013/04/09/read-adobe-xmp-xml-in-php/
- *
- * @global type $UNC_GALLERY
- * @param type $filepath
- * @return boolean
- */
-function unc_xmp_write_raw($filepath) {
-    global $UNC_GALLERY;
-    $max_size = 1240000; // maximum size read (1MB)
-    $chunk_size = 65536; // read 64k at a time
-    $start_tag = '<x:xmpmeta';
-    $end_tag = '</x:xmpmeta>';
-    $cache_file = $UNC_GALLERY['xmp_cache_dir'] . DIRECTORY_SEPARATOR . md5($filepath) . '.xmp.php';
-    $xmp_raw = null;
-
-    if (!is_dir($UNC_GALLERY['xmp_cache_dir'])) {
-        $mkdir_chk = mkdir($UNC_GALLERY['xmp_cache_dir']);
-        if (!$mkdir_chk) {
-            echo unc_tools_errormsg("could not create folder XMP cache folder at " . $UNC_GALLERY['xmp_cache_dir']);
-            return false;
-        }
-    }
-
-    // we have the data already, nothing to do.
-    if (file_exists($cache_file) && filemtime($cache_file) > filemtime($filepath) && $cache_fh = fopen($cache_file, 'rb')) {
-        // $xmp_raw = fread($cache_fh, filesize($cache_file));
-        // fclose($cache_fh);
-        return true;
-    } else if ($file_fh = fopen($filepath, 'rb')) { // let's get the data
-        $chunk = '';
-        $file_size = filesize( $filepath );
-        while (($file_pos = ftell( $file_fh ) ) < $file_size  && $file_pos < $max_size ) {
-            $chunk .= fread( $file_fh, $chunk_size );
-            if (($end_pos = strpos($chunk, $end_tag)) !== false) {
-                if (($start_pos = strpos( $chunk, $start_tag)) !== false) {
-                    $xmp_raw = substr($chunk, $start_pos, $end_pos - $start_pos + strlen($end_tag));
-                }
-                break;  // stop reading after finding the xmp data
-            }
-        }
-        fclose($file_fh);
-        // convert to php
-        $xmp_arr = unc_xmp_get_array($xmp_raw);
-        $check = unc_array2file($xmp_arr, 'xmp_arr', $cache_file);
-        if ($check) {
-            return true;
-        } else {
-            echo unc_tools_errormsg("could not write XMP cache file at " . $cache_file);
-            return false;
-        }
-    }
-}
-
-/**
- * convert raw XMP data into a PHP array
- *
- * @param type $xmp_raw
- * @return type
- */
-function unc_xmp_get_array($xmp_raw) {
-    $key_arr = array(
-        'Creator Email' => '<Iptc4xmpCore:CreatorContactInfo[^>]+?CiEmailWork="([^"]*)"',
-        'Owner Name'    => '<rdf:Description[^>]+?aux:OwnerName="([^"]*)"',
-        'Creation Date' => '<rdf:Description[^>]+?xmp:CreateDate="([^"]*)"',
-        'Modification Date'     => '<rdf:Description[^>]+?xmp:ModifyDate="([^"]*)"',
-        'Label'         => '<rdf:Description[^>]+?xmp:Label="([^"]*)"',
-        'Credit'        => '<rdf:Description[^>]+?photoshop:Credit="([^"]*)"',
-        'Source'        => '<rdf:Description[^>]+?photoshop:Source="([^"]*)"',
-        'Headline'      => '<rdf:Description[^>]+?photoshop:Headline="([^"]*)"',
-        'City'          => '<rdf:Description[^>]+?photoshop:City="([^"]*)"',
-        'State'         => '<rdf:Description[^>]+?photoshop:State="([^"]*)"',
-        'Country'       => '<rdf:Description[^>]+?photoshop:Country="([^"]*)"',
-        'Country Code'  => '<rdf:Description[^>]+?Iptc4xmpCore:CountryCode="([^"]*)"',
-        'Location'      => '<rdf:Description[^>]+?Iptc4xmpCore:Location="([^"]*)"',
-        'Title'         => '<dc:title>\s*<rdf:Alt>\s*(.*?)\s*<\/rdf:Alt>\s*<\/dc:title>',
-        'Description'   => '<dc:description>\s*<rdf:Alt>\s*(.*?)\s*<\/rdf:Alt>\s*<\/dc:description>',
-        'Creator'       => '<dc:creator>\s*<rdf:Seq>\s*(.*?)\s*<\/rdf:Seq>\s*<\/dc:creator>',
-        'Keywords'      => '<dc:subject>\s*<rdf:Bag>\s*(.*?)\s*<\/rdf:Bag>\s*<\/dc:subject>',
-        'Hierarchical Keywords' => '<lr:hierarchicalSubject>\s*<rdf:Bag>\s*(.*?)\s*<\/rdf:Bag>\s*<\/lr:hierarchicalSubject>'
-    );
-
-    foreach ($key_arr as $key => $regex ) {
-        $match = false;
-        // get a single text string
-        $xmp_arr[$key] = preg_match( "/$regex/is", $xmp_raw, $match ) ? $match[1] : '';
-
-        // if string contains a list, then re-assign the variable as an array with the list elements
-        $xmp_arr[$key] = preg_match_all( "/<rdf:li[^>]*>([^>]*)<\/rdf:li>/is", $xmp_arr[$key], $match ) ? $match[1] : $xmp_arr[$key];
-
-        // hierarchical keywords need to be split into a third dimension
-        if (!empty($xmp_arr[$key]) && $key == 'Hierarchical Keywords') {
-            foreach ($xmp_arr[$key] as $li => $val) {
-                $xmp_arr[$key][$li] = explode( '|', $val );
-            }
-            unset($li, $val);
-        }
-    }
-    return $xmp_arr;
-}
-
-function unc_tools_xmp_get_keywords($file_path) {
-    global $UNC_GALLERY, $xmp_arr;
-    $cache_file = $UNC_GALLERY['xmp_cache_dir'] . DIRECTORY_SEPARATOR . md5($file_path) . '.xmp.php';
-    if (!file_exists($cache_file)) {
-        return false;
-    }
-    $xmp_arr = array();
-    include_once($cache_file);
-    if (!isset($xmp_arr['Keywords']) || $xmp_arr['Keywords'] == array()) {
-        return false;
-    }
-    if (!is_array($xmp_arr['Keywords']) && strlen($xmp_arr['Keywords']) == 0) {
-        return false;
-    }
-    $keys = $xmp_arr['Keywords'];
-    XMPP_ERROR_trace("keys", var_export($keys, true));
-    $keys_string = implode(", ", $keys);
-    return $keys_string;
-}
-
-/**
- * Convert an array to a printable text and save to file
- *
- * @param type $data
- * @param type $array_name
- * @param type $file
- * @return string
- */
-function unc_array2file($data, $array_name, $file) {
-    $out = '<?php' . "\n"
-        . '$' . $array_name . " = array(\n"
-        . unc_array2file_line($data, 0)
-        . ");";
-    return file_put_contents($file, $out);
-}
-
-function unc_array2file_line($array, $layer, $val_change_func = false) {
-    $in_text = unc_array2file_indent($layer);
-    $out = "";
-    foreach ($array as $key => $value) {
-        if ($val_change_func) {
-            $value = $val_change_func($key, $value);
-        }
-        $out .=  "$in_text'$key' => ";
-        if (is_array($value)) {
-            $layer++;
-            $out .= "array(\n"
-                . unc_array2file_line($value, $layer,  $val_change_func)
-                . "$in_text),\n";
-            $layer--;
-        } else if(is_numeric($value)) {
-            $out .= "$value,\n";
-        } else {
-            $safe_val = addslashes($value);
-            $out .= "'$safe_val',\n";
-        }
-    }
-    return $out;
-}
-
-function unc_array2file_indent($layer) {
-    $text = '    ';
-    $out = '';
-    for ($i=0; $i<=$layer; $i++) {
-        $out .= $text;
-    }
-    return $out;
 }

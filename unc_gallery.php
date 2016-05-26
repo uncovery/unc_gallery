@@ -15,11 +15,15 @@ if (!defined('WPINC')) {
     die;
 }
 
+global $UNC_FILE_DATA;
+
 require_once( plugin_dir_path( __FILE__ ) . "unc_config.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_backend.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_upload.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_display.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_tools.inc.php");
+require_once( plugin_dir_path( __FILE__ ) . "unc_image.inc.php");
+require_once( plugin_dir_path( __FILE__ ) . "unc_arrays.inc.php");
 
 global $XMPP_ERROR;
 if (file_exists('/home/includes/xmpp_error/xmpp_error.php')) {
@@ -49,6 +53,7 @@ add_action('wp_ajax_unc_gallery_datepicker', 'unc_display_ajax_folder');
 add_action('wp_ajax_unc_gallery_image_delete', 'unc_tools_image_delete');
 add_action('wp_ajax_unc_gallery_images_refresh', 'unc_gallery_images_refresh');
 add_action('wp_ajax_unc_gallery_thumbnails_rebuild', 'unc_gallery_admin_rebuild_thumbs');
+add_action('wp_ajax_unc_gallery_admin_rebuild_data', 'unc_gallery_admin_rebuild_data');
 add_action('wp_ajax_unc_gallery_delete_everything', 'unc_gallery_admin_delete_everything');
 
 add_action( 'wp_enqueue_scripts', 'unc_gallery_add_css_and_js' );
@@ -78,7 +83,7 @@ function unc_gallery_plugin_activate() {
         $result = mkdir($UNC_GALLERY['upload_path'], 0755);
         // check success
         if (!$result) {
-            echo unc_tools_errormsg("There was an error creating the upload folder {$UNC_GALLERY['upload_path']}!");
+            echo unc_display_errormsg("There was an error creating the upload folder {$UNC_GALLERY['upload_path']}!");
         }
     }
 }

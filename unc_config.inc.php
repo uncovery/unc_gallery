@@ -13,7 +13,6 @@ global $UNC_GALLERY;
 
 $UNC_GALLERY['upload'] = "unc_gallery";
 $UNC_GALLERY['upload_path'] = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $UNC_GALLERY['upload'];
-$UNC_GALLERY['xmp_cache_dir'] = plugin_dir_path( __FILE__ ) . 'xmp_cache';
 $UNC_GALLERY['photos'] = "photos";                  // subfolder of upload_path where the photos go in
 $UNC_GALLERY['thumbnails'] = "thumbs";              // subfolder of upload_path where the thumbs go in
 $UNC_GALLERY['file_data'] = "file_data";            // subfolder of upload_path where the file data goes in
@@ -97,10 +96,10 @@ $UNC_GALLERY['user_settings'] = array(
         'options' => array('photoswipe' => 'Photoswipe', 'lightbox' => 'Lightbox', 'none' => 'Direct image link'),
     ),
     'show_exif_data' => array(
-        'help' => 'Do you want to show EXIF data for shutter speed, aperture etc?',
-        'default' => 'yes',
-        'type' => 'dropdown',
-        'options' => array('yes' => 'Yes', 'no' => 'No'),
+        'help' => 'Which EXIF data do you want to show in image descriptions?',
+        'default' => array('exposure_time', 'f', 'iso'),
+        'type' => 'multiple',
+        'options' => array('camera_manuf', 'camera_model', 'exposure_time', 'f', 'iso', 'focal_length' ,'lens'),
     ),
     'show_keywords' => array(
         'help' => 'Did you assign keywords to your phots (in Lightroom for example) and want to show them?',
@@ -122,49 +121,20 @@ $UNC_GALLERY['user_settings'] = array(
     ),
 );
 
-// exif data to be looked for
-// codes from http://www.exiv2.org/tags.html
+// These are the exif codes we will display for the description
+// TODO: Convert that to a setting so we can switch them on and off
 $UNC_GALLERY['exif_codes'] = array(
-    'camera_manuf' => array(
-        'hex' => '0x010F',
-        'key' => 'Make',
-        'conversion' => false,
-        'unit' => false,
-    ),
-    'camera_model' => array(
-        'hex' => '0x0110',
-        'key' => 'Model',
-        'conversion' => false,
-        'unit' => false,
-    ),
-    'exposure_time' => array(
-        'hex' => '0x829A',
-        'key' => 'ExposureTime',
-        'conversion' => false,
-        'unit' => 'sec.',
-    ),
-    'f' => array(
-        'hex' => '0x829D',
-        'key' => 'FNumber',
-        'conversion' => 'unc_tools_divide_string',
-        'unit' => false,
-    ),
-    'iso' => array(
-        'hex' => '0x8827',
-        'key' => 'ISOSpeedRatings',
-        'conversion' => false,
-        'unit' => false,
-    ),
-    'focal_length' => array(
-        'hex' => '0x920A',
-        'key' => 'FocalLength',
-        'conversion' => 'unc_tools_divide_string',
-        'unit' => 'mm',
-    ),
-    'lens' => array(
-        'hex' => '0xA434',
-        'key' => 'LensModel',
-        'conversion' => false,
-        'unit' => false,
-    ),
+    'camera_manuf',
+    'camera_model',
+    'exposure_time',
+    'f',
+    'iso',
+    'focal_length',
+    'lens',
+);
+
+// These are the XMP codes we will display for the description
+// TODO: Convert that to a setting so we can switch them on and off
+$UNC_GALLERY['xmp_codes'] = array(
+    'Keywords',
 );

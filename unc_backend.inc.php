@@ -53,9 +53,14 @@ function unc_gallery_admin_init() {
         $args = array('setting' => $prefix . $setting, 'value'=> $setting_value, 'help'=> $D['help'], 'default' => $D['default']);
         if ($D['type'] == 'text') {
             $callback = 'unc_gallery_setting_text_field_render';
-        } else {
+        } else if ($D['type'] == 'dropdown') {
             $callback = 'unc_gallery_setting_drodown_render';
             $args['options'] = $D['options'];
+        } else if ($D['type'] == 'multiple'){
+            $callback = 'unc_gallery_setting_multiple_render';
+            $args['options'] = $D['options'];
+        } else {
+            XMPP_ERROR_send_msg("Illegal option type ". $D['type']);
         }
         add_settings_field(
             $prefix . $setting,
@@ -71,7 +76,7 @@ function unc_gallery_admin_init() {
     // check if the upload folder exists:
     $dirPath =  $UNC_GALLERY['upload_path'];
     if (!file_exists($dirPath)) {
-        echo unc_tools_errormsg("The upload folder $dirPath does not exist!");
+        echo unc_display_errormsg("The upload folder $dirPath does not exist!");
         unc_gallery_plugin_activate();
     }
 }
@@ -101,6 +106,28 @@ function unc_gallery_setting_drodown_render($A) {
     $out .= "</select></td><td>{$A['help']} <strong>Default:</strong>&nbsp;'{$A['options'][$A['default']]}'\n";
     echo $out;
 }
+
+/**
+ * Generic function to render a dropdown input for WP settings dialogues
+ * @param type $A
+ */
+function unc_gallery_setting_multiple_render($A) {
+    $out = '';
+    foreach ($A['options'] as $option => $text) {
+        $sel = '';
+        XMPP_ERROR_trace("current", $A['value']);
+        if (in_array($option, $A['value'])) {
+            $sel = 'checked="checked"';
+        }
+        $nice_text = ucwords(str_replace("_", "&nbsp;", $text));
+        $out .= "<input type=\"checkbox\" name=\"{$A['setting']}\" value=\"$option\" $sel>$nice_text<br>\n";
+    }
+    XMPP_ERROR_send_msg($A['options'][$A['default']]);
+    $defaults = implode("', '", $A['options'][$A['default']]);
+    $out .= "</td><td>{$A['help']} <strong>Default:</strong>&nbsp;'$defaults'\n";
+    echo $out;
+}
+
 
 /**
  * Callback for the Settings-section. Since we have only one, no need to use this
@@ -197,6 +224,10 @@ function unc_gallery_admin_maintenance() {
             Rebuild Thumbnails
         </button> This will re-generate all thumbnails. Use this if after you changed the size of the thumbnails in the settings.<br>
         <div id="rebuild_thumbs_result"></div><br>
+        <button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_admin_rebuild_data\', \'rebuild_data_result\', \'Are you sure?\nThis can take a while!\')">
+            Re-load all data from image files
+        </button> This will go through all files and read all EXIF, IPCT, XMP etc data!<br>
+        <div id="rebuild_data_result"></div><br>
         <button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_delete_everything\', \'delete_all_result\', \'Are you sure?\nThis will delete ALL photos!\')">
             Delete all pictures
         </button> This will delete ALL images and thumbnails. Use with caution!<br>
@@ -232,6 +263,8 @@ function unc_gallery_admin_rebuild_thumbs() {
     // cleanup empty folders first
     unc_tools_folder_delete_empty($dirPath);
 
+    // TODO Delete all old thumbnails before re-writing them.
+    
     $thumb_root = $dirPath . DIRECTORY_SEPARATOR . $UNC_GALLERY['thumbnails'];
     // iterate all image folders
     $photo_folder = $dirPath . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
@@ -256,6 +289,42 @@ function unc_gallery_admin_rebuild_thumbs() {
     }
     echo "Done!";
     wp_die();
+}
+
+function unc_gallery_admin_rebuild_data() {
+    global $UNC_GALLERY;
+    ob_clean();
+    if (!is_admin()) {
+        echo "You are not admin!";
+        wp_die();
+    }
+    $dirPath = $UNC_GALLERY['upload_path'];
+    
+    // cleanup empty folders first
+    unc_tools_folder_delete_empty($dirPath);
+    
+    // TODO: delete all old data files
+
+    // iterate all image folders
+    $photo_folder = $dirPath . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
+    $target_folders = unc_tools_recurse_folders($photo_folder);
+
+    // create thumbnaisl
+    foreach ($target_folders as $date => $folder) {
+        // construct the thumb folder where we put the thumbnails
+        echo "Processing $date: ";
+
+        // enumerate all the files in the source folder
+        foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $image_file) {
+            if (!is_dir($image_file)) {
+                echo ".";
+                unc_image_info_write($image_file);
+            }
+        }
+        echo "<br>";
+    }
+    echo "Done!";
+    wp_die();    
 }
 
 /**
