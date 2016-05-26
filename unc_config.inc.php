@@ -83,12 +83,6 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'dropdown',
         'options' => array('2' => '2 Rows', '3' => '3 Rows', '4' => '4 Rows', '5' => '5 Rows', 'dynamic' => 'dynamic'),
     ),
-    'admin_date_selector' => array(
-        'help' => 'Chose if you want to have a calendar or a dropdown list for the Manage Images Admin page.',
-        'default' => 'calendar',
-        'type' => 'dropdown',
-        'options' => array('calendar' => 'Calendar', 'datelist' => 'Date List'),
-    ),
     'image_view_method' => array(
         'help' => 'Do you want to use photoswipe (mobile enabled) or lightbox, or just an image link to view images?',
         'default' => 'photoswipe',
@@ -121,6 +115,12 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'dropdown',
         'options' => array('sidebar' => 'Show in Sidebar', 'submenu' => 'Show in the Settings'),
     ),
+    'admin_date_selector' => array(
+        'help' => 'Chose if you want to have a calendar or a dropdown list for the Manage Images Admin page.',
+        'default' => 'calendar',
+        'type' => 'dropdown',
+        'options' => array('calendar' => 'Calendar', 'datelist' => 'Date List'),
+    ),    
     'uninstall_deletes_images' => array(
         'help' => 'Do you want your images removed from the server when you uninstall the plugin?',
         'default' => 'yes',

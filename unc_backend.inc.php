@@ -110,7 +110,7 @@ function unc_gallery_setting_drodown_render($A) {
 }
 
 /**
- * Generic function to render a dropdown input for WP settings dialogues
+ * Generic function to render a checkkbox input for WP settings dialogues
  * @param type $A
  */
 function unc_gallery_setting_multiple_render($A) {
