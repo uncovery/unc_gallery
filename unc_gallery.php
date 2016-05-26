@@ -3,7 +3,7 @@
 Plugin Name: Uncovery Gallery
 Plugin URI:  https://uncovery.net/about
 Description: A simple, self-generating, date-based gallery with bulk uploading
-Version:     3.3
+Version:     4.0
 Author:      Uncovery
 Author URI:  http://uncovery.net
 License:     GPL2

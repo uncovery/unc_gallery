@@ -115,6 +115,9 @@ function unc_gallery_setting_drodown_render($A) {
  */
 function unc_gallery_setting_multiple_render($A) {
     $out = '';
+    if (!is_array($A['value'])) {
+        $A['value'] = $A['default'];
+    }
     foreach ($A['options'] as $option => $text) {
         $sel = '';
         if (in_array($option, $A['value'])) {
