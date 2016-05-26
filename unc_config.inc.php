@@ -99,7 +99,15 @@ $UNC_GALLERY['user_settings'] = array(
         'help' => 'Which EXIF data do you want to show in image descriptions?',
         'default' => array('exposure_time', 'f', 'iso'),
         'type' => 'multiple',
-        'options' => array('camera_manuf', 'camera_model', 'exposure_time', 'f', 'iso', 'focal_length' ,'lens'),
+        'options' => array(
+            'camera_manuf' => 'Camera Manuf', 
+            'camera_model' => 'Camera Model', 
+            'exposure_time' => 'Exposure Time', 
+            'f' => 'F-Stop', 
+            'iso' => 'ISO', 
+            'focal_length' => 'Focal Length',
+            'lens' => 'Lens',
+        ),
     ),
     'show_keywords' => array(
         'help' => 'Did you assign keywords to your phots (in Lightroom for example) and want to show them?',

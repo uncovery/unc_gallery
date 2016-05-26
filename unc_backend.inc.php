@@ -115,15 +115,16 @@ function unc_gallery_setting_multiple_render($A) {
     $out = '';
     foreach ($A['options'] as $option => $text) {
         $sel = '';
-        XMPP_ERROR_trace("current", $A['value']);
         if (in_array($option, $A['value'])) {
             $sel = 'checked="checked"';
         }
-        $nice_text = ucwords(str_replace("_", "&nbsp;", $text));
-        $out .= "<input type=\"checkbox\" name=\"{$A['setting']}\" value=\"$option\" $sel>$nice_text<br>\n";
+        $out .= "<input type=\"checkbox\" name=\"{$A['setting']}[$option]\" value=\"$option\" $sel>$text<br>\n";
     }
-    XMPP_ERROR_send_msg($A['options'][$A['default']]);
-    $defaults = implode("', '", $A['options'][$A['default']]);
+    $def_arr = array();
+    foreach ($A['default'] as $def) {
+        $def_arr[] = $A['options'][$def];
+    }
+    $defaults = implode("', '", $def_arr);
     $out .= "</td><td>{$A['help']} <strong>Default:</strong>&nbsp;'$defaults'\n";
     echo $out;
 }

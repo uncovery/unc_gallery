@@ -11,7 +11,13 @@ function unc_image_info_read($file_path) {
     
     $data_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['file_data'] . DIRECTORY_SEPARATOR . $date_path . DIRECTORY_SEPARATOR . $file_name . ".php";
   
-    include_once $data_path;
+    // in case the data is missing, write a new file
+    if (!file_exists($data_path)){
+        unc_image_info_write($file_path);
+    }
+    
+    $file_data = false;
+    include_once($data_path);
     
     $UNC_FILE_DATA[$file_name] = $file_data;
     return true;
@@ -53,16 +59,14 @@ function unc_image_info_write($file_path) {
     
     $data = array();
     $data = array(
-        'base' => array(
-            'file_name' => $file_name,
-            'file_path' => $file_path,
-            'thumb_url' => $thumb_url,
-            'file_url' => $photo_url,
-            'time_stamp' => $time_stamp, // linux time stamp
-            'file_date' => $file_date, // full date including time
-            'date_str' => substr($file_date, 0, 10), // only the day 0000-00-00
-            'orientation' => $orientation,
-        ),
+        'file_name' => $file_name,
+        'file_path' => $file_path,
+        'thumb_url' => $thumb_url,
+        'file_url' => $photo_url,
+        'time_stamp' => $time_stamp, // linux time stamp
+        'file_date' => $file_date, // full date including time
+        'date_str' => substr($file_date, 0, 10), // only the day 0000-00-00
+        'orientation' => $orientation,
         'exif' => $exif,
         'xmp' => $xmp,
         'ipct' => $ipct,
@@ -173,7 +177,7 @@ function unc_xmp_get_array($xmp_raw) {
         $match = false;
         // get a single text string
         preg_match( "/$regex/is", $xmp_raw, $match);
-        if ($match[1] && $match[1] != '') {
+        if (isset($match[1]) && $match[1] != '') {
             $xmp_arr[$key] = $match[1];
         } else { // no match, next one;
             continue;

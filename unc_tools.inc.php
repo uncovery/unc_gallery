@@ -277,6 +277,9 @@ function unc_tools_images_list($D = false) {
  */
 function unc_tools_image_info_get($file_path, $D = false) {
     global $UNC_GALLERY;
+    
+    $I = unc_image_info_read($file_path);
+    
     $file_date = unc_image_date($file_path); // get image date from EXIF/IPCT
     $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
     $time_stamp = $dtime->getTimestamp(); // time stamp is easier to compare
@@ -537,7 +540,6 @@ function unc_tools_bytes_get($ini_val) {
  */
 function unc_tools_image_path($date_path, $file_name) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] ;
     $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
     $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
@@ -555,7 +557,6 @@ function unc_tools_image_path($date_path, $file_name) {
  */
 function unc_tools_folder_list($base_folder) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
     $base_length = strlen($photo_folder) + 1;
 

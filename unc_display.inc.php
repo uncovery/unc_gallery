@@ -431,7 +431,7 @@ function unc_display_folder_images() {
 function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     global $UNC_GALLERY;
     if (!$file_data) {
-        $F = unc_tools_image_info_get($file_path);
+        $F = unc_image_info_read($file_path);
     } else {
         $F = $file_data;
     }
