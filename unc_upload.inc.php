@@ -123,6 +123,7 @@ function unc_uploads_iterate_files() {
             unc_tools_import_enumerate($import_path);
             $F = $UNC_GALLERY['import'];
             $count = count($F["name"]);
+            echo "Found " . count($F) . " files in folder $import_path<br>";
         } else {
             echo $import_path . " cannot be accessed or does not exist! Make sure its readable by the apache user!";
             wp_die();
