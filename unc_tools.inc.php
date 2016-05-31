@@ -281,7 +281,7 @@ function unc_tools_file_desc($F) {
     // we iterate the 3 information sets
     foreach ($code_sets as $set_name) {
         // we get the configured settings to know which parts we take
-        $set = $UNC_GALLERY['show_' . $set_name . '_data'];
+        $set = $UNC_GALLERY['show_'.$set_name.'_data'];
         // if we do not have any settings in this set, continue
         if (!is_array($set)) {
             continue;

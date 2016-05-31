@@ -1,9 +1,9 @@
 <?php
 
-global $exif_codes_full, $xmp_codes_full, $ipct_codes_full;
+global $UNC_GALLERY;
 // detailed info on EXIF Codes
 // http://www.exiv2.org/tags.html
-$exif_codes_full = array(
+$UNC_GALLERY['codes']['exif'] = array(
     'camera_manuf' => array(
         'hex' => '0x010F',
         'key' => 'Make',
@@ -55,7 +55,7 @@ $exif_codes_full = array(
     ),
 );
 
-$xmp_codes_full = array(
+$UNC_GALLERY['codes']['xmp'] = array(
     'email' => array(
         'description' => 'Creator Email',
         'regex' => '<Iptc4xmpCore:CreatorContactInfo[^>]+?CiEmailWork="([^"]*)"',
@@ -134,7 +134,7 @@ $xmp_codes_full = array(
     ),
 );
 
-$ipct_codes_full = array(
+$UNC_GALLERY['codes']['ipct'] = array(
     'creation_date' => array('code' => '055', 'description' => 'Creation Date'),
     'creation_time' => array('code' => '060', 'description' => 'Creation Time'),
     'object_name' => array('code' => '005', 'description' => 'Object Name'),
@@ -371,8 +371,10 @@ function unc_xmp_get_array($xmp_raw) {
  * @return type
  */
 function unc_image_options_array($var) {
+    global $UNC_GALLERY;
     $out = array();
-    foreach ($var as $key => $D) {
+    $set = $UNC_GALLERY['codes'][$var];
+    foreach ($set as $key => $D) {
         $out[$key] = $D['description'];
     }
     return $out;
@@ -385,20 +387,15 @@ function unc_image_options_array($var) {
  * @return string
  */
 function unc_exif_get($image_path) {
-    global $UNC_GALLERY, $exif_codes_full;
-    $exif_codes = $UNC_GALLERY['show_exif_data'];
-
+    global $UNC_GALLERY;
     $exif = exif_read_data($image_path);
 
     $data = array(
         'file_width' => $exif['COMPUTED']['Width'],
         'file_height' => $exif['COMPUTED']['Height'],
     );
-    foreach ($exif_codes as $code) {
-        if (!isset($exif_codes_full[$code])) {
-            continue; // TODO: return proper error in case invalid EXIF is queried
-        }
-        $C = $exif_codes_full[$code];
+
+    foreach ($UNC_GALLERY['codes']['exif'] as $code => $C) {
         $hex_tag =  'UndefinedTag:' . $C['hex'];
         if (isset($exif[$C['key']])) {
             $val = $exif[$C['key']];
@@ -523,15 +520,16 @@ class iptc {
     }
 
     function set($tag, $data) {
-        global $ipct_codes_full;
-        $id = $ipct_codes_full[$tag]['code'];
+        global $UNC_GALLERY;
+
+        $id = $UNC_GALLERY['codes']['ipct'][$tag]['code'];
         $this->meta ["2#$id"]= Array( $data );
         $this->hasmeta=true;
     }
 
     function get($tag) {
-        global $ipct_codes_full;
-        $id = $ipct_codes_full[$tag]['code'];
+        global $UNC_GALLERY;
+        $id = $UNC_GALLERY['codes']['ipct'][$tag]['code'];
         if (isset($this->meta["2#$id"])) {
             return $this->meta["2#$id"][0];
         } else {
@@ -540,9 +538,9 @@ class iptc {
     }
 
     function dump() {
-        global $ipct_codes_full;
+        global $UNC_GALLERY;
         $out = array();
-        foreach ($ipct_codes_full as $code => $D) {
+        foreach ($UNC_GALLERY['codes']['ipct'] as $code => $D) {
             $id = $D['code'];
             if (isset($this->meta["2#$id"])) {
                 $out[$code] = $this->meta["2#$id"][0];
