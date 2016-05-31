@@ -17,13 +17,14 @@ if (!defined('WPINC')) {
 
 global $UNC_FILE_DATA;
 
-require_once( plugin_dir_path( __FILE__ ) . "unc_config.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_backend.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_upload.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_display.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_tools.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_image.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_arrays.inc.php");
+// this has to be last because it runs function in unc_image.inc.php
+require_once( plugin_dir_path( __FILE__ ) . "unc_config.inc.php");
 
 global $XMPP_ERROR;
 if (file_exists('/home/includes/xmpp_error/xmpp_error.php')) {

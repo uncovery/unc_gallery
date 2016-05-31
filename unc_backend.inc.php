@@ -120,10 +120,10 @@ function unc_gallery_setting_multiple_render($A) {
     }
     foreach ($A['options'] as $option => $text) {
         $sel = '';
-        if (in_array($option, $A['value'])) {
+        if (in_array($text, $A['value'])) {
             $sel = 'checked="checked"';
         }
-        $out .= "<input type=\"checkbox\" name=\"{$A['setting']}[$option]\" value=\"$option\" $sel>&nbsp;$text<br>\n";
+        $out .= "<input type=\"checkbox\" name=\"{$A['setting']}[$option]\" value=\"$text\" $sel>&nbsp;$text<br>\n";
     }
     $def_arr = array();
     foreach ($A['default'] as $def) {
@@ -271,7 +271,7 @@ function unc_gallery_admin_rebuild_thumbs() {
     unc_tools_folder_delete_empty($dirPath);
 
     // TODO Delete all old thumbnails before re-writing them.
-    
+
     $thumb_root = $dirPath . DIRECTORY_SEPARATOR . $UNC_GALLERY['thumbnails'];
     // iterate all image folders
     $photo_folder = $dirPath . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
@@ -306,10 +306,10 @@ function unc_gallery_admin_rebuild_data() {
         wp_die();
     }
     $dirPath = $UNC_GALLERY['upload_path'];
-    
+
     // cleanup empty folders first
     unc_tools_folder_delete_empty($dirPath);
-    
+
     // TODO: delete all old data files
 
     // iterate all image folders
@@ -331,7 +331,7 @@ function unc_gallery_admin_rebuild_data() {
         echo "<br>";
     }
     echo "Done!";
-    wp_die();    
+    wp_die();
 }
 
 /**

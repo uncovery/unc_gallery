@@ -1,27 +1,81 @@
 <?php
 
+global $exif_codes_full;
+// detailed info on EXIF Codes
+// http://www.exiv2.org/tags.html
+$exif_codes_full = array(
+        'camera_manuf' => array(
+            'hex' => '0x010F',
+            'key' => 'Make',
+            'conversion' => false,
+            'unit' => false,
+            'description' => 'Make',
+        ),
+        'camera_model' => array(
+            'hex' => '0x0110',
+            'key' => 'Model',
+            'conversion' => false,
+            'unit' => false,
+            'description' => 'Model',
+        ),
+        'exposure_time' => array(
+            'hex' => '0x829A',
+            'key' => 'ExposureTime',
+            'conversion' => false,
+            'unit' => 'sec.',
+            'description' => 'Exposure Time',
+        ),
+        'f' => array(
+            'hex' => '0x829D',
+            'key' => 'FNumber',
+            'conversion' => 'unc_tools_divide_string',
+            'unit' => false,
+            'description' => 'F-Stop',
+        ),
+        'iso' => array(
+            'hex' => '0x8827',
+            'key' => 'ISOSpeedRatings',
+            'conversion' => false,
+            'unit' => false,
+            'description' => 'ISO',
+        ),
+        'focal_length' => array(
+            'hex' => '0x920A',
+            'key' => 'FocalLength',
+            'conversion' => 'unc_tools_divide_string',
+            'unit' => 'mm',
+            'description' => 'Focal Length',
+        ),
+        'lens' => array(
+            'hex' => '0xA434',
+            'key' => 'LensModel',
+            'conversion' => false,
+            'unit' => false,
+            'description' => 'Lens',
+        ),
+    );
 
 function unc_image_info_read($file_path, $D = false) {
     global $UNC_GALLERY, $UNC_FILE_DATA;
-    
+
     $folder_info = pathinfo($file_path);
     $date_str = unc_tools_folder_date($folder_info['dirname']);
     $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
     $file_name = $folder_info['basename'];
-    
+
     $data_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['file_data'] . DIRECTORY_SEPARATOR . $date_path . DIRECTORY_SEPARATOR . $file_name . ".php";
-  
+
     // in case the data is missing, write a new file
     if (!file_exists($data_path)){
         unc_image_info_write($file_path);
     }
-    
+
     $UNC_FILE_DATA[$file_name] = false;
     require($data_path);
     if ($UNC_FILE_DATA[$file_name] == false) {
         XMPP_ERROR_trace("File data failed", $file_name);
     }
-    
+
     if (!$D) {
         $D = $UNC_GALLERY['display'];
     }
@@ -32,10 +86,10 @@ function unc_image_info_read($file_path, $D = false) {
         $description = $D['description'] . " ($file_name / $file_date)";
     } else {
         $description = "<b>File Name:</b> $file_name; <b>Date:</b> $file_date;";
-    }    
+    }
     $UNC_FILE_DATA[$file_name]['description'] = $description;
-    
-    return $UNC_FILE_DATA[$file_name]; 
+
+    return $UNC_FILE_DATA[$file_name];
 }
 
 /**
@@ -47,7 +101,7 @@ function unc_image_info_read($file_path, $D = false) {
  */
 function unc_image_info_write($file_path) {
     global $UNC_GALLERY;
-    
+
     $file_date = unc_image_date($file_path); // get image date from EXIF/IPCT
     $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
     $time_stamp = $dtime->getTimestamp(); // time stamp is easier to compare
@@ -59,19 +113,19 @@ function unc_image_info_write($file_path) {
     $exif = unc_exif_get($file_path);
     $xmp = unc_xmp_get($file_path);
     $ipct = unc_ipct_get($file_path);
-    
+
     $orientation = 'landscape';
     if ($exif['file_width'] < $exif['file_height']) {
         $orientation = 'portrait';
     }
-    
+
     unc_date_folder_create($date_str);
 
     $photo_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
     $thumb_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
-    
+
     $data_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['file_data'] . DIRECTORY_SEPARATOR . $date_path . DIRECTORY_SEPARATOR . $file_name . ".php";
-    
+
     $data = array(
         'file_name' => $file_name,
         'file_path' => $file_path,
@@ -85,10 +139,10 @@ function unc_image_info_write($file_path) {
         'xmp' => $xmp,
         'ipct' => $ipct,
     );
-    
+
     // write the file
     unc_array2file($data, 'UNC_FILE_DATA', $data_path, $file_name);
-    
+
     return true;
 }
 
@@ -196,7 +250,7 @@ function unc_xmp_get_array($xmp_raw) {
         } else { // no match, next one;
             continue;
         }
-        
+
         // if string contains a list, then re-assign the variable as an array with the list elements
         $xmp_arr[$key] = preg_match_all( "/<rdf:li[^>]*>([^>]*)<\/rdf:li>/is", $xmp_arr[$key], $match ) ? $match[1] : $xmp_arr[$key];
 
@@ -212,6 +266,21 @@ function unc_xmp_get_array($xmp_raw) {
     return $xmp_arr;
 }
 
+/**
+ * assemble an array of the ; key=>descriptions
+ * of exif codes that are used in the config
+ *
+ * @global array $exif_codes_full
+ * @return type
+ */
+function unc_exif_options() {
+    global $exif_codes_full;
+    $out = array();
+    foreach ($exif_codes_full as $key => $D) {
+        $out[$key] = $D['description'];
+    }
+    return $out;
+}
 
 /**
  * Get data from the EXIF values, convert it
@@ -220,55 +289,8 @@ function unc_xmp_get_array($xmp_raw) {
  * @return string
  */
 function unc_exif_get($image_path) {
-    global $UNC_GALLERY;
-    $exif_codes = $UNC_GALLERY['exif_codes'];
-
-    // detailed info on EXIF Codes
-    // http://www.exiv2.org/tags.html
-    $exif_codes_full = array(
-        'camera_manuf' => array(
-            'hex' => '0x010F',
-            'key' => 'Make',
-            'conversion' => false,
-            'unit' => false,
-        ),
-        'camera_model' => array(
-            'hex' => '0x0110',
-            'key' => 'Model',
-            'conversion' => false,
-            'unit' => false,
-        ),
-        'exposure_time' => array(
-            'hex' => '0x829A',
-            'key' => 'ExposureTime',
-            'conversion' => false,
-            'unit' => 'sec.',
-        ),
-        'f' => array(
-            'hex' => '0x829D',
-            'key' => 'FNumber',
-            'conversion' => 'unc_tools_divide_string',
-            'unit' => false,
-        ),
-        'iso' => array(
-            'hex' => '0x8827',
-            'key' => 'ISOSpeedRatings',
-            'conversion' => false,
-            'unit' => false,
-        ),
-        'focal_length' => array(
-            'hex' => '0x920A',
-            'key' => 'FocalLength',
-            'conversion' => 'unc_tools_divide_string',
-            'unit' => 'mm',
-        ),
-        'lens' => array(
-            'hex' => '0xA434',
-            'key' => 'LensModel',
-            'conversion' => false,
-            'unit' => false,
-        ),
-    );
+    global $UNC_GALLERY, $exif_codes_full;
+    $exif_codes = $UNC_GALLERY['show_exif_data'];
 
     $exif = exif_read_data($image_path);
 

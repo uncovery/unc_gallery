@@ -270,64 +270,25 @@ function unc_tools_images_list($D = false) {
 }
 
 /**
- * Get all possible information about a single file
- *
- * @global type $UNC_GALLERY
- * @param type $file_path
- * @param type $D
- */
-function unc_tools_image_info_get($file_path, $D = false) {
-    global $UNC_GALLERY;
-    
-    $I = unc_image_info_read($file_path);
-    
-    $file_date = unc_image_date($file_path); // get image date from EXIF/IPCT
-    $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
-    $time_stamp = $dtime->getTimestamp(); // time stamp is easier to compare
-    $folder_info = pathinfo($file_path);
-    $date_str = unc_tools_folder_date($folder_info['dirname']);
-    $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
-    $file_name = $folder_info['basename'];
-    $exif = unc_exif_get($file_path);
-
-    $orientation = 'landscape';
-    if ($exif['file_width'] < $exif['file_height']) {
-        $orientation = 'portrait';
-    }
-
-    $photo_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
-    $thumb_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
-    $file = array(
-        'file_name' => $file_name,
-        'file_path' => $file_path,
-        'thumb_url' => $thumb_url,
-        'file_url' => $photo_url,
-        'time_stamp' => $time_stamp, // linux time stamp
-        'file_date' => $file_date, // full date including time
-        'date_str' => substr($file_date, 0, 10), // only the day 0000-00-00
-        'orientation' => $orientation,
-    );
-    
-    $out = array_merge($file, $exif);
-    return $out;
-}
-
-
-/**
  * Assemble a file description from EXIF values
  *
  * @param type $F
  */
 function unc_tools_file_desc($F) {
     global $UNC_GALLERY;
-    $exif_codes = $UNC_GALLERY['exif_codes'];
+    $exif_codes = $UNC_GALLERY['show_exif_data'];
     $out = '';
-    foreach ($exif_codes as $desc) {
-        $desc_nice = ucwords(str_replace("_", "&nbsp;", $desc));
-        if (isset($F[$desc])) {
-            $out .= "<b>$desc_nice:</b>&nbsp;{$F[$desc]}; ";
+    foreach ($exif_codes as $key => $desc) {
+        if (isset($F['exif'][$key])) {
+            $out .= "<b>$desc:</b>&nbsp;{$F['exif'][$key]}; ";
         }
     }
+
+    // XMP keywords
+    if ($UNC_GALLERY['show_keywords'] == 'yes' && count($F['xmp']['Keywords']) > 0) {
+        $out .= '<b>Tags:</b> ' . implode(", ", $F['xmp']['Keywords']);
+    }
+
     return $out;
 }
 
@@ -698,3 +659,49 @@ function unc_tools_divide_string($string) {
     $result = $f[0] / $f[1];
     return number_format($result, 1);
 }
+
+
+/**
+ * Get all possible information about a single file
+ *
+ * @global type $UNC_GALLERY
+ * @param type $file_path
+ * @param type $D
+
+function unc_tools_image_info_get($file_path, $D = false) {
+    global $UNC_GALLERY;
+
+    $I = unc_image_info_read($file_path);
+
+    $file_date = unc_image_date($file_path); // get image date from EXIF/IPCT
+    $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
+    $time_stamp = $dtime->getTimestamp(); // time stamp is easier to compare
+    $folder_info = pathinfo($file_path);
+    $date_str = unc_tools_folder_date($folder_info['dirname']);
+    $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
+    $file_name = $folder_info['basename'];
+    $exif = unc_exif_get($file_path);
+
+    $orientation = 'landscape';
+    if ($exif['file_width'] < $exif['file_height']) {
+        $orientation = 'portrait';
+    }
+
+    $photo_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
+    $thumb_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
+    $file = array(
+        'file_name' => $file_name,
+        'file_path' => $file_path,
+        'thumb_url' => $thumb_url,
+        'file_url' => $photo_url,
+        'time_stamp' => $time_stamp, // linux time stamp
+        'file_date' => $file_date, // full date including time
+        'date_str' => substr($file_date, 0, 10), // only the day 0000-00-00
+        'orientation' => $orientation,
+    );
+
+    $out = array_merge($file, $exif);
+    return $out;
+}
+ *
+ */

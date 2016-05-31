@@ -476,16 +476,7 @@ function unc_display_photoswipe_js($files) {
         };
         var uncg_items_' . $slug . ' = [';
     foreach ($files  as $F) {
-        $desc = $F['description'];
-
-        if ($UNC_GALLERY['show_exif_data'] == 'yes') {
-            $desc .= unc_tools_file_desc($F);
-        }
-
-        if ($UNC_GALLERY['show_keywords'] == 'yes' && isset($F['keywords'])) {
-            $desc .= '<b>Tags:</b> ' . $F['keywords'];
-        }
-
+        $desc = $F['description'] . " " . unc_tools_file_desc($F);
         $out .= "
     {
         src: '{$F['file_url']}',
