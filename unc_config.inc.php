@@ -93,13 +93,19 @@ $UNC_GALLERY['user_settings'] = array(
         'help' => 'Which EXIF data do you want to show in image descriptions?',
         'default' => array('exposure_time', 'f', 'iso'),
         'type' => 'multiple',
-        'options' => unc_exif_options(),
+        'options' => unc_image_options_array($exif_codes_full), // this function just returns an array
     ),
-    'show_keywords' => array(
-        'help' => 'Did you assign keywords to your photos (in Lightroom for example) and want to show them?',
-        'default' => 'yes',
-        'type' => 'dropdown',
-        'options' => array('yes' => 'Yes', 'no' => 'No'),
+    'show_xmp_data' => array(
+        'help' => 'Which XMP data do you want to show in image descriptions?',
+        'default' => array('keywords'),
+        'type' => 'multiple',
+        'options' => unc_image_options_array($xmp_codes_full), // this function just returns an array
+    ),
+    'show_ipct_data' => array(
+        'help' => 'Which IPCT data do you want to show in image descriptions?',
+        'default' => array('byline'),
+        'type' => 'multiple',
+        'options' => unc_image_options_array($ipct_codes_full), // this function just returns an array
     ),
     'settings_location' => array(
         'help' => 'Do you want the admin screen of this plugin to be shown as a menu entry in the sidebar or a sub-menu of the settings menu?',

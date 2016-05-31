@@ -118,6 +118,7 @@ function unc_gallery_setting_multiple_render($A) {
     if (!is_array($A['value'])) {
         $A['value'] = $A['default'];
     }
+    asort($A['options']);
     foreach ($A['options'] as $option => $text) {
         $sel = '';
         if (in_array($text, $A['value'])) {

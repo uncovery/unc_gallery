@@ -282,6 +282,10 @@ function unc_tools_file_desc($F) {
     foreach ($code_sets as $set_name) {
         // we get the configured settings to know which parts we take
         $set = $UNC_GALLERY['show_' . $set_name . '_data'];
+        // if we do not have any settings in this set, continue
+        if (!is_array($set)) {
+            continue;
+        }
         // lets go through the configs of the current section
         foreach ($set as $key => $desc) {
             // only look if it's actually set. This should not be needed

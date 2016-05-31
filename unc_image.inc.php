@@ -1,59 +1,175 @@
 <?php
 
-global $exif_codes_full;
+global $exif_codes_full, $xmp_codes_full, $ipct_codes_full;
 // detailed info on EXIF Codes
 // http://www.exiv2.org/tags.html
 $exif_codes_full = array(
-        'camera_manuf' => array(
-            'hex' => '0x010F',
-            'key' => 'Make',
-            'conversion' => false,
-            'unit' => false,
-            'description' => 'Make',
-        ),
-        'camera_model' => array(
-            'hex' => '0x0110',
-            'key' => 'Model',
-            'conversion' => false,
-            'unit' => false,
-            'description' => 'Model',
-        ),
-        'exposure_time' => array(
-            'hex' => '0x829A',
-            'key' => 'ExposureTime',
-            'conversion' => false,
-            'unit' => 'sec.',
-            'description' => 'Exposure Time',
-        ),
-        'f' => array(
-            'hex' => '0x829D',
-            'key' => 'FNumber',
-            'conversion' => 'unc_tools_divide_string',
-            'unit' => false,
-            'description' => 'F-Stop',
-        ),
-        'iso' => array(
-            'hex' => '0x8827',
-            'key' => 'ISOSpeedRatings',
-            'conversion' => false,
-            'unit' => false,
-            'description' => 'ISO',
-        ),
-        'focal_length' => array(
-            'hex' => '0x920A',
-            'key' => 'FocalLength',
-            'conversion' => 'unc_tools_divide_string',
-            'unit' => 'mm',
-            'description' => 'Focal Length',
-        ),
-        'lens' => array(
-            'hex' => '0xA434',
-            'key' => 'LensModel',
-            'conversion' => false,
-            'unit' => false,
-            'description' => 'Lens',
-        ),
-    );
+    'camera_manuf' => array(
+        'hex' => '0x010F',
+        'key' => 'Make',
+        'conversion' => false,
+        'unit' => false,
+        'description' => 'Make',
+    ),
+    'camera_model' => array(
+        'hex' => '0x0110',
+        'key' => 'Model',
+        'conversion' => false,
+        'unit' => false,
+        'description' => 'Model',
+    ),
+    'exposure_time' => array(
+        'hex' => '0x829A',
+        'key' => 'ExposureTime',
+        'conversion' => false,
+        'unit' => 'sec.',
+        'description' => 'Exposure Time',
+    ),
+    'f' => array(
+        'hex' => '0x829D',
+        'key' => 'FNumber',
+        'conversion' => 'unc_tools_divide_string',
+        'unit' => false,
+        'description' => 'F-Stop',
+    ),
+    'iso' => array(
+        'hex' => '0x8827',
+        'key' => 'ISOSpeedRatings',
+        'conversion' => false,
+        'unit' => false,
+        'description' => 'ISO',
+    ),
+    'focal_length' => array(
+        'hex' => '0x920A',
+        'key' => 'FocalLength',
+        'conversion' => 'unc_tools_divide_string',
+        'unit' => 'mm',
+        'description' => 'Focal Length',
+    ),
+    'lens' => array(
+        'hex' => '0xA434',
+        'key' => 'LensModel',
+        'conversion' => false,
+        'unit' => false,
+        'description' => 'Lens',
+    ),
+);
+
+$xmp_codes_full = array(
+    'email' => array(
+        'description' => 'Creator Email',
+        'regex' => '<Iptc4xmpCore:CreatorContactInfo[^>]+?CiEmailWork="([^"]*)"',
+    ),
+    'name' => array(
+        'description' => 'Owner Name',
+        'regex' => '<rdf:Description[^>]+?aux:OwnerName="([^"]*)"',
+    ),
+    'creation_date' => array(
+        'description' => 'Creation Date',
+        'regex' => '<rdf:Description[^>]+?xmp:CreateDate="([^"]*)"',
+    ),
+    'modification_date' => array(
+        'description' => 'Modification Date',
+        'regex' => '<rdf:Description[^>]+?xmp:ModifyDate="([^"]*)"',
+    ),
+    'label' => array(
+        'description' => 'Label',
+        'regex' => '<rdf:Description[^>]+?xmp:Label="([^"]*)"',
+    ),
+    'credit' => array(
+        'description' => 'Credit',
+        'regex' => '<rdf:Description[^>]+?photoshop:Credit="([^"]*)"',
+    ),
+    'source' => array(
+        'description' => 'Source',
+        'regex' => '<rdf:Description[^>]+?photoshop:Source="([^"]*)"',
+    ),
+    'headline' => array(
+        'description' => 'Headline',
+        'regex' => '<rdf:Description[^>]+?photoshop:Headline="([^"]*)"',
+    ),
+    'city' => array(
+        'description' => 'City',
+        'regex' => '<rdf:Description[^>]+?photoshop:City="([^"]*)"',
+    ),
+    'state' => array(
+        'description' => 'State',
+        'regex' => '<rdf:Description[^>]+?photoshop:State="([^"]*)"',
+    ),
+    'city' => array(
+        'description' => 'City',
+        'regex' => '<rdf:Description[^>]+?photoshop:City="([^"]*)"',
+    ),
+    'country' => array(
+        'description' => 'Country',
+        'regex' => '<rdf:Description[^>]+?photoshop:Country="([^"]*)"',
+    ),
+    'countryc_code' => array(
+        'description' => 'Country Code',
+        'regex' => '<rdf:Description[^>]+?Iptc4xmpCore:CountryCode="([^"]*)"',
+    ),
+    'location' => array(
+        'description' => 'Location',
+        'regex' => '<rdf:Description[^>]+?Iptc4xmpCore:Location="([^"]*)"',
+    ),
+    'title' => array(
+        'description' => 'Title',
+        'regex' => '<dc:title>\s*<rdf:Alt>\s*(.*?)\s*<\/rdf:Alt>\s*<\/dc:title>',
+    ),
+    'description' => array(
+        'description' => 'Description',
+        'regex' => '<dc:description>\s*<rdf:Alt>\s*(.*?)\s*<\/rdf:Alt>\s*<\/dc:description>',
+    ),
+    'creator' => array(
+        'description' => 'Creator',
+        'regex' => '<dc:creator>\s*<rdf:Seq>\s*(.*?)\s*<\/rdf:Seq>\s*<\/dc:creator>',
+    ),
+    'keywords' => array(
+        'description' => 'Keywords',
+        'regex' => '<dc:subject>\s*<rdf:Bag>\s*(.*?)\s*<\/rdf:Bag>\s*<\/dc:subject>',
+    ),
+    'hierarchicalh_keywords' => array(
+        'description' => 'Hierarchical Keywords',
+        'regex' => '<lr:hierarchicalSubject>\s*<rdf:Bag>\s*(.*?)\s*<\/rdf:Bag>\s*<\/lr:hierarchicalSubject>',
+    ),
+);
+
+$ipct_codes_full = array(
+    'creation_date' => array('code' => '055', 'description' => 'Creation Date'),
+    'creation_time' => array('code' => '060', 'description' => 'Creation Time'),
+    'object_name' => array('code' => '005', 'description' => 'Object Name'),
+    'edit_status' => array('code' => '007', 'description' => 'Edit Ststus'),
+    'priority' => array('code' => '010', 'description' => 'Priority'),
+    'category' => array('code' => '015', 'description' => 'Category'),
+    'supplemental_category' => array('code' => '020', 'description' => 'Supplemental Category'),
+    'fixture_identifier' => array('code' => '022', 'description' => 'Fixture Identifier'),
+    'keywords' => array('code' => '025', 'description' => 'Object Name'),
+    'release_date' => array('code' => '030', 'description' => 'Release Date'),
+    'release_time' => array('code' => '035', 'description' => 'Release Time'),
+    'special_instructions' => array('code' => '040', 'description' => 'Special Instructions'),
+    'reference_service' => array('code' => '045', 'description' => 'Reference Service'),
+    'reference_date' => array('code' => '047', 'description' => 'Reference Date'),
+    'reference_number' => array('code' => '050', 'description' => 'Reference Number'),
+    'created_date' => array('code' => '055', 'description' => 'Created Date'),
+    'created_time' => array('code' => '060', 'description' => 'Created Time'),
+    'originating_program' => array('code' => '065', 'description' => 'Originating Program'),
+    'program_version' => array('code' => '070', 'description' => 'Program Version'),
+    'object_cycle' => array('code' => '075', 'description' => 'Object Cycle'),
+    'byline' => array('code' => '080', 'description' => 'Byline'),
+    'byline_title' => array('code' => '085', 'description' => 'Byline Title'),
+    'city' => array('code' => '090', 'description' => 'City'),
+    'province_state' => array('code' => '095', 'description' => 'Province / State'),
+    'country_code' => array('code' => '100', 'description' => 'Country Code'),
+    'country' => array('code' => '101', 'description' => 'Country'),
+    'country_code' => array('code' => '100', 'description' => 'Country Code'),
+    'original_transmission_reference' => array('code' => '103', 'description' => 'Original Transmission Reference'),
+    'headline' => array('code' => '105', 'description' => 'Headline'),
+    'credit' => array('code' => '110', 'description' => 'Credit'),
+    'source' => array('code' => '115', 'description' => 'Source'),
+    'copyright_string' => array('code' => '116', 'description' => 'Copyright String'),
+    'caption' => array('code' => '120', 'description' => 'Caption'),
+    'local_caption' => array('code' => '100', 'description' => 'Local Caption'),
+);
 
 function unc_image_info_read($file_path, $D = false) {
     global $UNC_GALLERY, $UNC_FILE_DATA;
@@ -219,31 +335,12 @@ function unc_xmp_get($filepath) {
  * @return type
  */
 function unc_xmp_get_array($xmp_raw) {
-    $key_arr = array(
-        'Creator Email' => '<Iptc4xmpCore:CreatorContactInfo[^>]+?CiEmailWork="([^"]*)"',
-        'Owner Name'    => '<rdf:Description[^>]+?aux:OwnerName="([^"]*)"',
-        'Creation Date' => '<rdf:Description[^>]+?xmp:CreateDate="([^"]*)"',
-        'Modification Date'     => '<rdf:Description[^>]+?xmp:ModifyDate="([^"]*)"',
-        'Label'         => '<rdf:Description[^>]+?xmp:Label="([^"]*)"',
-        'Credit'        => '<rdf:Description[^>]+?photoshop:Credit="([^"]*)"',
-        'Source'        => '<rdf:Description[^>]+?photoshop:Source="([^"]*)"',
-        'Headline'      => '<rdf:Description[^>]+?photoshop:Headline="([^"]*)"',
-        'City'          => '<rdf:Description[^>]+?photoshop:City="([^"]*)"',
-        'State'         => '<rdf:Description[^>]+?photoshop:State="([^"]*)"',
-        'Country'       => '<rdf:Description[^>]+?photoshop:Country="([^"]*)"',
-        'Country Code'  => '<rdf:Description[^>]+?Iptc4xmpCore:CountryCode="([^"]*)"',
-        'Location'      => '<rdf:Description[^>]+?Iptc4xmpCore:Location="([^"]*)"',
-        'Title'         => '<dc:title>\s*<rdf:Alt>\s*(.*?)\s*<\/rdf:Alt>\s*<\/dc:title>',
-        'Description'   => '<dc:description>\s*<rdf:Alt>\s*(.*?)\s*<\/rdf:Alt>\s*<\/dc:description>',
-        'Creator'       => '<dc:creator>\s*<rdf:Seq>\s*(.*?)\s*<\/rdf:Seq>\s*<\/dc:creator>',
-        'Keywords'      => '<dc:subject>\s*<rdf:Bag>\s*(.*?)\s*<\/rdf:Bag>\s*<\/dc:subject>',
-        'Hierarchical Keywords' => '<lr:hierarchicalSubject>\s*<rdf:Bag>\s*(.*?)\s*<\/rdf:Bag>\s*<\/lr:hierarchicalSubject>'
-    );
-
+    global $xmp_codes_full;
     $xmp_arr = array();
-    foreach ($key_arr as $key => $regex ) {
+    foreach ($xmp_codes_full as $key => $D ) {
         $match = false;
         // get a single text string
+        $regex = $D['regex'];
         preg_match( "/$regex/is", $xmp_raw, $match);
         if (isset($match[1]) && $match[1] != '') {
             $xmp_arr[$key] = $match[1];
@@ -270,13 +367,12 @@ function unc_xmp_get_array($xmp_raw) {
  * assemble an array of the ; key=>descriptions
  * of exif codes that are used in the config
  *
- * @global array $exif_codes_full
+ * @global array $var
  * @return type
  */
-function unc_exif_options() {
-    global $exif_codes_full;
+function unc_image_options_array($var) {
     $out = array();
-    foreach ($exif_codes_full as $key => $D) {
+    foreach ($var as $key => $D) {
         $out[$key] = $D['description'];
     }
     return $out;
@@ -416,43 +512,6 @@ class iptc {
     var $meta=Array();
     var $hasmeta=false;
     var $file=false;
-
-    var $ipct_data = array(
-    'IPTC_CREATED_DATE' => '055',
-    'IPTC_CREATED_TIME' => '060',
-    'IPTC_OBJECT_NAME' => '005',
-    'IPTC_EDIT_STATUS' => '007',
-    'IPTC_PRIORITY' => '010',
-    'IPTC_CATEGORY' => '015',
-    'IPTC_SUPPLEMENTAL_CATEGORY' => '020',
-    'IPTC_FIXTURE_IDENTIFIER' => '022',
-    'IPTC_KEYWORDS' => '025',
-    'IPTC_RELEASE_DATE' => '030',
-    'IPTC_RELEASE_TIME' => '035',
-    'IPTC_SPECIAL_INSTRUCTIONS' => '040',
-    'IPTC_REFERENCE_SERVICE' => '045',
-    'IPTC_REFERENCE_DATE' => '047',
-    'IPTC_REFERENCE_NUMBER' => '050',
-    'IPTC_CREATED_DATE' => '055',
-    'IPTC_CREATED_TIME' => '060',
-    'IPTC_ORIGINATING_PROGRAM' => '065',
-    'IPTC_PROGRAM_VERSION' => '070',
-    'IPTC_OBJECT_CYCLE' => '075',
-    'IPTC_BYLINE' => '080',
-    'IPTC_BYLINE_TITLE' => '085',
-    'IPTC_CITY' => '090',
-    'IPTC_PROVINCE_STATE' => '095',
-    'IPTC_COUNTRY_CODE' => '100',
-    'IPTC_COUNTRY' => '101',
-    'IPTC_ORIGINAL_TRANSMISSION_REFERENCE' => '103',
-    'IPTC_HEADLINE' => '105',
-    'IPTC_CREDIT' => '110',
-    'IPTC_SOURCE' => '115',
-    'IPTC_COPYRIGHT_STRING' => '116',
-    'IPTC_CAPTION' => '120',
-    'IPTC_LOCAL_CAPTION' => '121',
-);
-
     function iptc($filename) {
         $info = false;
         getimagesize($filename, $info);
@@ -464,15 +523,15 @@ class iptc {
     }
 
     function set($tag, $data) {
-        global $ipct_data;
-        $id = $ipct_data[$tag];
+        global $ipct_codes_full;
+        $id = $ipct_codes_full[$tag]['code'];
         $this->meta ["2#$id"]= Array( $data );
         $this->hasmeta=true;
     }
 
     function get($tag) {
-        global $ipct_data;
-        $id = $ipct_data[$tag];
+        global $ipct_codes_full;
+        $id = $ipct_codes_full[$tag]['code'];
         if (isset($this->meta["2#$id"])) {
             return $this->meta["2#$id"][0];
         } else {
@@ -481,9 +540,10 @@ class iptc {
     }
 
     function dump() {
-        global $ipct_data;
+        global $ipct_codes_full;
         $out = array();
-        foreach ($this->ipct_data as $code => $id) {
+        foreach ($ipct_codes_full as $code => $D) {
+            $id = $D['code'];
             if (isset($this->meta["2#$id"])) {
                 $out[$code] = $this->meta["2#$id"][0];
             }
