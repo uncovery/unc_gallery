@@ -276,17 +276,26 @@ function unc_tools_images_list($D = false) {
  */
 function unc_tools_file_desc($F) {
     global $UNC_GALLERY;
-    $exif_codes = $UNC_GALLERY['show_exif_data'];
     $out = '';
-    foreach ($exif_codes as $key => $desc) {
-        if (isset($F['exif'][$key])) {
-            $out .= "<b>$desc:</b>&nbsp;{$F['exif'][$key]}; ";
+    $code_sets = array('exif', 'xmp', 'ipct');
+    // we iterate the 3 information sets
+    foreach ($code_sets as $set_name) {
+        // we get the configured settings to know which parts we take
+        $set = $UNC_GALLERY['show_' . $set_name . '_data'];
+        // lets go through the configs of the current section
+        foreach ($set as $key => $desc) {
+            // only look if it's actually set. This should not be needed
+            if (isset($F[$set_name][$key])) {
+                // arrays should be exploded
+                if (is_array($F[$set_name][$key])) {
+                    $text = implode(",&nbsp;", $F[$set_name][$key]);
+                } else {
+                    $text = $F[$set_name][$key];
+                }
+                // write the code. This could be improved for CSS
+                $out .= "<b>$desc:</b>&nbsp;$text; ";
+            }
         }
-    }
-
-    // XMP keywords
-    if ($UNC_GALLERY['show_keywords'] == 'yes' && isset($F['xmp']['Keywords']) && count($F['xmp']['Keywords']) > 0) {
-        $out .= '<b>Tags:</b> ' . implode(", ", $F['xmp']['Keywords']);
     }
 
     return $out;
