@@ -575,13 +575,13 @@ function unc_tools_image_delete() {
 
 
     $paths = array(
-        $UNC_GALLERY['thumbnails'],
-        $UNC_GALLERY['upload_path'],
-        $UNC_GALLERY['file_data'],
+        $UNC_GALLERY['thumbnails'] => $file_name,
+        $UNC_GALLERY['photos'] => $file_name,
+        $UNC_GALLERY['file_data'] => $file_name . ".php",
     );
 
-    foreach ($paths as $path) {
-        $full_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $path . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $file_name;
+    foreach ($paths as $path => $del_file_name) {
+        $full_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $path . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $del_file_name;
         if (file_exists($full_path)) {
             $check = unlink($full_path);
             if ($check) {
@@ -593,9 +593,8 @@ function unc_tools_image_delete() {
                 wp_die();
             }
         } else {
-            ob_clean();
-            echo "File name $path could not be found!";
-            wp_die();
+            // we cannot stop at an error so there are no leftover files
+            echo "File name $full_path could not be found!";
         }
     }
 
