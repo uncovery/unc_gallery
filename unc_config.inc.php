@@ -11,8 +11,8 @@ if (!defined('WPINC')) {
 
 global $UNC_GALLERY;
 
-$UNC_GALLERY['upload'] = "unc_gallery";
-$UNC_GALLERY['upload_path'] = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $UNC_GALLERY['upload'];
+$UNC_GALLERY['upload_folder'] = "unc_gallery";
+$UNC_GALLERY['upload_path'] = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . $UNC_GALLERY['upload_folder'];
 $UNC_GALLERY['photos'] = "photos";                  // subfolder of upload_path where the photos go in
 $UNC_GALLERY['thumbnails'] = "thumbs";              // subfolder of upload_path where the thumbs go in
 $UNC_GALLERY['file_data'] = "file_data";            // subfolder of upload_path where the file data goes in
@@ -106,6 +106,12 @@ $UNC_GALLERY['user_settings'] = array(
         'default' => array('byline'),
         'type' => 'multiple',
         'options' => unc_image_options_array('ipct'), // this function just returns an array
+    ),
+    'post_keywords' => array(
+        'help' => 'Do you want to automatically assign keywords to posts?',
+        'default' => 'none',
+        'type' => 'dropdown',
+        'options' => array('none' => 'No', 'xmp' => 'XMP Keywords', 'ipct' => 'IPCT Keywords'),
     ),
     'settings_location' => array(
         'help' => 'Do you want the admin screen of this plugin to be shown as a menu entry in the sidebar or a sub-menu of the settings menu?',

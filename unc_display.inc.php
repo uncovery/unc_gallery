@@ -6,6 +6,7 @@ if (!defined('WPINC')) {
 
 /**
  * displays folder images while getting values from AJAX
+ * this happens from a datepicker
  *
  * @return type
  */
@@ -416,6 +417,9 @@ function unc_display_folder_images() {
     if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
         $photoswipe = unc_display_photoswipe_js($files);
     }
+    if ($UNC_GALLERY['post_keywords'] != 'none') {
+        unc_display_tags_compare($files);
+    }
 
     $out = $header . $featured . $images . $photoswipe;
 
@@ -428,8 +432,48 @@ function unc_display_folder_images() {
     }
 }
 
+function unc_display_tags_compare($F) {
+    global $UNC_GALLERY;
+
+    // get all image tags
+    $selected_tags = $UNC_GALLERY['post_keywords'];
+
+    $all_tags = array();
+    foreach ($F as $FD) {
+        if (!isset($FD[$selected_tags]['keywords'])) {
+            return false;
+        }
+        $image_tags = $FD[$selected_tags]['keywords'];
+        if (!is_array($image_tags)) {
+            return false;
+        }
+        foreach ($image_tags as $tag) {
+            $all_tags[] = $tag;
+        }
+    }
+    if (count($all_tags) == 0) {
+        return false;
+    }
+    $all_tags_unique = array_unique($all_tags);
+
+    // get all post tags
+    $post_tags = array();
+    $posttags_obj = get_the_tags();
+    if ($posttags_obj) {
+        foreach($posttags_obj as $tag) {
+            $post_tags[] = $tag->name;
+        }
+    }
+    $post_tags_unique = array_unique($post_tags);
+
+    //compare
+    $test = unc_array_analyse($all_tags_unique, $post_tags_unique);
+    // XMPP_ERROR_send_msg($test);
+}
+
 function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     global $UNC_GALLERY;
+    $out = '';
     if (!$file_data) {
         $F = unc_image_info_read($file_path);
     } else {
@@ -453,7 +497,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     }
 
     $dec = strip_tags($F['description']);
-    $out = "        <a href=\"{$F['file_url']}\" $gal_text title=\"$dec\">\n"
+    $out .= "        <a href=\"{$F['file_url']}\" $gal_text title=\"$dec\">\n"
         . "            <img alt=\"$dec\" src=\"$shown_image\">\n"
         . "        </a>\n";
     if (is_admin()) {

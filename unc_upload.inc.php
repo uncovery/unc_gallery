@@ -113,6 +113,7 @@ function unc_gallery_admin_upload() {
 function unc_uploads_iterate_files() {
     global $UNC_GALLERY;
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    XMPP_ERROR_trigger("upload");
     // get the amount of files
     // do we have an upload or an import?
     $F = false;
@@ -133,7 +134,7 @@ function unc_uploads_iterate_files() {
             echo "<p style=\"color: #F00;\">\nPlease note files larger than {$postMax} will result in this error!<br>Please be advised this is not a limitation in the CMS, This is a limitation of the hosting server.<br>For various reasons they limit the max size of uploaded files, if you have access to the php ini file you can fix this by changing the post_max_size setting.<br> If you can't then please ask your host to increase the size limits, or use the FTP uploaded form</p>"; // echo out error and solutions...
             wp_die(); //bounce back to the just filled out form.
     } else {
-        $UNC_GALLERY['upload'] = $_FILES["userImage"];
+        $UNC_GALLERY['upload_files'] = $_FILES["userImage"];
         $F = $_FILES["userImage"];
         $count = count($F["name"]);
         $ini_max = ini_get('max_file_uploads');
@@ -218,7 +219,7 @@ function unc_uploads_process_file($i, $overwrite) {
         $F = $UNC_GALLERY['import'];
     } else {
         $type = 'upload';
-        $F = $UNC_GALLERY['upload'];
+        $F = $UNC_GALLERY['upload_files'];
     }
 
     // is there an error with the file?
@@ -348,9 +349,9 @@ function unc_uploads_process_file($i, $overwrite) {
         $action = 'written';
     }
 
-    $check_xmp = unc_xmp_write_raw($new_path);
+    $check_xmp = unc_image_info_write($new_path);
     if (!$check_xmp) {
-        return array('date' => false, 'action' => "Could not write XMP data to file");
+        return array('date' => false, 'action' => "Could not write XMP/IPCT/EXIF data to file");
     }
 
     return array('date'=> $date_str, 'action' => $target_filename . ": " . $action);

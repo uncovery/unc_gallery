@@ -135,15 +135,13 @@ $UNC_GALLERY['codes']['xmp'] = array(
 );
 
 $UNC_GALLERY['codes']['ipct'] = array(
-    'creation_date' => array('code' => '055', 'description' => 'Creation Date'),
-    'creation_time' => array('code' => '060', 'description' => 'Creation Time'),
     'object_name' => array('code' => '005', 'description' => 'Object Name'),
     'edit_status' => array('code' => '007', 'description' => 'Edit Ststus'),
     'priority' => array('code' => '010', 'description' => 'Priority'),
     'category' => array('code' => '015', 'description' => 'Category'),
     'supplemental_category' => array('code' => '020', 'description' => 'Supplemental Category'),
     'fixture_identifier' => array('code' => '022', 'description' => 'Fixture Identifier'),
-    'keywords' => array('code' => '025', 'description' => 'Object Name'),
+    'keywords' => array('code' => '025', 'description' => 'Keywords'),
     'release_date' => array('code' => '030', 'description' => 'Release Date'),
     'release_time' => array('code' => '035', 'description' => 'Release Time'),
     'special_instructions' => array('code' => '040', 'description' => 'Special Instructions'),
@@ -237,8 +235,8 @@ function unc_image_info_write($file_path) {
 
     unc_date_folder_create($date_str);
 
-    $photo_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
-    $thumb_url = content_url($UNC_GALLERY['upload'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
+    $photo_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
+    $thumb_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
 
     $data_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['file_data'] . DIRECTORY_SEPARATOR . $date_path . DIRECTORY_SEPARATOR . $file_name . ".php";
 
@@ -335,9 +333,9 @@ function unc_xmp_get($filepath) {
  * @return type
  */
 function unc_xmp_get_array($xmp_raw) {
-    global $xmp_codes_full;
+    global $UNC_GALLERY;
     $xmp_arr = array();
-    foreach ($xmp_codes_full as $key => $D ) {
+    foreach ($UNC_GALLERY['codes']['xmp'] as $key => $D ) {
         $match = false;
         // get a single text string
         $regex = $D['regex'];
@@ -464,9 +462,10 @@ function unc_ipct_date($file_path) {
     $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
     $ipct_obj = new IPTC($file_path);
 
-    $ipct_date = $ipct_obj->get('IPTC_CREATED_DATE'); //  '20160220',
-    $ipct_time = $ipct_obj->get('IPTC_CREATED_TIME'); //  '235834',
+    $ipct_date = $ipct_obj->get('created_date'); //  '20160220',
+    $ipct_time = $ipct_obj->get('created_time'); //  '235834',
     if (strlen($ipct_date . $ipct_time) != 14) {
+        $UNC_GALLERY['debug'][][__FUNCTION__] = "ipct length wrong: $ipct_date / $ipct_time";
         return false;
     }
     $search_pattern = '/(\d\d\d\d)(\d\d)(\d\d) (\d\d)(\d\d)(\d\d)/';
@@ -495,8 +494,8 @@ function unc_ipct_date_write($file_path, $date_str) {
     $UNC_GALLERY['debug'][]["wirting IPCT"] = "$ipct_date / $ipct_time";
     // write IPICT Date / time
     $taget_ipct_obj = new iptc($file_path);
-    $taget_ipct_obj->set('IPTC_CREATED_DATE', $ipct_date);
-    $taget_ipct_obj->set('IPTC_CREATED_TIME', $ipct_time);
+    $taget_ipct_obj->set('created_date', $ipct_date);
+    $taget_ipct_obj->set('created_time', $ipct_time);
     $taget_ipct_obj->write();
 }
 
@@ -521,7 +520,6 @@ class iptc {
 
     function set($tag, $data) {
         global $UNC_GALLERY;
-
         $id = $UNC_GALLERY['codes']['ipct'][$tag]['code'];
         $this->meta ["2#$id"]= Array( $data );
         $this->hasmeta=true;

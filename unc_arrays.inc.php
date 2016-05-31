@@ -1,6 +1,28 @@
 <?php
 
 /**
+ * analyses arrays for differences
+ * 
+ * @param type $array1
+ * @param type $array2
+ * @return type
+ */
+function unc_array_analyse($array1, $array2) {
+    $only_1 = array_diff($array1, $array2);
+    $only_2 = array_diff($array2, $array1);
+    $section = array_intersect($array1, $array2);
+    $union = array_merge($only_1, $only_2, $section); 
+    
+    $out = array(
+        'only_in_1' => $only_1,
+        'only_in_2' => $only_2,
+        'common' => $section,
+        'complete_set' => $union,
+    );
+    return $out;
+}
+
+/**
  * Convert an array to a printable text and save to file
  *
  * @param type $data
