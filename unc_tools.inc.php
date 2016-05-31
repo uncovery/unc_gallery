@@ -285,7 +285,7 @@ function unc_tools_file_desc($F) {
     }
 
     // XMP keywords
-    if ($UNC_GALLERY['show_keywords'] == 'yes' && count($F['xmp']['Keywords']) > 0) {
+    if ($UNC_GALLERY['show_keywords'] == 'yes' && isset($F['xmp']['Keywords']) && count($F['xmp']['Keywords']) > 0) {
         $out .= '<b>Tags:</b> ' . implode(", ", $F['xmp']['Keywords']);
     }
 
