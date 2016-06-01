@@ -189,14 +189,6 @@ for touch devices such as mobile phones and tablets.
 
 You can see known bugs and upcoming features on the project's [issue page on Github](https://github.com/uncovery/unc_gallery/issues)
 
-## Security issues
-
-While we try to make this plugin as safe as possible, I welcome of course any suggestions on how to improve it.
-It is highly recommended to update your ImageMagick, PHP and Wordpress installation including all plugins.
-I would like to address specific security issues here and their status:
-
-* [CVE-2016–3714](https://www.cve.mitre.org/cgi-bin/cvename.cgi?name=2016-3714) While this vulnerability in ImageMagick from March 2016 should be patched by updating it to the latest version, this plug-in should be immune since we check all files for the starting bits before touching it.
-
 ## Credits
 
 This plugin uses the following libraries:
