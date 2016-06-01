@@ -471,7 +471,10 @@ function unc_display_tags_compare($F) {
     $missing_tags = $comp_result['only_in_1'];
 
     // add tags to post
-    wp_set_post_tags(get_the_ID(), $missing_tags, false);
+    $post_id = get_the_ID();
+    if ($post_id) {
+        wp_set_post_tags($post_id, $missing_tags, false);
+    }
 }
 
 function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
