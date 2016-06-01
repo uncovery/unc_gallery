@@ -108,7 +108,7 @@ $UNC_GALLERY['user_settings'] = array(
         'options' => unc_image_options_array('ipct'), // this function just returns an array
     ),
     'post_keywords' => array(
-        'help' => 'Do you want to automatically assign keywords to posts?',
+        'help' => 'Do you want to automatically add missing keywords from photos to posts?',
         'default' => 'none',
         'type' => 'dropdown',
         'options' => array('none' => 'No', 'xmp' => 'XMP Keywords', 'ipct' => 'IPCT Keywords'),

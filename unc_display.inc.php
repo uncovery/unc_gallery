@@ -438,7 +438,7 @@ function unc_display_tags_compare($F) {
     // get all image tags
     $selected_tags = $UNC_GALLERY['post_keywords'];
 
-    $all_tags = array();
+    $photo_tags = array();
     foreach ($F as $FD) {
         if (!isset($FD[$selected_tags]['keywords'])) {
             return false;
@@ -448,13 +448,13 @@ function unc_display_tags_compare($F) {
             return false;
         }
         foreach ($image_tags as $tag) {
-            $all_tags[] = $tag;
+            $photo_tags[] = $tag;
         }
     }
-    if (count($all_tags) == 0) {
+    if (count($photo_tags) == 0) {
         return false;
     }
-    $all_tags_unique = array_unique($all_tags);
+    $photo_tags_unique = array_unique($photo_tags);
 
     // get all post tags
     $post_tags = array();
@@ -467,8 +467,11 @@ function unc_display_tags_compare($F) {
     $post_tags_unique = array_unique($post_tags);
 
     //compare
-    $test = unc_array_analyse($all_tags_unique, $post_tags_unique);
-    // XMPP_ERROR_send_msg($test);
+    $comp_result = unc_array_analyse($photo_tags_unique, $post_tags_unique);
+    $missing_tags = $comp_result['only_in_1'];
+
+    // add tags to post
+    wp_set_post_tags(get_the_ID(), $missing_tags, false);
 }
 
 function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
