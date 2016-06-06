@@ -420,8 +420,7 @@ function unc_display_folder_images() {
     if ($UNC_GALLERY['post_keywords'] != 'none') {
         unc_display_tags_compare($files);
     }
-    XMPP_ERROR_trigger("test");
-
+    
     $out = $header . $featured . $images . $photoswipe;
 
     if ($D['echo']) {
@@ -435,8 +434,6 @@ function unc_display_folder_images() {
 
 function unc_display_tags_compare($F) {
     global $UNC_GALLERY;
-    XMPP_ERROR_trace("comparing keywords");
-    
     // get all image tags
     $selected_tags = $UNC_GALLERY['post_keywords'];
     
