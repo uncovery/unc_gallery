@@ -241,7 +241,6 @@ function unc_tools_images_list($D = false) {
         $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
         $folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
         foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
-            XMPP_ERROR_trace("Feed check", $file_path);
             $F = unc_image_info_read($file_path, $D);
             if (($D['range']['end_time'] && $D['range']['start_time']) && // only if both are set
                     ($D['range']['end_time'] < $D['range']['start_time'])) { // AND the end is before the start

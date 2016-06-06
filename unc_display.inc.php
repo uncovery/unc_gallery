@@ -420,6 +420,7 @@ function unc_display_folder_images() {
     if ($UNC_GALLERY['post_keywords'] != 'none') {
         unc_display_tags_compare($files);
     }
+    XMPP_ERROR_trigger("test");
 
     $out = $header . $featured . $images . $photoswipe;
 
@@ -434,24 +435,28 @@ function unc_display_folder_images() {
 
 function unc_display_tags_compare($F) {
     global $UNC_GALLERY;
-
+    XMPP_ERROR_trace("comparing keywords");
+    
     // get all image tags
     $selected_tags = $UNC_GALLERY['post_keywords'];
-
+    
     $photo_tags = array();
     foreach ($F as $FD) {
         if (!isset($FD[$selected_tags]['keywords'])) {
-            return false;
+            XMPP_ERROR_trace("unc_display_tags_compare", "No $selected_tags Keywords set");
+            continue;
         }
         $image_tags = $FD[$selected_tags]['keywords'];
         if (!is_array($image_tags)) {
-            return false;
+            XMPP_ERROR_trace("unc_display_tags_compare", "Keyword set is not an array (i.e. no keywords)");
+            continue;
         }
         foreach ($image_tags as $tag) {
             $photo_tags[] = $tag;
         }
     }
     if (count($photo_tags) == 0) {
+        XMPP_ERROR_trace("unc_display_tags_compare", "collected zero keywords from array");
         return false;
     }
     $photo_tags_unique = array_unique($photo_tags);
@@ -473,7 +478,7 @@ function unc_display_tags_compare($F) {
     // add tags to post
     $post_id = get_the_ID();
     if ($post_id) {
-        wp_set_post_tags($post_id, $missing_tags, false);
+        wp_set_post_tags($post_id, $missing_tags, true); // true means tags will be added, not replaced
     }
 }
 
