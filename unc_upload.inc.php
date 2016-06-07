@@ -403,7 +403,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
         $new_height = intval($original_height * ($size / $original_width));
     }
 
-    XMPP_ERROR_trace("New image dims", "$original_width x $original_height ==> $new_width x $new_height");
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("New image dims", "$original_width x $original_height ==> $new_width x $new_height");}
     // get image extension from MIME type
     $image_ext = $img_types[$arr_image_details[2]];
 
@@ -415,7 +415,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
 
     // get original file date
     $file_date = unc_image_date($image_file_path);
-    XMPP_ERROR_trace("Read image date result", $file_date);
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("Read image date result", $file_date);}
 
     $new_image = imagecreatetruecolor($new_width, $new_height); // create a blank canvas
     $old_image = $imgcreatefrom($image_file_path); // take the old image to memort
@@ -435,7 +435,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     if ($file_date) {
         unc_ipct_date_write($target_file_path, $file_date);
         $new_file_date = unc_image_date($target_file_path);
-        XMPP_ERROR_trace("check IPCT result", $new_file_date);
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("check IPCT result", $new_file_date);}
     }
 
     imagedestroy($new_image); // free up the memory

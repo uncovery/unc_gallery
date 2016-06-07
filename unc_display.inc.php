@@ -446,12 +446,12 @@ function unc_display_tags_compare($F) {
     $photo_tags = array();
     foreach ($F as $FD) {
         if (!isset($FD[$selected_tags]['keywords'])) {
-            XMPP_ERROR_trace("unc_display_tags_compare", "No $selected_tags Keywords set");
+            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("unc_display_tags_compare", "No $selected_tags Keywords set");}
             continue;
         }
         $image_tags = $FD[$selected_tags]['keywords'];
         if (!is_array($image_tags)) {
-            XMPP_ERROR_trace("unc_display_tags_compare", "Keyword set is not an array (i.e. no keywords)");
+            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("unc_display_tags_compare", "Keyword set is not an array (i.e. no keywords)");}
             continue;
         }
         foreach ($image_tags as $tag) {
@@ -459,7 +459,7 @@ function unc_display_tags_compare($F) {
         }
     }
     if (count($photo_tags) == 0) {
-        XMPP_ERROR_trace("unc_display_tags_compare", "collected zero keywords from array");
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("unc_display_tags_compare", "collected zero keywords from array");}
         return false;
     }
     $photo_tags_unique = array_unique($photo_tags);
