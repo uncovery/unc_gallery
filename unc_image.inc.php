@@ -275,12 +275,12 @@ function unc_image_date($file_path) {
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $exif = unc_exif_date($file_path);
     if (!$exif) {
-        $UNC_GALLERY['debug'][]["image date check"] = "exif failed, getting ipct";
+        XMPP_ERROR_trace(__FUNCTION__, "exif failed, getting ipct");
         $ipct = unc_ipct_date($file_path);
         if ($ipct) {
             return $ipct;
         } else {
-            $UNC_GALLERY['debug'][]["image date check"] = "ipct failed, bail!";
+            XMPP_ERROR_trace(__FUNCTION__, "ipct failed, bail!");
             return false;
         }
     } else {
@@ -488,7 +488,7 @@ function unc_ipct_date($file_path) {
     $ipct_date = $ipct_obj->get('created_date'); //  '20160220',
     $ipct_time = $ipct_obj->get('created_time'); //  '235834',
     if (strlen($ipct_date . $ipct_time) != 14) {
-        $UNC_GALLERY['debug'][][__FUNCTION__] = "ipct length wrong: $ipct_date / $ipct_time";
+        XMPP_ERROR_trace(__FUNCTION__, "ipct length wrong: $ipct_date / $ipct_time");
         return false;
     }
     $search_pattern = '/(\d\d\d\d)(\d\d)(\d\d) (\d\d)(\d\d)(\d\d)/';
@@ -514,7 +514,7 @@ function unc_ipct_date_write($file_path, $date_str) {
     $time_pattern = '$4$5$6';
     $ipct_time = preg_replace($search_pattern, $time_pattern, $date_str);
 
-    $UNC_GALLERY['debug'][]["wirting IPCT"] = "$ipct_date / $ipct_time";
+    XMPP_ERROR_trace(__FUNCTION__, "$ipct_date / $ipct_time");
     // write IPICT Date / time
     $taget_ipct_obj = new iptc($file_path);
     $taget_ipct_obj->set('created_date', $ipct_date);
@@ -600,7 +600,7 @@ class iptc {
         global $UNC_GALLERY;
         if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
         if(!function_exists('iptcembed')) {
-            $UNC_GALLERY['debug'][]['iptcembed'] = "Does not exist!!";
+            XMPP_ERROR_trace(__FUNCTION__, "iptcembed Does not exist!!");
             return false;
         }
         $mode = 0;

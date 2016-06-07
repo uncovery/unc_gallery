@@ -128,7 +128,7 @@ function unc_tools_folder_delete_empty($path) {
            $empty = false;
         }
     }
-    $UNC_GALLERY['debug'][]['$empty'] = $empty;
+    XMPP_ERROR_trace('empty folder', $empty);
     if ($empty) {
         rmdir($path);
     }
