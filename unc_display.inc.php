@@ -329,7 +329,7 @@ function unc_gallery_display_page() {
         } else {
             $file = $D['file'];
         }
-        $file_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $file;
+        $file_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_path . DIRECTORY_SEPARATOR . $file;
         $out = unc_display_image_html($file_path, $thumb, false);
     } else {
 
@@ -506,6 +506,10 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     $gal_text = '';
     if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
         $slug = $UNC_GALLERY['display']['slug'];
+        if (!isset($F['index'])) {
+            $F['index'] = 0;
+            $F['index']++;
+        }
         $gal_text = "onClick=\"unc_g_photoswipe_$slug({$F['index']}); return false;\"";
     } else if ($UNC_GALLERY['image_view_method'] == 'lightbox') {
         $gal_text = "data-lightbox=\"gallery_{$F['file_name']}\"";

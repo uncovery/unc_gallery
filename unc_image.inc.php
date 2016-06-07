@@ -189,19 +189,21 @@ function unc_image_info_read($file_path, $D = false) {
 
     // in case the data is missing, write a new file
     if (!file_exists($data_path)){
+        XMPP_ERROR_trigger($data_path . " Not found!");
         unc_image_info_write($file_path);
     }
-
-    $UNC_FILE_DATA[$file_name] = false;
+    $file_code = md5($date_path . DIRECTORY_SEPARATOR . $file_name . ".php");
+    // reset the data so we re-read it from file
+    $UNC_FILE_DATA[$file_code] = false;
     require($data_path);
-    if ($UNC_FILE_DATA[$file_name] == false) {
+    if ($UNC_FILE_DATA[$file_code] == false) {
         if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("File data failed", $file_name);}
     }
 
     if (!$D) {
         $D = $UNC_GALLERY['display'];
     }
-    $file_date = $UNC_FILE_DATA[$file_name]['file_date'];
+    $file_date = $UNC_FILE_DATA[$file_code]['file_date'];
     if (isset($D['details'][$file_name])) {
         $description = $D['details'][$file_name] . " ($file_name / $file_date)";
     } else if (isset($D['description']) && $D['description']) {
@@ -209,9 +211,9 @@ function unc_image_info_read($file_path, $D = false) {
     } else {
         $description = "<b>File Name:</b> $file_name; <b>Date:</b> $file_date;";
     }
-    $UNC_FILE_DATA[$file_name]['description'] = $description;
+    $UNC_FILE_DATA[$file_code]['description'] = $description;
 
-    return $UNC_FILE_DATA[$file_name];
+    return $UNC_FILE_DATA[$file_code];
 }
 
 /**
@@ -270,7 +272,11 @@ function unc_image_info_write($file_path) {
     );
 
     // write the file
-    unc_array2file($data, 'UNC_FILE_DATA', $data_path, $file_name);
+    $file_code = md5($date_path . DIRECTORY_SEPARATOR . $file_name . ".php");
+    unc_array2file($data, 'UNC_FILE_DATA', $data_path, $file_code);
+
+    global $UNC_FILE_DATA;
+    $UNC_FILE_DATA[$file_code] = $data;
 
     return true;
 }
@@ -288,15 +294,18 @@ function unc_image_date($file_path) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $exif = unc_exif_date($file_path);
-    if (!$exif) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "exif failed, getting ipct");}
+    if (is_null($exif)) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "exif empty, getting ipct");}
         $ipct = unc_ipct_date($file_path);
         if ($ipct) {
             return $ipct;
         } else {
-            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "ipct failed, bail!");}
+            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "ipct & EXIF failed, bail!");}
             return false;
         }
+    } else if (!$exif) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "EXIF Data invalid!");}
+        return false;
     } else {
         return $exif;
     }
@@ -409,6 +418,7 @@ function unc_exif_get($image_path) {
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // we need to apply a custom error handler to catch 'illegal IFD size' errors
     set_error_handler('unc_exif_catch_errors', E_WARNING);
+    // we are setting this ariable to have a bridge into the error handling function
     $UNC_GALLERY['exif_get_file'] = $image_path;
     $exif = exif_read_data($image_path);
     restore_error_handler();
@@ -458,9 +468,13 @@ function unc_exif_date($file_path) {
     $exif_data = exif_read_data($file_path);
     restore_error_handler();
 
-    // if EXIF Invalid, try IPICT
-    if (!$exif_data || !isset($exif_data['DateTimeOriginal'])) {
+    // did the EXIF data return an error?
+    if (isset($UNC_GALLERY['errors'][$file_path])) {
         return false;
+    }
+
+    if (!$exif_data || !isset($exif_data['DateTimeOriginal'])) {
+        return NULL;
     }
     $file_date = unc_exif_convert_date($exif_data['DateTimeOriginal']);
     return $file_date;
@@ -496,7 +510,6 @@ function unc_exif_catch_errors($errno, $errstr, $errfile, $errline) {
     global $UNC_GALLERY;
     $filename = $UNC_GALLERY['exif_get_file'];
     $UNC_GALLERY['errors'][$filename][] = $errstr;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger('EXIF WARNING!');}
 }
 
 

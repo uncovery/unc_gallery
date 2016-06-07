@@ -188,6 +188,7 @@ function unc_uploads_iterate_files() {
     }
     echo "<br>All images processed!";
     // ob_clean();
+    XMPP_ERROR_trigger("upload");
     wp_die();
 }
 

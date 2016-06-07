@@ -421,21 +421,31 @@ function unc_tools_date_random() {
  * @return type
  */
 function unc_tools_file_latest($date_path) {
-    global $UNC_GALLERY;
+    global $UNC_GALLERY, $UNC_FILE_DATA;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    $base_folder = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_path;
+    $base_folder = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['file_data'] . DIRECTORY_SEPARATOR . $date_path;
     $paths = array();
-    foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file) {
+
+    $folder_files = array();
+
+    foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
         // found a sub-folder, go deeper
-        if (!is_dir($file)) {
-            $file_date = unc_image_date($file);
-            $paths[$file_date] = $file;
+        if (!is_dir($file_path)) {
+            require_once($file_path);
+            XMPP_ERROR_trace($file_path);
+            $file_name = basename($file_path, ".php");
+            $file_code = md5($date_path . DIRECTORY_SEPARATOR . $file_name . ".php");
+            $file_timestamp = $UNC_FILE_DATA[$file_code]['time_stamp'];
+            XMPP_ERROR_trace($file_timestamp);
+            $folder_files[$file_timestamp] = $UNC_FILE_DATA[$file_code];
         }
     }
+    krsort($folder_files);
+    XMPP_ERROR_trace("check", $folder_files);
+    $latest_path = array_shift($folder_files);
+    $latest_file = $latest_path['file_name'];
+    XMPP_ERROR_trace("Latest: " . $latest_file);
 
-    krsort($paths);
-    $latest_path = array_shift($paths);
-    $latest_file = basename($latest_path);
     return $latest_file;
 }
 
