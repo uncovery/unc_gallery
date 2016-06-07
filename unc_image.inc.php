@@ -266,6 +266,7 @@ function unc_image_info_write($file_path) {
         'exif' => $exif,
         'xmp' => $xmp,
         'ipct' => $ipct,
+        'errors' => $UNC_GALLERY['errors'][$file_path],
     );
 
     // write the file
@@ -277,6 +278,7 @@ function unc_image_info_write($file_path) {
 
 /**
  * Get the date of an image, first EXIF, then IPCT
+ * This function is only used when uploading images.
  *
  * @global type $UNC_GALLERY
  * @param type $file_path
@@ -451,6 +453,7 @@ function unc_exif_date($file_path) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
+    $UNC_GALLERY['exif_get_file'] = $file_path;
     set_error_handler('unc_exif_catch_errors', E_WARNING);
     $exif_data = exif_read_data($file_path);
     restore_error_handler();
@@ -470,6 +473,8 @@ function unc_exif_date($file_path) {
  * @return type
  */
 function unc_exif_convert_date($date) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $search_pattern = '/(\d\d\d\d):(\d\d):(\d\d \d\d:\d\d:\d\d)/';
     $replace_pattern = '$1-$2-$3';
     $fixed_date = preg_replace($search_pattern, $replace_pattern, $date);
@@ -489,8 +494,9 @@ function unc_exif_convert_date($date) {
  */
 function unc_exif_catch_errors($errno, $errstr, $errfile, $errline) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['errors'][$errstr] = $UNC_GALLERY['exif_get_file'];
-    XMPP_ERROR_trigger('EXIF WARNING!');
+    $filename = $UNC_GALLERY['exif_get_file'];
+    $UNC_GALLERY['errors'][$filename][] = $errstr;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger('EXIF WARNING!');}
 }
 
 
