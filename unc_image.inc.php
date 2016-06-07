@@ -53,6 +53,13 @@ $UNC_GALLERY['codes']['exif'] = array(
         'unit' => false,
         'description' => 'Lens',
     ),
+    'created' => array(
+        'hex' => '0x9003',
+        'key' => 'DateTimeOriginal',
+        'conversion' => 'unc_exif_convert_date',
+        'unit' => false,
+        'description' => 'Created',
+    ),
 );
 
 $UNC_GALLERY['codes']['xmp'] = array(
@@ -218,17 +225,22 @@ function unc_image_info_write($file_path) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
-    $file_date = unc_image_date($file_path); // get image date from EXIF/IPCT
+    $exif = unc_exif_get($file_path);
+    $xmp = unc_xmp_get($file_path);
+    $ipct = unc_ipct_get($file_path);
+
+    if (!isset($exif['created'])) {
+        $file_date = unc_ipct_convert_date($ipct['created_date'], $ipct['created_time']);
+    } else {
+        $file_date = $exif['created'];
+    }
+
     $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
     $time_stamp = $dtime->getTimestamp(); // time stamp is easier to compare
     $folder_info = pathinfo($file_path);
     $date_str = unc_tools_folder_date($folder_info['dirname']);
     $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
     $file_name = $folder_info['basename'];
-
-    $exif = unc_exif_get($file_path);
-    $xmp = unc_xmp_get($file_path);
-    $ipct = unc_ipct_get($file_path);
 
     $orientation = 'landscape';
     if ($exif['file_width'] < $exif['file_height']) {
@@ -395,6 +407,7 @@ function unc_exif_get($image_path) {
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // we need to apply a custom error handler to catch 'illegal IFD size' errors
     set_error_handler('unc_exif_catch_errors', E_WARNING);
+    $UNC_GALLERY['exif_get_file'] = $image_path;
     $exif = exif_read_data($image_path);
     restore_error_handler();
 
@@ -426,14 +439,6 @@ function unc_exif_get($image_path) {
     return $data;
 }
 
-
-function unc_exif_catch_errors($errno, $errstr, $errfile, $errline) {
-    global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-
-    XMPP_ERROR_trigger('EXIF WARNING!');
-}
-
 /**
  * Get the EXIF date of a file based on date & filename only
  *
@@ -446,7 +451,10 @@ function unc_exif_date($file_path) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
+    set_error_handler('unc_exif_catch_errors', E_WARNING);
     $exif_data = exif_read_data($file_path);
+    restore_error_handler();
+
     // if EXIF Invalid, try IPICT
     if (!$exif_data || !isset($exif_data['DateTimeOriginal'])) {
         return false;
@@ -457,6 +465,37 @@ function unc_exif_date($file_path) {
     $fixed_date = preg_replace($search_pattern, $replace_pattern, $file_date);
     return $fixed_date;
 }
+
+/**
+ * Take an EXIF date format and convert it to a date / time string
+ *
+ * @param type $date
+ * @return type
+ */
+function unc_exif_convert_date($date) {
+    $search_pattern = '/(\d\d\d\d):(\d\d):(\d\d \d\d:\d\d:\d\d)/';
+    $replace_pattern = '$1-$2-$3';
+    $fixed_date = preg_replace($search_pattern, $replace_pattern, $date);
+    return $fixed_date;
+}
+
+
+/**
+ * catch warnings during EXIF file data retreival so we know which
+ * files have issues and can report back to the user.
+ *
+ * @global array $UNC_GALLERY
+ * @param type $errno
+ * @param type $errstr
+ * @param type $errfile
+ * @param type $errline
+ */
+function unc_exif_catch_errors($errno, $errstr, $errfile, $errline) {
+    global $UNC_GALLERY;
+    $UNC_GALLERY['errors'][$errstr] = $UNC_GALLERY['exif_get_file'];
+    XMPP_ERROR_trigger('EXIF WARNING!');
+}
+
 
 /**
  * Get all IPCT tags
@@ -498,6 +537,21 @@ function unc_ipct_date($file_path) {
 }
 
 /**
+ * Take an EXIF date format and convert it to a date / time string
+ *
+ * @param type $date
+ * @return type
+ */
+function unc_ipct_convert_date($date, $time) {
+    $fulldate = $date . " " . $time;
+    $search_pattern = '/(\d\d\d\d)(\d\d)(\d\d) (\d\d)(\d\d)(\d\d)/';
+    $replace_pattern = '$1-$2-$3 $4:$5:$6';
+    $fixed_date = preg_replace($search_pattern, $replace_pattern, $fulldate);
+    return $fixed_date;
+}
+
+
+/**
  * Write the IPCT date to an image
  *
  * @global type $UNC_GALLERY
@@ -514,7 +568,7 @@ function unc_ipct_date_write($file_path, $date_str) {
     $time_pattern = '$4$5$6';
     $ipct_time = preg_replace($search_pattern, $time_pattern, $date_str);
 
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "$ipct_date / $ipct_time");}
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('will write IPCT date in format', "$ipct_date / $ipct_time");}
     // write IPICT Date / time
     $taget_ipct_obj = new iptc($file_path);
     $taget_ipct_obj->set('created_date', $ipct_date);

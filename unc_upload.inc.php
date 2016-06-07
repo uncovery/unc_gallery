@@ -215,12 +215,22 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // the FILE array from the server
 
+
     if (isset($UNC_GALLERY['import'])) {
         $type = 'import';
         $F = $UNC_GALLERY['import'];
     } else {
         $type = 'upload';
         $F = $UNC_GALLERY['upload_files'];
+    }
+
+    // get the current path of the temp name
+    if ($type == 'upload' && is_uploaded_file($F['tmp_name'][$i])) {
+        $sourcePath = $F['tmp_name'][$i];
+    } else if ($type == 'import' && is_file($F['tmp_name'][$i])) {
+        $sourcePath = $F['tmp_name'][$i];
+    } else {
+        return array('date'=> false, 'action' => "Cannot find uploaded file {$F['tmp_name'][$i]}!");
     }
 
     // is there an error with the file?
@@ -230,9 +240,17 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // if there is an imagesize, we have a valid image
     $image_check = getimagesize($F['tmp_name'][$i]);
+
     if (!$image_check) {
         return array('date'=> false, 'action' => "Not image file, upload cancelled of file " . $F['name'][$i]);
     }
+
+    // let's set variables for the currently uploaded file so we do not have to get the same data twice.
+    $UNC_GALLERY['upload_file_info'] = array(
+        'image_size' => $image_check,
+        'temp_name' => $F['tmp_name'][$i],
+        'type' => $type,
+    );
 
     $original_width = $image_check[0];
     $original_height = $image_check[1];
@@ -253,6 +271,7 @@ function unc_uploads_process_file($i, $overwrite) {
     if (!$exif_imagetype) {
         return array('date'=> false, 'action' => "Could not determine image type of file " . $F['name'][$i] . ", upload cancelled!");
     }
+    $UNC_GALLERY['upload_file_info']['exif_imagetype'] = $exif_imagetype;
 
     // get mime-type and check if it's in the list of valid ones
     $mime_type = image_type_to_mime_type($exif_imagetype);
@@ -261,26 +280,19 @@ function unc_uploads_process_file($i, $overwrite) {
     } else { // get extension for optional resize
         $extension = $UNC_GALLERY['valid_filetypes'][$mime_type];
     }
+    $UNC_GALLERY['upload_file_info']['extension'] = $extension;
 
     // we set the new filename of the image including extension so there is no guessing
-    $extension = $UNC_GALLERY['valid_filetypes'][$mime_type];
     $file_no_ext = pathinfo($F['name'][$i], PATHINFO_FILENAME);
     $target_filename = $file_no_ext . "." . $extension;
-
-    // get the current path of the temp name
-    if ($type == 'upload' && is_uploaded_file($F['tmp_name'][$i])) {
-        $sourcePath = $F['tmp_name'][$i];
-    } else if ($type == 'import' && is_file($F['tmp_name'][$i])) {
-        $sourcePath = $F['tmp_name'][$i];
-    } else {
-        return array('date'=> false, 'action' => "Cannot find uploaded file {$F['tmp_name'][$i]}!");
-    }
+    $UNC_GALLERY['upload_file_info']['target_filename'] = $target_filename;
 
     // we need the exif date to know when the image was taken
     $date_str = unc_image_date($sourcePath);
     if (!$date_str) {
         return array('date'=> false, 'action' => "Cannot read EXIF or IPCT of file $sourcePath");
     }
+    $UNC_GALLERY['upload_file_info']['date_str'] = $date_str;
 
     $date_check = date_create($date_str);
     if (!$date_check) {
@@ -375,13 +387,8 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $img_types = array(1 => 'GIF', 2 => 'JPEG', 3 => 'PNG');
 
-    // let's get the image size
-    // this exit check is a bit redundant since we did that before with the uploaded file
-    $arr_image_details = getimagesize($image_file_path); // pass id to thumb name
-    if (!$arr_image_details) {
-        echo unc_display_errormsg("Failed to get image size of $image_file_path");
-        return false;
-    }
+    // let's get the image size from the last check
+    $arr_image_details = $UNC_GALLERY['upload_file_info']['image_size'];
     $original_width = $arr_image_details[0];
     $original_height = $arr_image_details[1];
 
@@ -414,7 +421,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     $imgcreatefrom = "ImageCreateFrom" . $image_ext;
 
     // get original file date
-    $file_date = unc_image_date($image_file_path);
+    $file_date = $UNC_GALLERY['upload_file_info']['date_str'];
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("Read image date result", $file_date);}
 
     $new_image = imagecreatetruecolor($new_width, $new_height); // create a blank canvas
@@ -431,12 +438,10 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
         wp_die();
     }
 
-    // write ipct date
-    if ($file_date) {
-        unc_ipct_date_write($target_file_path, $file_date);
-        $new_file_date = unc_image_date($target_file_path);
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("check IPCT result", $new_file_date);}
-    }
+    // write ipct date to new thumbnail file
+    unc_ipct_date_write($target_file_path, $file_date);
+    $new_file_date = unc_image_date($target_file_path);
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("check IPCT result", $new_file_date);}
 
     imagedestroy($new_image); // free up the memory
     return true;
