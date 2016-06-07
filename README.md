@@ -185,6 +185,12 @@ for touch devices such as mobile phones and tablets.
 |---------------------------------|----------------------------------|
 |![Lightbox](/images/screenshot-13.png)|![Photoswipe](/images/screenshot-12.png)|
 
+## Limitations
+
+* The system cannot handle 2 files of the same filename taken on the same date
+* The system can only handle files in JPG/JPEG format.
+* The system cannot handle 2 files that are taken exactly at the same time (date/minute/second).
+
 ## Known Bugs, upcoming features
 
 You can see known bugs and upcoming features on the project's [issue page on Github](https://github.com/uncovery/unc_gallery/issues)
