@@ -171,6 +171,7 @@ $UNC_GALLERY['codes']['ipct'] = array(
 
 function unc_image_info_read($file_path, $D = false) {
     global $UNC_GALLERY, $UNC_FILE_DATA;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $folder_info = pathinfo($file_path);
     $date_str = unc_tools_folder_date($folder_info['dirname']);
@@ -215,6 +216,7 @@ function unc_image_info_read($file_path, $D = false) {
  */
 function unc_image_info_write($file_path) {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $file_date = unc_image_date($file_path); // get image date from EXIF/IPCT
     $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
@@ -270,7 +272,7 @@ function unc_image_info_write($file_path) {
  */
 function unc_image_date($file_path) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $exif = unc_exif_date($file_path);
     if (!$exif) {
         $UNC_GALLERY['debug'][]["image date check"] = "exif failed, getting ipct";
@@ -296,6 +298,8 @@ function unc_image_date($file_path) {
  * @return boolean
  */
 function unc_xmp_get($filepath) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $max_size = 1240000; // maximum size read (1MB)
     $chunk_size = 65536; // read 64k at a time
     $start_tag = '<x:xmpmeta';
@@ -334,6 +338,7 @@ function unc_xmp_get($filepath) {
  */
 function unc_xmp_get_array($xmp_raw) {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $xmp_arr = array();
     foreach ($UNC_GALLERY['codes']['xmp'] as $key => $D ) {
         $match = false;
@@ -370,6 +375,7 @@ function unc_xmp_get_array($xmp_raw) {
  */
 function unc_image_options_array($var) {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $out = array();
     $set = $UNC_GALLERY['codes'][$var];
     foreach ($set as $key => $D) {
@@ -386,7 +392,11 @@ function unc_image_options_array($var) {
  */
 function unc_exif_get($image_path) {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    // we need to apply a custom error handler to catch 'illegal IFD size' errors
+    set_error_handler('unc_exif_catch_errors', E_WARNING);
     $exif = exif_read_data($image_path);
+    restore_error_handler();
 
     $data = array(
         'file_width' => $exif['COMPUTED']['Width'],
@@ -416,6 +426,14 @@ function unc_exif_get($image_path) {
     return $data;
 }
 
+
+function unc_exif_catch_errors($errno, $errstr, $errfile, $errline) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
+    XMPP_ERROR_trigger('EXIF WARNING!');
+}
+
 /**
  * Get the EXIF date of a file based on date & filename only
  *
@@ -426,7 +444,8 @@ function unc_exif_get($image_path) {
  */
 function unc_exif_date($file_path) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
     $exif_data = exif_read_data($file_path);
     // if EXIF Invalid, try IPICT
     if (!$exif_data || !isset($exif_data['DateTimeOriginal'])) {
@@ -446,6 +465,9 @@ function unc_exif_date($file_path) {
  * @return type
  */
 function unc_ipct_get($file_path) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
     $ipct_obj = new IPTC($file_path);
     return $ipct_obj->dump();
 }
@@ -459,7 +481,8 @@ function unc_ipct_get($file_path) {
  */
 function unc_ipct_date($file_path) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
     $ipct_obj = new IPTC($file_path);
 
     $ipct_date = $ipct_obj->get('created_date'); //  '20160220',
@@ -483,7 +506,7 @@ function unc_ipct_date($file_path) {
  */
 function unc_ipct_date_write($file_path, $date_str) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // convert date_str to IPCT
     $search_pattern = '/(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)/';
     $date_pattern = '$1$2$3';
@@ -575,7 +598,7 @@ class iptc {
     }
     function write() {
         global $UNC_GALLERY;
-        $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
         if(!function_exists('iptcembed')) {
             $UNC_GALLERY['debug'][]['iptcembed'] = "Does not exist!!";
             return false;

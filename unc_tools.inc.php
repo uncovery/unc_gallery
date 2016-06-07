@@ -14,7 +14,7 @@ if (!defined('WPINC')) {
  */
 function unc_date_folder_create($date_str) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     if (!is_admin()) {
         return false;
     }
@@ -64,6 +64,7 @@ function unc_date_folder_delete($date_str) {
         return false;
     }
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $date_obj = new DateTime($date_str);
     if (!$date_obj) {
@@ -112,7 +113,7 @@ function unc_date_folder_delete($date_str) {
  */
 function unc_tools_folder_delete_empty($path) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     if (!is_admin()) {
         return false;
@@ -142,7 +143,7 @@ function unc_tools_folder_delete_empty($path) {
  */
 function unc_tools_import_enumerate($path) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     if (!is_admin()) {
         return false;
@@ -166,6 +167,8 @@ function unc_tools_import_enumerate($path) {
  * @return type
  */
 function unc_display_fix_timezones($dates) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $new_dates = array();
     foreach ($dates as $date => $details) {
         $date_obj = new DateTime($date);
@@ -187,7 +190,7 @@ function unc_display_fix_timezones($dates) {
  */
 function unc_tools_date_span($date1, $date2) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // we try to sort the dates
     if ($date1 < $date2) {
         $early = $date1;
@@ -225,6 +228,7 @@ function unc_tools_date_span($date1, $date2) {
  */
 function unc_tools_images_list($D = false) {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     if (!$D) {
         $D = $UNC_GALLERY['display'];
@@ -275,6 +279,7 @@ function unc_tools_images_list($D = false) {
  */
 function unc_tools_file_desc($F) {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $out = '';
     $code_sets = array('exif', 'xmp', 'ipct');
     // we iterate the 3 information sets
@@ -314,7 +319,7 @@ function unc_tools_file_desc($F) {
  */
 function unc_gallery_recurse_files($base_folder, $file_function, $dir_function) {
     global $TMP_FOLDERS, $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // safety net
     if (strpos($base_folder, '.' . DIRECTORY_SEPARATOR)) {
         die("Error, recursive path! $base_folder");
@@ -340,7 +345,7 @@ function unc_gallery_recurse_files($base_folder, $file_function, $dir_function) 
  */
 function unc_tools_recurse_folders($base_folder) {
     global $TMP_FOLDERS, $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     if (strpos($base_folder, '.' . DIRECTORY_SEPARATOR)) {
         die("Error, recursive path! $base_folder");
     }
@@ -369,7 +374,7 @@ function unc_tools_recurse_folders($base_folder) {
  */
 function unc_tools_date_latest() {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
     $folders = unc_tools_recurse_folders($photo_folder);
@@ -394,6 +399,7 @@ function unc_tools_date_latest() {
  */
 function unc_tools_date_random() {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
     $folders = unc_tools_recurse_folders($photo_folder);
     if (count($folders) == 0) {
@@ -416,6 +422,7 @@ function unc_tools_date_random() {
  */
 function unc_tools_file_latest($date_path) {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $base_folder = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_path;
     $paths = array();
     foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file) {
@@ -441,6 +448,7 @@ function unc_tools_file_latest($date_path) {
  */
 function unc_tools_file_random($date_path) {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $base_folder = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_path;
     $files = array();
     foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file) {
@@ -464,6 +472,8 @@ function unc_tools_file_random($date_path) {
  * @return type
  */
 function unc_tools_folder_date($folder) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $path_arr = explode(DIRECTORY_SEPARATOR, $folder);
     // get last 3 elements
     $new_date_arr = array_slice($path_arr, -3, 3);
@@ -478,6 +488,8 @@ function unc_tools_folder_date($folder) {
  * @return int
  */
 function unc_tools_bytes_get($ini_val) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $val = trim($ini_val);
     $last = strtolower($val[strlen($val)-1]);
     switch($last) {
@@ -502,6 +514,7 @@ function unc_tools_bytes_get($ini_val) {
  */
 function unc_tools_image_path($date_path, $file_name) {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] ;
     $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
     $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
@@ -519,6 +532,7 @@ function unc_tools_image_path($date_path, $file_name) {
  */
 function unc_tools_folder_list($base_folder) {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
     $base_length = strlen($photo_folder) + 1;
 
@@ -543,8 +557,7 @@ function unc_tools_folder_list($base_folder) {
     }
     krsort($dates);
     // the above dates are local timezone, we need the same date in UTC
-    $all_dates = unc_display_fix_timezones($dates);
-    return $all_dates;
+    return $dates;
 }
 
 /**
@@ -554,7 +567,7 @@ function unc_tools_folder_list($base_folder) {
  */
 function unc_tools_image_delete() {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     if (!is_admin()) {
         ob_clean();
@@ -612,7 +625,7 @@ function unc_tools_image_delete() {
  */
 function unc_tools_filename_validate($file_name) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     if (strpbrk($file_name, "\\/?%*:|\"<>") === FALSE) {
         return $file_name;
     } else {
@@ -627,6 +640,8 @@ function unc_tools_filename_validate($file_name) {
  * @return boolean
  */
 function unc_tools_validate_date($date_str) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $pattern = "/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/";
     if (preg_match($pattern, $date_str)) {
         return $date_str;
@@ -644,7 +659,7 @@ function unc_tools_validate_date($date_str) {
  */
 function unc_tools_date_path($date) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $date_obj = new DateTime($date . " 00:00:00");
     if ($date_obj) {
         $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));

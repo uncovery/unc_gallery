@@ -2,17 +2,19 @@
 
 /**
  * analyses arrays for differences
- * 
+ *
  * @param type $array1
  * @param type $array2
  * @return type
  */
 function unc_array_analyse($array1, $array2) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $only_1 = array_diff($array1, $array2);
     $only_2 = array_diff($array2, $array1);
     $section = array_intersect($array1, $array2);
-    $union = array_merge($only_1, $only_2, $section); 
-    
+    $union = array_merge($only_1, $only_2, $section);
+
     $out = array(
         'only_in_1' => $only_1,
         'only_in_2' => $only_2,
@@ -31,6 +33,8 @@ function unc_array_analyse($array1, $array2) {
  * @return string
  */
 function unc_array2file($data, $array_name, $file, $global = false) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     if ($global) {
         $out = '<?php' . "\n";
         $out .= "global $$array_name;\n";
@@ -39,11 +43,13 @@ function unc_array2file($data, $array_name, $file, $global = false) {
         $out = '<?php' . "\n";
         $out .= '$' . $array_name . " = array(\n";
     }
-    $out .= unc_array2file_line($data, 0) . ");";   
+    $out .= unc_array2file_line($data, 0) . ");";
     return file_put_contents($file, $out);
 }
 
 function unc_array2file_line($array, $layer, $val_change_func = false) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $in_text = unc_array2file_indent($layer);
     $out = "";
     foreach ($array as $key => $value) {
@@ -68,6 +74,8 @@ function unc_array2file_line($array, $layer, $val_change_func = false) {
 }
 
 function unc_array2file_indent($layer) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $text = '    ';
     $out = '';
     for ($i=0; $i<=$layer; $i++) {

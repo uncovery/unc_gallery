@@ -15,7 +15,8 @@ if (!defined('WPINC')) {
     die;
 }
 
-global $UNC_FILE_DATA;
+global $UNC_FILE_DATA, $UNC_GALLERY;
+$UNC_GALLERY['debug'] = false;
 
 require_once( plugin_dir_path( __FILE__ ) . "unc_backend.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_upload.inc.php");
@@ -28,6 +29,7 @@ require_once( plugin_dir_path( __FILE__ ) . "unc_config.inc.php");
 
 global $XMPP_ERROR;
 if (file_exists('/home/includes/xmpp_error/xmpp_error.php')) {
+    $UNC_GALLERY['debug'] = true;
     require_once('/home/includes/xmpp_error/xmpp_error.php');
     $XMPP_ERROR['config']['project_name'] = 'unc_gallery';
     $XMPP_ERROR['config']['enabled'] = true;
@@ -67,7 +69,7 @@ add_filter('the_excerpt_rss', 'do_shortcode');
 // this iterates the user settings that are supposed to be in the wordpress config
 // and gets them from there, setting the default if not available
 // inserts them into the global
-global $UNC_GALLERY;
+
 foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
     $UNC_GALLERY[$setting] = get_option($UNC_GALLERY['settings_prefix'] . $setting, $D['default']);
 }
@@ -80,6 +82,7 @@ foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
  */
 function unc_gallery_plugin_activate() {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     if (!file_exists($UNC_GALLERY['upload_path'])) {
         $result = mkdir($UNC_GALLERY['upload_path'], 0755);
         // check success
@@ -96,6 +99,7 @@ function unc_gallery_plugin_activate() {
  */
 function unc_gallery_plugin_deactivate() {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // deactivate all settings
     $prefix = $UNC_GALLERY['settings_prefix'];
     foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
@@ -105,6 +109,7 @@ function unc_gallery_plugin_deactivate() {
 
 function unc_gallery_plugin_uninstall() {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // delete all images optional
 
     if ($UNC_GALLERY['uninstall_deletes_images'] == 'yes') {
@@ -125,6 +130,8 @@ function unc_gallery_plugin_uninstall() {
  */
 function unc_gallery_add_css_and_js() {
     global $UNC_GALLERY;
+        global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // jquery etc
     wp_enqueue_script('jquery-ui');
     wp_enqueue_script('jquery-form');

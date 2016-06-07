@@ -11,6 +11,8 @@ if (!defined('WPINC')) {
  * @return type
  */
 function unc_display_ajax_folder() {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // we get the date from the GET value
     $date_str = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
     unc_gallery_display_var_init(array('date' => $date_str, 'echo' => true));
@@ -23,6 +25,8 @@ function unc_display_ajax_folder() {
  * @return type
  */
 function unc_gallery_images_refresh() {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     unc_gallery_display_var_init(array('echo' => true));
     return unc_display_folder_images();
 }
@@ -36,7 +40,7 @@ function unc_gallery_images_refresh() {
  */
 function unc_gallery_apply($atts = array()) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $check = unc_gallery_display_var_init($atts);
     if ($check) {
@@ -52,7 +56,7 @@ function unc_gallery_apply($atts = array()) {
  */
 function unc_gallery_display_var_init($atts = array()) {
     global $UNC_GALLERY, $post;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $a = shortcode_atts( array(
         'type' => 'day',    // display type
@@ -258,7 +262,7 @@ function unc_gallery_display_var_init($atts = array()) {
 
 function unc_gallery_display_page() {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $D = $UNC_GALLERY['display'];
     $date = $D['dates'][0];
@@ -274,10 +278,6 @@ function unc_gallery_display_page() {
     if ($D['date_description']) {
         $datepicker_div = "<span id=\"photodate\">Showing $date</span>";
     }
-    $avail_dates = unc_tools_folder_list($photo_folder);
-    if (!$avail_dates) {
-        return "There are no images in the libray yet. Please upload some first.";
-    }
 
     // we need a unique ID for datepicker div targets
     /* global $post;
@@ -286,25 +286,30 @@ function unc_gallery_display_page() {
         $slug .= str_replace("-", "_", $post->post_name);
     }
      */
-
-    if ($D['date_selector'] == 'calendar') {
-        $out .= "\n     <script type=\"text/javascript\">
-        var availableDates = [\"" . implode("\",\"", array_keys($avail_dates)) . "\"];
-        var ajaxurl = \"" . admin_url('admin-ajax.php') . "\";
-        jQuery(document).ready(function($) {
-            datepicker_ready('{$date}');
-        });
-        </script>";
-        $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"$date\" size=\"10\">";
-    } else if ($D['date_selector'] == 'datelist') {
-        $datepicker_div = "<select id=\"datepicker\" onchange=\"datelist_change()\">\n";
-        foreach ($avail_dates as $folder_date => $folder_files) {
-            $counter = count($folder_files);
-            $datepicker_div .= "<option value=\"$folder_date\">$folder_date ($counter)</option>\n";
+    if ($D['date_selector'] == 'calendar' || $D['date_selector'] == 'datelist') {
+        $avail_dates = unc_tools_folder_list($photo_folder);
+        $fixed_dates = unc_display_fix_timezones($avail_dates);
+        if (!$fixed_dates) {
+            return "There are no images in the libray yet. Please upload some first.";
         }
-        $datepicker_div .="</select>\n";
+        if ($D['date_selector'] == 'calendar') {
+            $out .= "\n     <script type=\"text/javascript\">
+            var availableDates = [\"" . implode("\",\"", array_keys($fixed_dates)) . "\"];
+            var ajaxurl = \"" . admin_url('admin-ajax.php') . "\";
+            jQuery(document).ready(function($) {
+                datepicker_ready('{$date}');
+            });
+            </script>";
+            $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"$date\" size=\"10\">";
+        } else if ($D['date_selector'] == 'datelist') {
+            $datepicker_div = "<select id=\"datepicker\" onchange=\"datelist_change()\">\n";
+            foreach ($fixed_dates as $folder_date => $folder_files) {
+                $counter = count($folder_files);
+                $datepicker_div .= "<option value=\"$folder_date\">$folder_date ($counter)</option>\n";
+            }
+            $datepicker_div .="</select>\n";
+        }
     }
-
 
     $date_path = unc_tools_date_path($D['dates'][0]);
     // TODO: This should check all dates
@@ -356,7 +361,7 @@ function unc_gallery_display_page() {
  */
 function unc_display_folder_images() {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $D = $UNC_GALLERY['display'];
 
@@ -420,7 +425,7 @@ function unc_display_folder_images() {
     if ($UNC_GALLERY['post_keywords'] != 'none') {
         unc_display_tags_compare($files);
     }
-    
+
     $out = $header . $featured . $images . $photoswipe;
 
     if ($D['echo']) {
@@ -434,9 +439,10 @@ function unc_display_folder_images() {
 
 function unc_display_tags_compare($F) {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // get all image tags
     $selected_tags = $UNC_GALLERY['post_keywords'];
-    
+
     $photo_tags = array();
     foreach ($F as $FD) {
         if (!isset($FD[$selected_tags]['keywords'])) {
@@ -481,6 +487,7 @@ function unc_display_tags_compare($F) {
 
 function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $out = '';
     if (!$file_data) {
         $F = unc_image_info_read($file_path);
@@ -518,6 +525,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
 
 function unc_display_photoswipe_js($files) {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $slug = $UNC_GALLERY['display']['slug'];
     $out = '
@@ -548,10 +556,14 @@ function unc_display_photoswipe_js($files) {
 }
 
 function unc_display_errormsg($error) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     return "<div class=\"unc_gallery_error\">ERROR: $error</div>";
 }
 
 function unc_display_photoswipe() {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $out = '<!-- Root element of PhotoSwipe. Must have class pswp. -->
 <div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
 

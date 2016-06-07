@@ -4,6 +4,8 @@
  * @return string
  */
 function unc_gallery_admin_upload() {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ?>
     <h2>Upload Images</h2>
     <form id="uploadForm" method="POST" enctype="multipart/form-data">
@@ -112,7 +114,7 @@ function unc_gallery_admin_upload() {
  */
 function unc_uploads_iterate_files() {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     XMPP_ERROR_trigger("upload");
     // get the amount of files
     // do we have an upload or an import?
@@ -200,7 +202,7 @@ function unc_uploads_iterate_files() {
  */
 function unc_uploads_process_file($i, $overwrite) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $action = false;
     //$_FILES(1) {
     //    ["userImage"]=> array(5) {
@@ -371,7 +373,7 @@ function unc_uploads_process_file($i, $overwrite) {
  */
 function unc_import_image_resize($image_file_path, $target_file_path, $size, $edge, $extension, $quality) {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $img_types = array(1 => 'GIF', 2 => 'JPEG', 3 => 'PNG');
 
     // let's get the image size

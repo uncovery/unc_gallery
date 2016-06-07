@@ -7,6 +7,7 @@ if (!defined('WPINC')) {
 
 function unc_gallery_admin_menu() {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // the main page where we manage the options
 
     if (isset($UNC_GALLERY['settings_location']) && $UNC_GALLERY['settings_location'] == 'submenu') {
@@ -38,6 +39,7 @@ function unc_gallery_admin_menu() {
  */
 function unc_gallery_admin_init() {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     add_settings_section(
         'unc_gallery_pluginPage_section',
@@ -86,6 +88,8 @@ function unc_gallery_admin_init() {
  * @param type $A
  */
 function unc_gallery_setting_text_field_render($A) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $def_text = str_replace(" ", '&nbsp;', $A['default']);
     $out = "<input type='text' name='{$A['setting']}' value='{$A['value']}'></td><td>{$A['help']} <strong>Default:</strong>&nbsp;'$def_text'\n";
     echo $out;
@@ -96,6 +100,8 @@ function unc_gallery_setting_text_field_render($A) {
  * @param type $A
  */
 function unc_gallery_setting_drodown_render($A) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $out = "<select name=\"{$A['setting']}\">\n";
     foreach ($A['options'] as $option => $text) {
         $sel = '';
@@ -114,6 +120,8 @@ function unc_gallery_setting_drodown_render($A) {
  * @param type $A
  */
 function unc_gallery_setting_multiple_render($A) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $out = '';
     if (!is_array($A['value'])) {
         $A['value'] = $A['default'];
@@ -149,6 +157,8 @@ function unc_gallery_settings_section_callback() {
  * this will manage the settings
  */
 function unc_gallery_admin_settings() {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     remove_filter('the_content', 'wpautop');
     echo '<div class="wrap">
     <h2>Uncovery Gallery</h2>
@@ -206,7 +216,7 @@ function unc_gallery_admin_settings() {
  */
 function unc_gallery_admin_display_images() {
     global $UNC_GALLERY;
-    $UNC_GALLERY['debug'][][__FUNCTION__] = func_get_args();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $out = "<h2>Manage Images</h2>\n";
     // check first if there is a folder to delete:
@@ -227,6 +237,8 @@ function unc_gallery_admin_display_images() {
  * @return string
  */
 function unc_gallery_admin_maintenance() {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $out = '<h2>Maintenance</h2>
         <button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_thumbnails_rebuild\', \'rebuild_thumbs_result\', \'Are you sure?\nThis can take a while for the whole database!\')">
             Rebuild Thumbnails
@@ -248,6 +260,8 @@ function unc_gallery_admin_maintenance() {
  * We are using https://github.com/erusev/parsedown
  */
 function unc_gallery_admin_show_documentation() {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     require_once(__DIR__ .  DIRECTORY_SEPARATOR . 'libraries' . DIRECTORY_SEPARATOR . 'Parsedown.php');
 
     $markdown_docs = file_get_contents(__DIR__ .  DIRECTORY_SEPARATOR . 'README.md');
@@ -262,6 +276,7 @@ function unc_gallery_admin_show_documentation() {
  */
 function unc_gallery_admin_rebuild_thumbs() {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
     if (!is_admin()) {
         echo "You are not admin!";
@@ -301,6 +316,7 @@ function unc_gallery_admin_rebuild_thumbs() {
 
 function unc_gallery_admin_rebuild_data() {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
     if (!is_admin()) {
         echo "You are not admin!";
@@ -341,6 +357,7 @@ function unc_gallery_admin_rebuild_data() {
  */
 function unc_gallery_admin_delete_everything() {
     global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
     if (!is_admin()) {
         echo "You are not admin!";
