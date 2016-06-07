@@ -459,11 +459,8 @@ function unc_exif_date($file_path) {
     if (!$exif_data || !isset($exif_data['DateTimeOriginal'])) {
         return false;
     }
-    $file_date = $exif_data['DateTimeOriginal'];
-    $search_pattern = '/(\d\d\d\d):(\d\d):(\d\d \d\d:\d\d:\d\d)/';
-    $replace_pattern = '$1-$2-$3';
-    $fixed_date = preg_replace($search_pattern, $replace_pattern, $file_date);
-    return $fixed_date;
+    $file_date = unc_exif_convert_date($exif_data['DateTimeOriginal']);
+    return $file_date;
 }
 
 /**
