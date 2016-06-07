@@ -179,7 +179,7 @@ function unc_uploads_iterate_files() {
     // display results
     foreach ($out_arr as $date_str => $data) {
         foreach ($data as $action => $count) {
-            echo "$date_str: $count images $action<br>\n";
+            echo "$date_str: image $action<br>\n";
         }
 
     }
