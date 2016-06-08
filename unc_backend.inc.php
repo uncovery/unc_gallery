@@ -66,8 +66,8 @@ function unc_gallery_admin_init() {
         } else if ($D['type'] == 'multiple'){
             $callback = 'unc_gallery_setting_multiple_render';
             $args['options'] = $D['options'];
-        } else {
-            XMPP_ERROR_send_msg("Illegal option type ". $D['type']);
+        } else if ($UNC_GALLERY['debug']) {
+            XMPP_ERROR_trigger("Illegal option type ". $D['type']);
         }
         add_settings_field(
             $prefix . $setting,
