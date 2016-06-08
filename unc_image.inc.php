@@ -492,7 +492,7 @@ function unc_exif_convert_gps_link($gps_arr) {
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $coords = unc_exif_convert_gps($gps_arr);
     $fixed_coords = str_replace(" ", ",", $coords);
-    $link = "<a href=\"http://www.google.com/maps/place/$fixed_coords\" target=\"_blank\">Map Link</a>";
+    $link = "<a href='http://www.google.com/maps/place/$fixed_coords' target='_blank'>Map Link</a>";
     return $link;
 }
 

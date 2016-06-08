@@ -52,7 +52,12 @@ function unc_gallery_admin_init() {
         $prefix = $UNC_GALLERY['settings_prefix'];
         register_setting('unc_gallery_settings_page', $prefix . $setting);
         $setting_value = get_option($prefix . $setting, $D['default']);
-        $args = array('setting' => $prefix . $setting, 'value'=> $setting_value, 'help'=> $D['help'], 'default' => $D['default']);
+        $args = array(
+            'setting' => $prefix . $setting,
+            'value'=> $setting_value,
+            'help'=> $D['help'],
+            'default' => $D['default'],
+        );
         if ($D['type'] == 'text') {
             $callback = 'unc_gallery_setting_text_field_render';
         } else if ($D['type'] == 'dropdown') {
@@ -66,7 +71,7 @@ function unc_gallery_admin_init() {
         }
         add_settings_field(
             $prefix . $setting,
-            __(ucwords(str_replace("_", " ", $setting)), 'wordpress'),
+            __($D['title'], 'wordpress'),
             $callback,
             'unc_gallery_settings_page',
             'unc_gallery_pluginPage_section',
