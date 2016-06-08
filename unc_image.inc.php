@@ -118,15 +118,11 @@ $UNC_GALLERY['codes']['xmp'] = array(
         'description' => 'State',
         'regex' => '<rdf:Description[^>]+?photoshop:State="([^"]*)"',
     ),
-    'city' => array(
-        'description' => 'City',
-        'regex' => '<rdf:Description[^>]+?photoshop:City="([^"]*)"',
-    ),
     'country' => array(
         'description' => 'Country',
         'regex' => '<rdf:Description[^>]+?photoshop:Country="([^"]*)"',
     ),
-    'countryc_code' => array(
+    'country_code' => array(
         'description' => 'Country Code',
         'regex' => '<rdf:Description[^>]+?Iptc4xmpCore:CountryCode="([^"]*)"',
     ),
@@ -178,10 +174,9 @@ $UNC_GALLERY['codes']['ipct'] = array(
     'byline' => array('code' => '080', 'description' => 'Byline'),
     'byline_title' => array('code' => '085', 'description' => 'Byline Title'),
     'city' => array('code' => '090', 'description' => 'City'),
-    'province_state' => array('code' => '095', 'description' => 'Province / State'),
+    'province_state' => array('code' => '095', 'description' => 'State'),
     'country_code' => array('code' => '100', 'description' => 'Country Code'),
     'country' => array('code' => '101', 'description' => 'Country'),
-    'country_code' => array('code' => '100', 'description' => 'Country Code'),
     'original_transmission_reference' => array('code' => '103', 'description' => 'Original Transmission Reference'),
     'headline' => array('code' => '105', 'description' => 'Headline'),
     'credit' => array('code' => '110', 'description' => 'Credit'),
