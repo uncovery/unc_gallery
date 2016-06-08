@@ -268,8 +268,11 @@ function unc_image_info_write($file_path) {
         'exif' => $exif,
         'xmp' => $xmp,
         'ipct' => $ipct,
-        'errors' => $UNC_GALLERY['errors'][$file_path],
     );
+
+    if (isset($UNC_GALLERY['errors'])) {
+        $data['errors'] = $UNC_GALLERY['errors'][$file_path];
+    }
 
     // write the file
     $file_code = md5($date_path . DIRECTORY_SEPARATOR . $file_name . ".php");
@@ -322,6 +325,7 @@ function unc_image_date($file_path) {
  */
 function unc_xmp_get($filepath) {
     global $UNC_GALLERY;
+    XMPP_ERROR_trigger("test");
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $max_size = 1240000; // maximum size read (1MB)
     $chunk_size = 65536; // read 64k at a time
