@@ -204,7 +204,7 @@ function unc_image_info_read($file_path, $D = false) {
 
     // in case the data is missing, write a new file
     if (!file_exists($data_path)){
-        XMPP_ERROR_trigger($data_path . " Not found!");
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger($data_path . " Not found!");}
         unc_image_info_write($file_path);
     }
     $file_code = md5($date_path . DIRECTORY_SEPARATOR . $file_name . ".php");

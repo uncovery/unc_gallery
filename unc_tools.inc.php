@@ -430,20 +430,15 @@ function unc_tools_file_latest($date_path) {
         // found a sub-folder, go deeper
         if (!is_dir($file_path)) {
             require_once($file_path);
-            XMPP_ERROR_trace($file_path);
             $file_name = basename($file_path, ".php");
             $file_code = md5($date_path . DIRECTORY_SEPARATOR . $file_name . ".php");
             $file_timestamp = $UNC_FILE_DATA[$file_code]['time_stamp'];
-            XMPP_ERROR_trace($file_timestamp);
             $folder_files[$file_timestamp] = $UNC_FILE_DATA[$file_code];
         }
     }
     krsort($folder_files);
-    XMPP_ERROR_trace("check", $folder_files);
     $latest_path = array_shift($folder_files);
     $latest_file = $latest_path['file_name'];
-    XMPP_ERROR_trace("Latest: " . $latest_file);
-
     return $latest_file;
 }
 
@@ -620,8 +615,6 @@ function unc_tools_image_delete() {
 
     unc_tools_folder_delete_empty($UNC_GALLERY['upload_path']);
     unc_display_ajax_folder();
-    XMPP_ERROR_send_msg("delete5");
-
 }
 
 /**
