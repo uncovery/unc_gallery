@@ -60,8 +60,23 @@ $UNC_GALLERY['codes']['exif'] = array(
         'unit' => false,
         'description' => 'Created',
     ),
+    'gps' => array(
+        'hex' => false, // not sure how to use keys here, need to see some valid data using keys
+        'key' => array('GPSLatitudeRef', 'GPSLatitude', 'GPSLongitudeRef', 'GPSLongitude'),
+        'conversion' => 'unc_exif_convert_gps',
+        'unit' => false,
+        'description' => 'GPS',
+    ),
+    'gps_link' => array(
+        'hex' => false, // not sure how to use keys here, need to see some valid data using keys
+        'key' => array('GPSLatitudeRef', 'GPSLatitude', 'GPSLongitudeRef', 'GPSLongitude'),
+        'conversion' => 'unc_exif_convert_gps_link',
+        'unit' => false,
+        'description' => 'GPS Map Link',
+    )
 );
 
+// https://surniaulula.com/2013/04/09/read-adobe-xmp-xml-in-php/
 $UNC_GALLERY['codes']['xmp'] = array(
     'email' => array(
         'description' => 'Creator Email',
@@ -209,7 +224,7 @@ function unc_image_info_read($file_path, $D = false) {
     } else if (isset($D['description']) && $D['description']) {
         $description = $D['description'] . " ($file_name / $file_date)";
     } else {
-        $description = "<b>File Name:</b> $file_name; <b>Date:</b> $file_date;";
+        $description = "<b>File Name:</b> $file_name;";
     }
     $UNC_FILE_DATA[$file_code]['description'] = $description;
 
@@ -270,7 +285,7 @@ function unc_image_info_write($file_path) {
         'ipct' => $ipct,
     );
 
-    if (isset($UNC_GALLERY['errors'])) {
+    if (isset($UNC_GALLERY['errors'][$file_path])) {
         $data['errors'] = $UNC_GALLERY['errors'][$file_path];
     }
 
@@ -325,7 +340,6 @@ function unc_image_date($file_path) {
  */
 function unc_xmp_get($filepath) {
     global $UNC_GALLERY;
-    XMPP_ERROR_trigger("test");
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $max_size = 1240000; // maximum size read (1MB)
     $chunk_size = 65536; // read 64k at a time
@@ -422,10 +436,13 @@ function unc_exif_get($image_path) {
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // we need to apply a custom error handler to catch 'illegal IFD size' errors
     set_error_handler('unc_exif_catch_errors', E_WARNING);
+
     // we are setting this ariable to have a bridge into the error handling function
     $UNC_GALLERY['exif_get_file'] = $image_path;
     $exif = exif_read_data($image_path);
     restore_error_handler();
+
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('EXIF Data full', $exif);}
 
     $data = array(
         'file_width' => $exif['COMPUTED']['Width'],
@@ -434,9 +451,17 @@ function unc_exif_get($image_path) {
 
     foreach ($UNC_GALLERY['codes']['exif'] as $code => $C) {
         $hex_tag =  'UndefinedTag:' . $C['hex'];
-        if (isset($exif[$C['key']])) {
+        if (is_array($C['key'])) { // gps for example is made out of multiple keys
+            $val = array();
+            foreach ($C['key'] as $key_name) {
+                if (!isset($exif[$key_name])) { // we only get this if all sub-tags exist
+                    continue 2; // continue to the next file in the outer loop
+                }
+                $val[$key_name] = $exif[$key_name];
+            }
+        } else if (isset($exif[$C['key']])) {
             $val = $exif[$C['key']];
-        } else if (isset($exif[$hex_tag])) {
+        } else if (isset($exif[$hex_tag])) { // lens model for example is stored as an undefined key
             $val = $exif[$hex_tag];
         } else {
             continue;
@@ -453,6 +478,75 @@ function unc_exif_get($image_path) {
         $data[$code] = $val_conv;
     }
     return $data;
+}
+
+/**
+ * Creates an HTML link to google maps coordinates from
+ * EXIF GPS Data
+ *
+ * @param type $gps_arr
+ * @return type
+ */
+function unc_exif_convert_gps_link($gps_arr) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    $coords = unc_exif_convert_gps($gps_arr);
+    $fixed_coords = str_replace(" ", ",", $coords);
+    $link = "<a href=\"http://www.google.com/maps/place/$fixed_coords\" target=\"_blank\">Map Link</a>";
+    return $link;
+}
+
+/**
+ * Converts EXIF GPS Data to decimal coordinates
+ *
+ * @global array $UNC_GALLERY
+ * @param type $gps_arr
+ * @return type
+ */
+function unc_exif_convert_gps($gps_arr) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    $D = array (
+        'lat' => array('GPSLatitudeRef', 'GPSLatitude'),
+        'lon' => array('GPSLongitudeRef', 'GPSLongitude'),
+    );
+    $lat = false;
+    $lon = false;
+    foreach ($D as $type => $T) {
+        $coord = $gps_arr[$T[1]];
+        $hemi = $gps_arr[$T[0]];
+
+        $degrees = count($coord) > 0 ? unc_exif_convert_gps_2_Num($coord[0]) : 0;
+        $minutes = count($coord) > 1 ? unc_exif_convert_gps_2_Num($coord[1]) : 0;
+        $seconds = count($coord) > 2 ? unc_exif_convert_gps_2_Num($coord[2]) : 0;
+
+        $flip = ($hemi == 'W' or $hemi == 'S') ? -1 : 1;
+        $$type = $flip * ($degrees + $minutes / 60 + $seconds / 3600);
+    }
+    return "$lat $lon";
+}
+
+/**
+ * Helper function for unc_exif_convert_gps()
+ *
+ * @global array $UNC_GALLERY
+ * @param type $coordPart
+ * @return int
+ */
+function unc_exif_convert_gps_2_Num($coordPart) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    $parts = explode('/', $coordPart);
+
+    if (count($parts) <= 0) {
+        return 0;
+    }
+
+    if (count($parts) == 1) {
+        return $parts[0];
+    }
+
+    return floatval($parts[0]) / floatval($parts[1]);
 }
 
 /**
