@@ -424,8 +424,6 @@ function unc_tools_file_latest($date_path) {
     global $UNC_GALLERY, $UNC_FILE_DATA;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $base_folder = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['file_data'] . DIRECTORY_SEPARATOR . $date_path;
-    $paths = array();
-
     $folder_files = array();
 
     foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
