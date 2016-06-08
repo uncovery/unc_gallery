@@ -120,11 +120,23 @@ $UNC_GALLERY['user_settings'] = array(
         'title' => 'Description IPCT Data choices',
     ),
     'post_keywords' => array(
-        'help' => 'Do you want to automatically add missing keywords from photos to posts?',
+        'help' => 'Do you want to automatically add missing keywords from photos to posts? This will not remove any tags from posts, only create & add new ones.',
         'default' => 'none',
         'type' => 'dropdown',
-        'options' => array('none' => 'No', 'xmp' => 'XMP Keywords', 'ipct' => 'IPCT Keywords'),
+        'options' => array('none' => 'Do not auto-tag', 'xmp' => 'XMP Keywords', 'ipct' => 'IPCT Keywords'),
         'title' => 'Auto-Tag posts with Keywords',
+    ),
+    'post_categories' => array(
+        'help' => 'Do you want to automatically add XMP-data location-based hierarchical categories to posts? This will not remove manually added categories, only create and add new ones',
+        'default' => 'none',
+        'type' => 'dropdown',
+        'options' => array(
+            'none' => 'Do not auto-categorize',
+            'xmp_country_state_city_location' => 'XMP: Country - State - City - Location',
+            'xmp_city_location' => 'XMP: City - Location',
+            'ipct_country_state_city' => 'IPCT: Country - State - City',
+        ),
+        'title' => 'Auto-Categorize posts by Location',
     ),
     'settings_location' => array(
         'help' => 'Do you want the admin screen of this plugin to be shown as a menu entry in the sidebar or a sub-menu of the settings menu?',
