@@ -144,7 +144,7 @@ $UNC_GALLERY['user_settings'] = array(
         'help' => 'Do you want your images removed from the server when you uninstall the plugin?',
         'default' => 'yes',
         'type' => 'dropdown',
-        'options' => array('yes' => 'Yes, delete!', 'no' => 'No, keep the images!'),
+        'options' => array('yes' => 'Delete all images!', 'no' => 'Keep all images!'),
         'title' => 'Uninstall behavior',
     ),
 );
