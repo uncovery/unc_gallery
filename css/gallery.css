@@ -178,3 +178,12 @@
 .unc_fade_in {
   display: none;
 }
+
+.unc_gallery_error {
+    color: #CE272D;
+    background-color: #FFFFFF;
+    padding: 10px;
+    margin: 15px;
+    font-size: large;
+    border: 1px #000 solid;
+}
