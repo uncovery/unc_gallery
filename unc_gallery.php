@@ -61,6 +61,12 @@ add_action('wp_ajax_unc_gallery_delete_everything', 'unc_gallery_admin_delete_ev
 
 add_action( 'wp_enqueue_scripts', 'unc_gallery_add_css_and_js' );
 
+// get the AjaxURL in the frontend
+add_action('wp_head','pluginname_ajaxurl');
+function pluginname_ajaxurl() {
+    echo "<script type=\"text/javascript\">var ajaxurl='" .  admin_url('admin-ajax.php') . "'</script>";
+}
+
 // execute shortcodes in the excerpts
 add_filter('the_excerpt', 'do_shortcode');
 add_filter('the_excerpt_rss', 'do_shortcode');

@@ -84,8 +84,6 @@
 
 .unc_gallery .one_photo {
     float:left;
-    position: relative;
-    overflow: auto;
     margin-right: 6px;
     margin-bottom: 5px;
 }

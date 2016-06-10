@@ -15,7 +15,7 @@ if (!defined('WPINC')) {
 function unc_date_folder_create($date_str) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    if (!is_admin()) {
+    if (!current_user_can('manage_sites')) {
         return false;
     }
     global $UNC_GALLERY;
@@ -60,7 +60,7 @@ function unc_date_folder_create($date_str) {
  * @param type $date_str
  */
 function unc_date_folder_delete($date_str) {
-    if (!is_admin()) {
+    if (!current_user_can('manage_sites')) {
         return false;
     }
     global $UNC_GALLERY;
@@ -115,7 +115,7 @@ function unc_tools_folder_delete_empty($path) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
-    if (!is_admin()) {
+    if (!current_user_can('manage_sites')) {
         return false;
     }
     $empty = true;
@@ -145,7 +145,7 @@ function unc_tools_import_enumerate($path) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
-    if (!is_admin()) {
+    if (!current_user_can('manage_sites')) {
         return false;
     }
     foreach (glob($path . DIRECTORY_SEPARATOR . "*") as $file) {
@@ -572,7 +572,7 @@ function unc_tools_image_delete() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
-    if (!is_admin()) {
+    if (!current_user_can('manage_sites')) {
         ob_clean();
         echo "You are not admin!";
         wp_die();

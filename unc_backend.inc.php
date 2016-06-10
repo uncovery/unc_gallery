@@ -283,7 +283,7 @@ function unc_gallery_admin_rebuild_thumbs() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
-    if (!is_admin()) {
+    if (!current_user_can('manage_sites')) {
         echo "You are not admin!";
         wp_die();
     }
@@ -323,7 +323,7 @@ function unc_gallery_admin_rebuild_data() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
-    if (!is_admin()) {
+    if (!current_user_can('manage_sites')) {
         echo "You are not admin!";
         wp_die();
     }
@@ -364,7 +364,7 @@ function unc_gallery_admin_delete_everything() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
-    if (!is_admin()) {
+    if (!current_user_can('manage_sites')) {
         echo "You are not admin!";
     } else {
         // delete all images

@@ -260,6 +260,12 @@ function unc_gallery_display_var_init($atts = array()) {
     return true;
 }
 
+/**
+ * Display one post/page
+ *
+ * @global type $UNC_GALLERY
+ * @return string
+ */
 function unc_gallery_display_page() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
@@ -300,7 +306,7 @@ function unc_gallery_display_page() {
                 datepicker_ready('{$date}');
             });
             </script>";
-            $datepicker_div = "Date: <input type=\"text\" id=\"datepicker\" value=\"$date\" size=\"10\">";
+            $datepicker_div = "Pick a Date: <input type=\"text\" id=\"datepicker\" value=\"$date\" size=\"10\">";
         } else if ($D['date_selector'] == 'datelist') {
             $datepicker_div = "<select id=\"datepicker\" onchange=\"datelist_change()\">\n";
             foreach ($fixed_dates as $folder_date => $folder_files) {
@@ -368,7 +374,7 @@ function unc_display_folder_images() {
     $date_str = $D['dates'][0];
 
     $header = '';
-    if (is_admin()) {
+ /*   if (current_user_can('manage_sites')) {
         $header .= "
         <span class=\"delete_folder_link\">
             Sample shortcode for this day: <input id=\"short_code_sample\" onClick=\"SelectAll('short_code_sample');\" type=\"text\" value=\"[unc_gallery date=&quot;$date_str&quot;]\">
@@ -377,6 +383,8 @@ function unc_display_folder_images() {
             </a>
         </span>\n";
     }
+
+    */
 
     // get all the files in the folder with attributes
     $files = $D['files'];
@@ -425,6 +433,9 @@ function unc_display_folder_images() {
     if ($UNC_GALLERY['post_keywords'] != 'none') {
         unc_display_tags_compare($files);
     }
+    if ($UNC_GALLERY['post_categories'] != 'none') {
+        unc_display_categories_compare($files);
+    }
 
     $out = $header . $featured . $images . $photoswipe;
 
@@ -441,6 +452,12 @@ function unc_display_tags_compare($F) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // get all image tags
+
+    $post_id = get_the_ID();
+    if (!$post_id) {
+        return;
+    }
+
     $selected_tags = $UNC_GALLERY['post_keywords'];
 
     $photo_tags = array();
@@ -478,12 +495,61 @@ function unc_display_tags_compare($F) {
     $comp_result = unc_array_analyse($photo_tags_unique, $post_tags_unique);
     $missing_tags = $comp_result['only_in_1'];
 
-    // add tags to post
-    $post_id = get_the_ID();
-    if ($post_id) {
-        wp_set_post_tags($post_id, $missing_tags, true); // true means tags will be added, not replaced
-    }
+    wp_set_post_tags($post_id, $missing_tags, true); // true means tags will be added, not replaced
 }
+
+function unc_display_categories_compare($file_data) {
+    global $UNC_GALLERY;
+    return;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
+    $post_id = get_the_ID();
+    if (!$post_id) {
+        return;
+    }
+
+    // get the posts existing categories
+    $curr_cats = get_the_category($post_id);
+
+    // get all cats in nthe system
+    $wp_all_cats = get_categories();
+
+    // find out what the current setting is
+    $setting = $UNC_GALLERY['post_categories'];
+    // split into array:
+    $setting_array = explode("_", $setting);
+    $data_type = array_shift($setting_array);
+    // iterate all files and get all the different levels of categories
+    $cats = array();
+    foreach ($file_data as $F) {
+        foreach ($setting_array as $setting) {
+            $cats[$setting] = false; // with this we also catch empty levels
+            if (!isset($F[$data_type][$setting])) {
+                continue;
+            }
+            $value = $F[$data_type][$setting];
+            $cats[$setting][$value] = $value;
+        }
+    }
+    //$image_cats = array_unique($cats);
+    XMPP_ERROR_send_msg($cats);
+    foreach ($cats as $level => $cat) {
+        // compare if the current cat already exists
+
+
+        // add new cateogory to system
+        $new_cat_id = wp_create_category( $cat_name, $parent );
+    }
+
+    // we need to check if the categories we added have the right hierarchy, so let's get the whole list first
+
+
+    //$comp_result = unc_array_analyse($photo_tags_unique, $post_tags_unique);
+    //$missing_cats = $comp_result['only_in_1'];
+
+    // wp_set_post_categories($post_id, $post_categories, true); // true means cats will be added, not replaced
+}
+
 
 function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     global $UNC_GALLERY;
@@ -519,7 +585,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     $out .= "        <a href=\"{$F['file_url']}\" $gal_text title=\"$dec\">\n"
         . "            <img alt=\"$dec\" src=\"$shown_image\">\n"
         . "        </a>\n";
-    if (is_admin()) {
+    if (current_user_can('manage_sites')) {
         $out .= "         <button class=\"delete_image_link\" title=\"Delete Image\" onClick=\"delete_image('{$F['file_name']}','{$F['date_str']}')\">
             <img src=\"" . plugin_dir_url( __FILE__ ) . "/images/delete.png\" width=\"20px\" height=\"20px\">
             </button>";
