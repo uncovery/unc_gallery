@@ -174,8 +174,13 @@ function unc_gallery_admin_settings() {
         // Fade in sections that we wanted to pre-render
         jQuery(\'.unc_fade_in\').fadeIn(\'fast\');
         });
-    </script>
-    <div class="unc_jquery_tabs unc_fade_in">
+    </script>';
+
+    if (!function_exists('exif_read_data')) {
+        echo unc_display_errormsg("EXIF Library does not exist! This plugin will not work properly! See <a href=\"http://php.net/manual/en/book.exif.php\">http://php.net/manual/en/book.exif.php</a>");
+    }
+
+    echo '<div class="unc_jquery_tabs unc_fade_in">
     <ul>' . "\n";
 
     # Set up tab titles
@@ -284,7 +289,7 @@ function unc_gallery_admin_rebuild_thumbs() {
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
     if (!current_user_can('manage_sites')) {
-        echo "You are not admin!";
+        echo "Cannot rebuild Thumbs, you are not admin!";
         wp_die();
     }
     $dirPath = $UNC_GALLERY['upload_path'];
@@ -323,8 +328,8 @@ function unc_gallery_admin_rebuild_data() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
-    if (!current_user_can('manage_sites')) {
-        echo "You are not admin!";
+    if (!is_admin()) {
+        echo "Cannot rebuild data, you are not admin!";
         wp_die();
     }
     $dirPath = $UNC_GALLERY['upload_path'];
@@ -337,7 +342,6 @@ function unc_gallery_admin_rebuild_data() {
     // iterate all image folders
     $photo_folder = $dirPath . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
     $target_folders = unc_tools_recurse_folders($photo_folder);
-
     // create thumbnaisl
     foreach ($target_folders as $date => $folder) {
         // construct the thumb folder where we put the thumbnails
@@ -346,8 +350,15 @@ function unc_gallery_admin_rebuild_data() {
         // enumerate all the files in the source folder
         foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $image_file) {
             if (!is_dir($image_file)) {
-                echo ".";
-                unc_image_info_write($image_file);
+                echo $image_file;
+                $check = unc_image_info_write($image_file);
+                if ($check) {
+                    echo ".";
+                } else {
+                    echo "x";
+                }
+            } else {
+                echo "/$image_file/\n";
             }
         }
         echo "<br>";
@@ -364,8 +375,8 @@ function unc_gallery_admin_delete_everything() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
-    if (!current_user_can('manage_sites')) {
-        echo "You are not admin!";
+    if (!is_admin()) {
+        echo "Cannot delete all, you are not admin!";
     } else {
         // delete all images
         unc_gallery_recurse_files($UNC_GALLERY['upload_path'], 'unlink', 'rmdir');
