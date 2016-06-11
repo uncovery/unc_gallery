@@ -18,6 +18,8 @@ if (!defined('WPINC')) {
 global $UNC_FILE_DATA, $UNC_GALLERY;
 $UNC_GALLERY['debug'] = false;
 
+$UNC_GALLERY['data_version'] = 1; // increase this number when you change the format!
+
 require_once( plugin_dir_path( __FILE__ ) . "unc_backend.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_upload.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_display.inc.php");
