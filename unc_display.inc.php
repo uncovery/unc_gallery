@@ -58,7 +58,7 @@ function unc_gallery_display_var_init($atts = array()) {
     global $UNC_GALLERY, $post;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
-    $a = shortcode_atts( array(
+    $possible_attributes = array(
         'type' => 'day',    // display type
         'date' => false, // which date?
         'file' => false,    // specifix file?
@@ -72,10 +72,19 @@ function unc_gallery_display_var_init($atts = array()) {
         'offset' => false, // offset for date string to cover photos after midnight
         'limit_rows' => false,
         'debug' => false,
-    ), $atts);
+    );
 
+    // check if all the attributes exist
+    foreach ($atts as $key => $value) {
+        if (!isset($possible_attributes[$key])) {
+            echo unc_display_errormsg("You have an invalid setting '$key' in your gallery shortcode!");
+            return false;
+        }
+    }
+
+    // parse the attributes
+    $a = shortcode_atts($possible_attributes, $atts);
     $type = $a['type'];
-
     // we convert the start time and end time to unix timestamp for better
     // comparison
     $UNC_GALLERY['display']['range'] = array('start_time' => false, 'end_time' => false);
@@ -229,6 +238,11 @@ function unc_gallery_display_var_init($atts = array()) {
         $UNC_GALLERY['display']['link'] = true;
     }
 
+    $UNC_GALLERY['display']['slideshow'] = false;
+    if (in_array('slideshow', $UNC_GALLERY['options'])) {
+        $UNC_GALLERY['display']['slideshow'] = true;
+    }
+
     $UNC_GALLERY['display']['date_selector'] = false;
     if (in_array('calendar', $options)) {
         $UNC_GALLERY['display']['date_selector'] = 'calendar';
@@ -317,6 +331,11 @@ function unc_gallery_display_page() {
         }
     }
 
+    if ($D['slideshow'] == true) {
+
+        echo "Doing slideshow!";
+    }
+
     $date_path = unc_tools_date_path($D['dates'][0]);
     // TODO: This should check all dates
     if (!$date_path) {
@@ -374,7 +393,7 @@ function unc_display_folder_images() {
     $date_str = $D['dates'][0];
 
     $header = '';
- /*   if (current_user_can('manage_sites')) {
+    if (is_admin()) {
         $header .= "
         <span class=\"delete_folder_link\">
             Sample shortcode for this day: <input id=\"short_code_sample\" onClick=\"SelectAll('short_code_sample');\" type=\"text\" value=\"[unc_gallery date=&quot;$date_str&quot;]\">
@@ -383,8 +402,6 @@ function unc_display_folder_images() {
             </a>
         </span>\n";
     }
-
-    */
 
     // get all the files in the folder with attributes
     $files = $D['files'];
@@ -585,7 +602,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     $out .= "        <a href=\"{$F['file_url']}\" $gal_text title=\"$dec\">\n"
         . "            <img alt=\"$dec\" src=\"$shown_image\">\n"
         . "        </a>\n";
-    if (current_user_can('manage_sites')) {
+    if (is_admin()) {
         $out .= "         <button class=\"delete_image_link\" title=\"Delete Image\" onClick=\"delete_image('{$F['file_name']}','{$F['date_str']}')\">
             <img src=\"" . plugin_dir_url( __FILE__ ) . "/images/delete.png\" width=\"20px\" height=\"20px\">
             </button>";
