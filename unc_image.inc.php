@@ -200,7 +200,7 @@ function unc_image_info_read($file_path, $D = false) {
     // in case the data is missing, write a new file
     if (!file_exists($data_path)){
         if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger($data_path . " Not found!");}
-        unc_image_info_write($file_path);
+        $check = unc_image_info_write($file_path);
     }
     $file_code = md5($date_path . DIRECTORY_SEPARATOR . $file_name . ".php");
     // reset the data so we re-read it from file
@@ -208,6 +208,12 @@ function unc_image_info_read($file_path, $D = false) {
     require($data_path);
     if ($UNC_FILE_DATA[$file_code] == false) {
         if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("File data failed", $file_name);}
+    }
+    // check if we have the correc latest file version, otherwise re-create:
+    if (!isset($UNC_FILE_DATA[$file_code]['data_version']) || $UNC_FILE_DATA[$file_code]['data_version'] <> $UNC_GALLERY['data_version']) {
+        $check = unc_image_info_write($file_path);
+        // read again
+        require($data_path);
     }
 
     if (!$D) {
@@ -263,6 +269,7 @@ function unc_image_info_write($file_path) {
     $data_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['file_data'] . DIRECTORY_SEPARATOR . $date_path . DIRECTORY_SEPARATOR . $file_name . ".php";
 
     $data = array(
+        'data_version' => $UNC_GALLERY['data_version'],
         'file_name' => $file_name,
         'file_path' => $file_path,
         'thumb_url' => $thumb_url,
