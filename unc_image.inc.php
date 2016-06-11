@@ -236,17 +236,14 @@ function unc_image_info_read($file_path, $D = false) {
 function unc_image_info_write($file_path) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-
     $exif = unc_exif_get($file_path);
     $xmp = unc_xmp_get($file_path);
     $ipct = unc_ipct_get($file_path);
-
     if (!isset($exif['created'])) {
         $file_date = unc_ipct_convert_date($ipct['created_date'], $ipct['created_time']);
     } else {
         $file_date = $exif['created'];
     }
-
     $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
     $time_stamp = $dtime->getTimestamp(); // time stamp is easier to compare
     $folder_info = pathinfo($file_path);
@@ -258,7 +255,6 @@ function unc_image_info_write($file_path) {
     if ($exif['file_width'] < $exif['file_height']) {
         $orientation = 'portrait';
     }
-
     unc_date_folder_create($date_str);
 
     $photo_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
@@ -286,12 +282,11 @@ function unc_image_info_write($file_path) {
 
     // write the file
     $file_code = md5($date_path . DIRECTORY_SEPARATOR . $file_name . ".php");
-    unc_array2file($data, 'UNC_FILE_DATA', $data_path, $file_code);
-
     global $UNC_FILE_DATA;
     $UNC_FILE_DATA[$file_code] = $data;
 
-    return true;
+    $check = unc_array2file($data, 'UNC_FILE_DATA', $data_path, $file_code);
+    return $check;
 }
 
 
@@ -431,7 +426,6 @@ function unc_exif_get($image_path) {
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // we need to apply a custom error handler to catch 'illegal IFD size' errors
     set_error_handler('unc_exif_catch_errors', E_WARNING);
-
     // we are setting this ariable to have a bridge into the error handling function
     $UNC_GALLERY['exif_get_file'] = $image_path;
     $exif = exif_read_data($image_path);

@@ -28,7 +28,7 @@ require_once( plugin_dir_path( __FILE__ ) . "unc_arrays.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_config.inc.php");
 
 global $XMPP_ERROR;
-if (file_exists('/home/includes/xmpp_error/xmpp_error.php')) {
+if (@file_exists('/home/includes/xmpp_error/xmpp_error.php')) {
     $UNC_GALLERY['debug'] = true;
     require_once('/home/includes/xmpp_error/xmpp_error.php');
     $XMPP_ERROR['config']['project_name'] = 'unc_gallery';

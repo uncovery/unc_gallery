@@ -15,7 +15,7 @@ if (!defined('WPINC')) {
 function unc_date_folder_create($date_str) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    if (!current_user_can('manage_sites')) {
+    if (!is_admin()) {
         return false;
     }
     global $UNC_GALLERY;
