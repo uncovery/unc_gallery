@@ -84,6 +84,8 @@
 
 .unc_gallery .one_photo {
     float:left;
+    // the position is needed to place the delete-icon on the image
+    position:relative;
     margin-right: 6px;
     margin-bottom: 5px;
 }
