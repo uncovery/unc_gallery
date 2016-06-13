@@ -26,7 +26,7 @@ require_once( plugin_dir_path( __FILE__ ) . "unc_display.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_tools.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_image.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_arrays.inc.php");
-// this has to be last because it runs function in unc_image.inc.php
+// co nfig has to be last because it runs function in unc_image.inc.php
 require_once( plugin_dir_path( __FILE__ ) . "unc_config.inc.php");
 
 global $XMPP_ERROR;
@@ -43,7 +43,7 @@ register_activation_hook( __FILE__, 'unc_gallery_plugin_activate');
 register_deactivation_hook( __FILE__, 'unc_gallery_plugin_deactivate');
 register_uninstall_hook( __FILE__, 'unc_gallery_plugin_uninstall');
 
-if (is_admin()){ // admin actions
+if (is_admin() === true){ // admin actions
     add_action('admin_init', 'unc_gallery_admin_init');
     // add an admin menu
     add_action('admin_menu', 'unc_gallery_admin_menu');
@@ -51,15 +51,17 @@ if (is_admin()){ // admin actions
 // shortcode for the [unc_gallery] replacements
 add_shortcode('unc_gallery', 'unc_gallery_apply');
 // this activates the returns without header & footer on upload Ajax POST
-add_action('wp_ajax_unc_gallery_uploads', 'unc_uploads_iterate_files');
-add_action('wp_ajax_unc_gallery_import_images', 'unc_uploads_iterate_files');
-add_action('wp_ajax_nopriv_unc_gallery_datepicker', 'unc_display_ajax_folder');
-add_action('wp_ajax_unc_gallery_datepicker', 'unc_display_ajax_folder');
-add_action('wp_ajax_unc_gallery_image_delete', 'unc_tools_image_delete');
-add_action('wp_ajax_unc_gallery_images_refresh', 'unc_gallery_images_refresh');
-add_action('wp_ajax_unc_gallery_thumbnails_rebuild', 'unc_gallery_admin_rebuild_thumbs');
-add_action('wp_ajax_unc_gallery_admin_rebuild_data', 'unc_gallery_admin_rebuild_data');
-add_action('wp_ajax_unc_gallery_delete_everything', 'unc_gallery_admin_delete_everything');
+if (is_admin() === true) {
+    add_action('wp_ajax_unc_gallery_uploads', 'unc_uploads_iterate_files');
+    add_action('wp_ajax_unc_gallery_import_images', 'unc_uploads_iterate_files');
+    add_action('wp_ajax_nopriv_unc_gallery_datepicker', 'unc_display_ajax_folder');
+    add_action('wp_ajax_unc_gallery_datepicker', 'unc_display_ajax_folder');
+    add_action('wp_ajax_unc_gallery_image_delete', 'unc_tools_image_delete');
+    add_action('wp_ajax_unc_gallery_images_refresh', 'unc_gallery_images_refresh');
+    add_action('wp_ajax_unc_gallery_thumbnails_rebuild', 'unc_gallery_admin_rebuild_thumbs');
+    add_action('wp_ajax_unc_gallery_admin_rebuild_data', 'unc_gallery_admin_rebuild_data');
+    add_action('wp_ajax_unc_gallery_delete_everything', 'unc_gallery_admin_delete_everything');
+}
 
 add_action( 'wp_enqueue_scripts', 'unc_gallery_add_css_and_js' );
 
