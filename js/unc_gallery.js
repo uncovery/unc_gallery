@@ -1,7 +1,14 @@
+/**
+ * function that selects the content of an input field when the user clicks on it
+ * used in the admin screen
+ * @param {type} id
+ * @returns {undefined}
+ */
 function SelectAll(id) {
     document.getElementById(id).focus();
     document.getElementById(id).select();
 }
+
 
 function datepicker_available(date) {
     off = date.getTimezoneOffset();
@@ -17,6 +24,12 @@ function datepicker_available(date) {
     }
 }
 
+/**
+ * controls what happens when you select a date in teh datepicker
+ * @param {type} dateText
+ * @param {type} inst
+ * @returns {undefined}
+ */
 function datepicker_select(dateText, inst) {
     jQuery.ajax({
         url: ajaxurl,
@@ -42,11 +55,23 @@ function datepicker_ready(defaultdate) {
     });
 }
 
+/**
+ * action when the datelist dropdown is updated
+ * @param {type} inst
+ * @returns {undefined}
+ */
 function datelist_change(inst) {
     var datelist_value = jQuery('#datepicker').val();
     datepicker_select(datelist_value, inst);
 }
 
+/**
+ * action for the delete image link
+ * 
+ * @param {type} file_name
+ * @param {type} rel_date
+ * @returns {undefined}
+ */
 function delete_image(file_name, rel_date) {
     var c = confirm("Are you sure you want to delete " + file_name + "?");
     if (c) {
@@ -65,6 +90,14 @@ function delete_image(file_name, rel_date) {
     }
 }
 
+/**
+ * do-all can-all generic ajax
+ * 
+ * @param {type} action
+ * @param {type} target_div
+ * @param {type} confirmation_message
+ * @returns {undefined}
+ */
 function unc_gallery_generic_ajax(action, target_div, confirmation_message) {
     jQuery('#' + target_div).html('');
     if (confirmation_message) {
@@ -103,6 +136,11 @@ Date.prototype.addMinutes= function(m){
     return this;
 };
 
+/**
+ * importing images in the admin screen
+ * 
+ * @returns {undefined}
+ */
 function unc_gallery_import_images() {
     var path = jQuery('#import_path').val();
     var overwrite = jQuery('#import_overwrite').val();
