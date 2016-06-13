@@ -21,7 +21,7 @@ $UNC_GALLERY['settings_prefix'] = 'unc_gallery_';   // internal prefix for the c
 // options for displays
 $UNC_GALLERY['keywords'] = array(
     'type' => array(
-        'day' => array('calendar', 'datelist'), // shows a single date's gallery, optional date picker
+        'day' => array('calendar', 'datelist', 'slideshow'), // shows a single date's gallery, optional date picker
         'image' => array('link'), // only one image, requires file addon unless random or latest
         'thumb' => array('link'), // only the icon of one image, requires file addon unless random or latest
     ),
