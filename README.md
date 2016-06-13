@@ -202,3 +202,4 @@ This plugin uses the following libraries:
 * [Photoswipe](http://photoswipe.com/)
 * [Lightbox](http://lokeshdhakar.com/projects/lightbox2/)
 * [Parsedown](http://parsedown.org)
+* [LightSlider](http://sachinchoolur.github.io/lightslider/)
