@@ -47,6 +47,7 @@ function unc_gallery_apply($atts = array()) {
         return unc_gallery_display_page();
     }
 }
+
 /**
  * Process and validate $UNC_GALLERY['display'] settings
  *
@@ -111,9 +112,6 @@ function unc_gallery_display_var_init($atts = array()) {
     } else {
         $UNC_GALLERY['display']['featured_image'] = array();
     }
-
-    // debug or not?
-    $UNC_GALLERY['display']['debug'] = $a['debug'];
 
     // there can be several options, separated by space
     if (!$a['options']) {
@@ -332,8 +330,9 @@ function unc_gallery_display_page() {
     }
 
     if ($D['slideshow'] == true) {
-
-        echo "Doing slideshow!";
+        wp_register_script('unc_gallery_lightslider_js', plugin_dir_url( __FILE__ ) . 'js/lightslider.min.js', array(), '4.1.1', true);
+        wp_enqueue_script('unc_gallery_lightslider_js');
+        wp_enqueue_style('unc_gallery_lightslider_css', plugin_dir_url( __FILE__ ) . 'css/lightslider.css');
     }
 
     $date_path = unc_tools_date_path($D['dates'][0]);
@@ -357,7 +356,6 @@ function unc_gallery_display_page() {
         $file_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_path . DIRECTORY_SEPARATOR . $file;
         $out = unc_display_image_html($file_path, $thumb, false);
     } else {
-
         $images = unc_display_folder_images();
         $delete_link = '';
         $limit_rows = '';
@@ -370,7 +368,7 @@ function unc_gallery_display_page() {
                 $delete_link
                 <div class=\"photos $limit_rows\" id=\"datepicker_target\">
         $images
-                </div>
+            </div>
             </div>
             <span style=\"clear:both;\"></span>";
     }
@@ -393,7 +391,7 @@ function unc_display_folder_images() {
     $date_str = $D['dates'][0];
 
     $header = '';
-    if (is_admin()) {
+    if (current_user_can('manage_options') && is_admin()) {
         $header .= "
         <span class=\"delete_folder_link\">
             Sample shortcode for this day: <input id=\"short_code_sample\" onClick=\"SelectAll('short_code_sample');\" type=\"text\" value=\"[unc_gallery date=&quot;$date_str&quot;]\">
@@ -415,10 +413,14 @@ function unc_display_folder_images() {
         $featured_fixed = $UNC_GALLERY['featured_size_for_mixed_sizes'];
     }
 
+    if ($D['slideshow']) {
+        $images .= '<ul id="lightSlider">';
+    }
+
     $i = 0;
     foreach ($files as $F) {
         $F['index'] = $i;
-        if ($F['featured']){
+        if (!$D['slideshow'] && $F['featured']) { // slideshow does not have features
             // select size for featured images
             if ($featured_fixed) {
                 $feat_size = $featured_fixed;
@@ -436,6 +438,12 @@ function unc_display_folder_images() {
             $featured .= "<div class=\"featured_photo $height_css\">\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . "</div>\n";
+        }
+        if ($D['slideshow']) {
+            $images .= "<li>\n"
+                . unc_display_image_html($F['file_path'], false, $F)
+                . '<p>' . unc_tools_file_desc($F) . '</p>'
+                . "</li>\n";
         } else {
             $images .= "<div class=\"one_photo\">\n"
                 . unc_display_image_html($F['file_path'], true, $F)
@@ -443,6 +451,10 @@ function unc_display_folder_images() {
         }
         $i++;
     }
+    if ($D['slideshow']) {
+        $images .= '</ul>';
+    }
+
     $photoswipe = '';
     if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
         $photoswipe = unc_display_photoswipe_js($files);
@@ -452,6 +464,24 @@ function unc_display_folder_images() {
     }
     if ($UNC_GALLERY['post_categories'] != 'none') {
         unc_display_categories_compare($files);
+    }
+
+    if ($D['slideshow']) {
+        $photoswipe = '<script type="text/javascript">
+        jQuery(document).ready(function() {
+            var slider = jQuery("#lightSlider").lightSlider({
+                adaptiveHeight:true,
+                item:1,
+                auto:true,
+                slideMargin:0,
+                loop:true,
+                adaptiveHeight:true,
+                mode:\'fade\',
+                speed:800,
+                pause:4000,
+                });
+        });
+        </script>';
     }
 
     $out = $header . $featured . $images . $photoswipe;
@@ -602,7 +632,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     $out .= "        <a href=\"{$F['file_url']}\" $gal_text title=\"$dec\">\n"
         . "            <img alt=\"$dec\" src=\"$shown_image\">\n"
         . "        </a>\n";
-    if (is_admin()) {
+    if (current_user_can('manage_options') && is_admin()) {
         $out .= "         <button class=\"delete_image_link\" title=\"Delete Image\" onClick=\"delete_image('{$F['file_name']}','{$F['date_str']}')\">
             <img src=\"" . plugin_dir_url( __FILE__ ) . "/images/delete.png\" width=\"20px\" height=\"20px\">
             </button>";
