@@ -15,7 +15,7 @@ if (!defined('WPINC')) {
 function unc_date_folder_create($date_str) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    if (!is_admin()) {
+    if (!current_user_can('manage_options')) {
         return false;
     }
     global $UNC_GALLERY;
@@ -405,9 +405,7 @@ function unc_tools_date_random() {
     if (count($folders) == 0) {
         return false;
     }
-    $count = count($folders);
-    $rnd = random_int (0, $count - 1);
-    $my_folder = $folders[$rnd];
+    $my_folder = array_rand($folders);
     // split by path
     $new_date_str = unc_tools_folder_date($my_folder);
     return $new_date_str;
@@ -572,7 +570,7 @@ function unc_tools_image_delete() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
-    if (!current_user_can('manage_sites')) {
+    if (!is_admin() === true) {
         ob_clean();
         echo "You are not admin!";
         wp_die();
