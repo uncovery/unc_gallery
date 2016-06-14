@@ -45,7 +45,7 @@ Additional features include:
 = Uninstall =
 
 Please note that while deactivating the plugin has no bad consequences, deleting it will also delete all
-uploaded photos from the server!
+uploaded photos from the server if you don't set the proper admin option!
 
 == Screenshots ==
 
