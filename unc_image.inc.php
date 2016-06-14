@@ -216,8 +216,11 @@ function unc_image_info_read($file_path, $D = false) {
         require($data_path);
     }
 
-    if (!$D) {
+    // TODO remove the descriotion from this function
+    if (!$D && isset($UNC_GALLERY['display'])) {
         $D = $UNC_GALLERY['display'];
+    } else { // we need this for the thumbnail rebuild function
+        return $UNC_FILE_DATA[$file_code];
     }
     $file_date = $UNC_FILE_DATA[$file_code]['file_date'];
     if (isset($D['details'][$file_name])) {

@@ -60,7 +60,7 @@ function unc_date_folder_create($date_str) {
  * @param type $date_str
  */
 function unc_date_folder_delete($date_str) {
-    if (!current_user_can('manage_sites')) {
+    if (!is_admin() === true) {
         return false;
     }
     global $UNC_GALLERY;
@@ -115,9 +115,10 @@ function unc_tools_folder_delete_empty($path) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
-    if (!current_user_can('manage_sites')) {
-        return false;
+    if (!is_admin() === true) {
+        echo "You are not admin!";
     }
+    
     $empty = true;
     foreach (glob($path . DIRECTORY_SEPARATOR . "*") as $file) {
         if (is_dir($file)) { // recurse lower directory
@@ -145,7 +146,7 @@ function unc_tools_import_enumerate($path) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
-    if (!current_user_can('manage_sites')) {
+    if (!current_user_can('manage_options')) {
         return false;
     }
     foreach (glob($path . DIRECTORY_SEPARATOR . "*") as $file) {

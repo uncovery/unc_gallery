@@ -288,7 +288,7 @@ function unc_gallery_admin_rebuild_thumbs() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
-    if (!current_user_can('manage_sites')) {
+    if (!current_user_can('manage_options') || !is_admin()) {
         echo "Cannot rebuild Thumbs, you are not admin!";
         wp_die();
     }
@@ -315,7 +315,14 @@ function unc_gallery_admin_rebuild_thumbs() {
                 echo ".";
                 $filename = basename($image_file);
                 $thumb_filename = $thumb_folder . DIRECTORY_SEPARATOR . $filename;
-                unc_import_image_resize($image_file, $thumb_filename, $UNC_GALLERY['thumbnail_height'], 'height', $UNC_GALLERY['thumbnail_ext'], $UNC_GALLERY['thumbnail_quality']);
+                unc_import_image_resize(
+                    $image_file, 
+                    $thumb_filename, 
+                    $UNC_GALLERY['thumbnail_height'], 
+                    $UNC_GALLERY['thumbnail_ext'], 
+                    $UNC_GALLERY['thumbnail_quality'], 
+                    $UNC_GALLERY['thumbnail_format']
+                );
             }
         }
         echo "<br>";

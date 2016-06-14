@@ -333,7 +333,7 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // finally, move the file
     if ($UNC_GALLERY['picture_long_edge'] > 0) {
-        $resize_check = unc_import_image_resize($F['tmp_name'][$i], $new_path, $UNC_GALLERY['picture_long_edge'], 'long', $extension, $UNC_GALLERY['image_quality'], false);
+        $resize_check = unc_import_image_resize($F['tmp_name'][$i], $new_path, $UNC_GALLERY['picture_long_edge'], $extension, $UNC_GALLERY['image_quality'], false);
         if (!$resize_check) {
             return array('date'=> false, 'action' => "Could not resize {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path");
         }
@@ -356,16 +356,11 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // now make the thumbnail
     $thumb_format = $UNC_GALLERY['thumbnail_format'];
-    if ($thumb_format != 'false') {
-        if ($thumb_format == 'square') {
-            // calculate new size
-        }
-    }    
+  
     $check = unc_import_image_resize(
         $new_path, 
         $new_thumb_path, 
         $UNC_GALLERY['thumbnail_height'], 
-        'height', 
         $UNC_GALLERY['thumbnail_ext'], 
         $UNC_GALLERY['thumbnail_quality'], 
         $thumb_format
@@ -392,20 +387,30 @@ function unc_uploads_process_file($i, $overwrite) {
  * @param string $image_file_path
  * @param string $target_file_path
  * @param int $size target size of the image
- * @param string $edge one of the following: 'height', 'width', 'long'
  * @param string $extension the file extension
  * @param int @quality quality from 1 (worst) to 100 (best)
  * @return boolean
  */
-function unc_import_image_resize($image_file_path, $target_file_path, $size, $edge, $extension, $quality, $format = false) {
+function unc_import_image_resize($image_file_path, $target_file_path, $size, $extension, $quality, $format = false) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $img_types = array(1 => 'GIF', 2 => 'JPEG', 3 => 'PNG');
 
-    // let's get the image size from the last check
-    $arr_image_details = $UNC_GALLERY['upload_file_info']['image_size'];
-    $original_width = $arr_image_details[0];
-    $original_height = $arr_image_details[1];
+    // 
+    if (!isset($UNC_GALLERY['upload_file_info'])) {
+        $image_data = unc_image_info_read($image_file_path);
+        $original_width = $image_data['exif']['file_width'];
+        $original_height = $image_data['exif']['file_height'];
+        $image_ext = $img_types[2]; // TODO this should not be hardcoded
+        $file_date = $image_data['date_str'];
+    } else {
+        // let's get the image size from the last check
+        $arr_image_details = $UNC_GALLERY['upload_file_info']['image_size'];
+        $original_width = $arr_image_details[0];
+        $original_height = $arr_image_details[1];
+        $image_ext = $img_types[$arr_image_details[2]];
+        $file_date = $UNC_GALLERY['upload_file_info']['date_str'];
+    }
 
     // for long-edge fitting, check which one is longer
     //if ($edge == 'long') { // resize so that the long edge fits
@@ -440,14 +445,14 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
 
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("New image dims", "$original_width x $original_height ==> $new_width x $new_height");}
     // get image extension from MIME type
-    $image_ext = $img_types[$arr_image_details[2]];
+    
 
     // set the function names for processing
     $img_generator = "Image" . $extension;
     $imgcreatefrom = "ImageCreateFrom" . $image_ext;
 
     // get original file date
-    $file_date = $UNC_GALLERY['upload_file_info']['date_str'];
+    
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("Read image date result", $file_date);}
 
     $new_image = imagecreatetruecolor($new_width, $new_height); // create a blank canvas
@@ -469,7 +474,6 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
         $source_y = 0;
     }
     
-    XMPP_ERROR_send_msg( "$new_image, $old_image, 0, 0, $source_x, $source_y, $new_width, $new_height, $source_width, $source_height");
     $resize_check = imagecopyresized($new_image, $old_image, 0, 0, $source_x, $source_y, $new_width, $new_height, $source_width, $source_height); // resize it
     if (!$resize_check) { // ;et's check if the file was resized
         echo "Could not resize image to dimensions $new_width, $new_height, $original_width, $original_height!";
