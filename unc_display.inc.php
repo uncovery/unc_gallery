@@ -443,8 +443,7 @@ function unc_display_folder_images() {
             $featured .= "<div class=\"featured_photo $height_css\">\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . "</div>\n";
-        }
-        if ($D['slideshow']) {
+        } else if ($D['slideshow']) {
             $images .= "<li>\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . '<p>' . unc_tools_file_desc($F) . '</p>'
