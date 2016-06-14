@@ -333,7 +333,7 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // finally, move the file
     if ($UNC_GALLERY['picture_long_edge'] > 0) {
-        $resize_check = unc_import_image_resize($F['tmp_name'][$i], $new_path, $UNC_GALLERY['picture_long_edge'], 'long', $extension, $UNC_GALLERY['image_quality']);
+        $resize_check = unc_import_image_resize($F['tmp_name'][$i], $new_path, $UNC_GALLERY['picture_long_edge'], 'long', $extension, $UNC_GALLERY['image_quality'], false);
         if (!$resize_check) {
             return array('date'=> false, 'action' => "Could not resize {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path");
         }
@@ -355,7 +355,21 @@ function unc_uploads_process_file($i, $overwrite) {
     }
 
     // now make the thumbnail
-    $check = unc_import_image_resize($new_path, $new_thumb_path, $UNC_GALLERY['thumbnail_height'], 'height', $UNC_GALLERY['thumbnail_ext'], $UNC_GALLERY['thumbnail_quality']);
+    $thumb_format = $UNC_GALLERY['thumbnail_format'];
+    if ($thumb_format != 'false') {
+        if ($thumb_format == 'square') {
+            // calculate new size
+        }
+    }    
+    $check = unc_import_image_resize(
+        $new_path, 
+        $new_thumb_path, 
+        $UNC_GALLERY['thumbnail_height'], 
+        'height', 
+        $UNC_GALLERY['thumbnail_ext'], 
+        $UNC_GALLERY['thumbnail_quality'], 
+        $thumb_format
+    );
     if (!$check) {
         return array('date'=> false, 'action' => "Could not create the thumbnail for {$F['tmp_name'][$i]} / $new_thumb_path!");
     } else if (!$action) {
@@ -370,8 +384,9 @@ function unc_uploads_process_file($i, $overwrite) {
     return array('date'=> $date_str, 'action' => $target_filename . ": " . $action);
 }
 
+
 /**
- * Resize an image
+ * Resize an image so the long edge becomes a given value
  *
  * @global array $UNC_GALLERY
  * @param string $image_file_path
@@ -382,7 +397,7 @@ function unc_uploads_process_file($i, $overwrite) {
  * @param int @quality quality from 1 (worst) to 100 (best)
  * @return boolean
  */
-function unc_import_image_resize($image_file_path, $target_file_path, $size, $edge, $extension, $quality) {
+function unc_import_image_resize($image_file_path, $target_file_path, $size, $edge, $extension, $quality, $format = false) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $img_types = array(1 => 'GIF', 2 => 'JPEG', 3 => 'PNG');
@@ -393,19 +408,32 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     $original_height = $arr_image_details[1];
 
     // for long-edge fitting, check which one is longer
-    if ($edge == 'long') { // resize so that the long edge fits
+    //if ($edge == 'long') { // resize so that the long edge fits
         if ($original_height > $original_width) {
-            $edge = 'height';
+            $long_edge = 'height';
+            $short_edge = 'width';
         } else {
-            $edge = 'width';
+            $long_edge = 'width';
+            $short_edge = 'height';
         }
+    //}
+    
+    if ($original_height > $original_width) {
+        $square_x = 0;
+        $square_y = ceil(($original_height - $original_width) / 2);
+    } else {
+        $square_x = ceil(($original_width - $original_height) / 2);
+        $square_y = 0;
     }
-
-    // we try to get the same height for all images
-    if ($edge == 'height') {
+    
+    // if we go for square, the target edge is the short one
+    if ($format == 'square') {
+        $new_height = $size;
+        $new_width = $size;
+    } else if ($long_edge == 'height') {
         $new_height = $size;
         $new_width = intval($original_width * ($size / $original_height));
-    } else if ($edge == 'width') {
+    } else if ($long_edge == 'width') {
         $new_width = $size;
         $new_height = intval($original_height * ($size / $original_width));
     }
@@ -413,8 +441,6 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("New image dims", "$original_width x $original_height ==> $new_width x $new_height");}
     // get image extension from MIME type
     $image_ext = $img_types[$arr_image_details[2]];
-
-
 
     // set the function names for processing
     $img_generator = "Image" . $extension;
@@ -426,7 +452,25 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ed
 
     $new_image = imagecreatetruecolor($new_width, $new_height); // create a blank canvas
     $old_image = $imgcreatefrom($image_file_path); // take the old image to memort
-    $resize_check = imagecopyresized($new_image, $old_image, 0, 0, 0, 0, $new_width, $new_height, $original_width, $original_height); // resize it
+    
+    $source_width = $original_width;
+    $source_height = $original_height;
+    
+    if ($format == 'square') {
+        $source_x = $square_x;
+        $source_y = $square_y;
+        if ($long_edge == 'height') {
+            $source_height = $original_width;
+        } else {
+            $source_width = $original_height;
+        }
+    } else {
+        $source_x = 0;
+        $source_y = 0;
+    }
+    
+    XMPP_ERROR_send_msg( "$new_image, $old_image, 0, 0, $source_x, $source_y, $new_width, $new_height, $source_width, $source_height");
+    $resize_check = imagecopyresized($new_image, $old_image, 0, 0, $source_x, $source_y, $new_width, $new_height, $source_width, $source_height); // resize it
     if (!$resize_check) { // ;et's check if the file was resized
         echo "Could not resize image to dimensions $new_width, $new_height, $original_width, $original_height!";
         wp_die();

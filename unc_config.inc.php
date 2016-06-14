@@ -57,7 +57,8 @@ $UNC_GALLERY['user_settings'] = array(
         'help' => 'Crop the thumbnails to a specific format for easier layouts.',
         'default' => 'false',
         'type' => 'dropdown',
-        'title' => array('false'=> 'Do not crop','square'=> 'Square (like facebook)'),
+        'options' => array('false' => 'Do not crop', 'square' => 'Square (like facebook/instagram)'),
+        'title' => 'Thumbnail Format',
     ),
     'picture_long_edge' => array(
         'help' => 'Shrink the full-size images so that the long edge will be this long (in pixels, 0 for disable). Warning: Resizing will remove all photo meta-data except for the date.',
