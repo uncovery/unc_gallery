@@ -27,6 +27,8 @@ $UNC_GALLERY['keywords'] = array(
     ),
     'date' => array('random', 'latest'),  // whichdate to chose
     'file' => array('random', 'latest'), // in case of image or icon type, you can chose one filename
+    'limt_rows' => 'intval',
+    'limit_images' => 'intval',
 );
 
 // file & mime-types
@@ -50,6 +52,12 @@ $UNC_GALLERY['user_settings'] = array(
         'default' => '60',
         'type' => 'text',
         'title' => 'Thumbnail Quality',
+    ),
+    'thumbnail_format' => array(
+        'help' => 'Crop the thumbnails to a specific format for easier layouts.',
+        'default' => 'false',
+        'type' => 'dropdown',
+        'title' => array('false'=> 'Do not crop','square'=> 'Square (like facebook)'),
     ),
     'picture_long_edge' => array(
         'help' => 'Shrink the full-size images so that the long edge will be this long (in pixels, 0 for disable). Warning: Resizing will remove all photo meta-data except for the date.',
@@ -159,22 +167,4 @@ $UNC_GALLERY['user_settings'] = array(
         'options' => array('yes' => 'Delete all images!', 'no' => 'Keep all images!'),
         'title' => 'Uninstall behavior',
     ),
-);
-
-// These are the exif codes we will display for the description
-// TODO: Convert that to a setting so we can switch them on and off
-$UNC_GALLERY['exif_codes'] = array(
-    'camera_manuf',
-    'camera_model',
-    'exposure_time',
-    'f',
-    'iso',
-    'focal_length',
-    'lens',
-);
-
-// These are the XMP codes we will display for the description
-// TODO: Convert that to a setting so we can switch them on and off
-$UNC_GALLERY['xmp_codes'] = array(
-    'Keywords',
 );
