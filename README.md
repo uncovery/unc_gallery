@@ -190,6 +190,7 @@ for touch devices such as mobile phones and tablets.
 * The system cannot handle 2 files of the same filename taken on the same date
 * The system can only handle files in JPG/JPEG format.
 * The system cannot handle 2 files that are taken exactly at the same time (date/minute/second).
+* The system works only on images which have valid EXIF or IPCT creation dates
 
 ## Known Bugs, upcoming features
 
