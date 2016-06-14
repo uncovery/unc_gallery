@@ -72,7 +72,7 @@ function unc_gallery_display_var_init($atts = array()) {
         'echo' => false, // internal variable, used by AJAX call
         'offset' => false, // offset for date string to cover photos after midnight
         'limit_rows' => false,
-        'debug' => false,
+        'limit_images' => false,
     );
 
     // check if all the attributes exist
@@ -130,6 +130,7 @@ function unc_gallery_display_var_init($atts = array()) {
 
     $UNC_GALLERY['display']['description'] = trim($a['description']);
     $UNC_GALLERY['display']['limit_rows'] = trim($a['limit_rows']);
+    $UNC_GALLERY['display']['limit_images'] = trim($a['limit_images']);
 
     // date
     $keywords = $UNC_GALLERY['keywords'];
@@ -418,6 +419,10 @@ function unc_display_folder_images() {
     }
 
     $i = 0;
+    
+    // limit images
+    $max_images = $D['limit_images'];
+    
     foreach ($files as $F) {
         $F['index'] = $i;
         if (!$D['slideshow'] && $F['featured']) { // slideshow does not have features
@@ -449,6 +454,10 @@ function unc_display_folder_images() {
                 . unc_display_image_html($F['file_path'], true, $F)
                 . "</div>\n";
         }
+        // stop looping once we have the max number of images
+        if ($max_images && $i >= $max_images) {
+            exit;
+        }
         $i++;
     }
     if ($D['slideshow']) {
@@ -467,7 +476,7 @@ function unc_display_folder_images() {
     }
 
     if ($D['slideshow']) {
-        $photoswipe = '<script type="text/javascript">
+        $photoswipe = '';  /*'<script type="text/javascript">
         jQuery(document).ready(function() {
             var slider = jQuery("#lightSlider").lightSlider({
                 adaptiveHeight:true,
@@ -481,7 +490,7 @@ function unc_display_folder_images() {
                 pause:4000,
                 });
         });
-        </script>';
+        </script>'; */
     }
 
     $out = $header . $featured . $images . $photoswipe;
