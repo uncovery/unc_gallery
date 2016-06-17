@@ -4,6 +4,13 @@ global $UNC_GALLERY;
 // detailed info on EXIF Codes
 // http://www.exiv2.org/tags.html
 $UNC_GALLERY['codes']['exif'] = array(
+    'file_name' => array(
+        'hex' => false,
+        'key' => false,
+        'conversion' => false,
+        'unit' => false,
+        'description' => 'File Name',
+    ),
     'camera_manuf' => array(
         'hex' => '0x010F',
         'key' => 'Make',
@@ -72,7 +79,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'key' => array('GPSLatitudeRef', 'GPSLatitude', 'GPSLongitudeRef', 'GPSLongitude'),
         'conversion' => 'unc_exif_convert_gps_link',
         'unit' => false,
-        'description' => 'GPS Map Link',
+        'description' => 'Map',
     )
 );
 
@@ -222,15 +229,6 @@ function unc_image_info_read($file_path, $D = false) {
     } else { // we need this for the thumbnail rebuild function
         return $UNC_FILE_DATA[$file_code];
     }
-    $file_date = $UNC_FILE_DATA[$file_code]['file_date'];
-    if (isset($D['details'][$file_name])) {
-        $description = $D['details'][$file_name] . " ($file_name / $file_date)";
-    } else if (isset($D['description']) && $D['description']) {
-        $description = $D['description'] . " ($file_name / $file_date)";
-    } else {
-        $description = "<b>File Name:</b> $file_name;";
-    }
-    $UNC_FILE_DATA[$file_code]['description'] = $description;
 
     return $UNC_FILE_DATA[$file_code];
 }
@@ -449,6 +447,12 @@ function unc_exif_get($image_path) {
     );
 
     foreach ($UNC_GALLERY['codes']['exif'] as $code => $C) {
+        // we artificially added the filename as an EXIF info to make the admin menu easier
+        if ($code == 'file_name') {
+            $data[$code] = basename($image_path);
+            continue;
+        }
+        
         $hex_tag =  'UndefinedTag:' . $C['hex'];
         if (is_array($C['key'])) { // gps for example is made out of multiple keys
             $val = array();
@@ -491,7 +495,7 @@ function unc_exif_convert_gps_link($gps_arr) {
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $coords = unc_exif_convert_gps($gps_arr);
     $fixed_coords = str_replace(" ", ",", $coords);
-    $link = "<a href='http://www.google.com/maps/place/$fixed_coords' target='_blank'>Map Link</a>";
+    $link = "<a href='http://www.google.com/maps/place/$fixed_coords' target='_blank'>Link</a>";
     return $link;
 }
 
