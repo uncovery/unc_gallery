@@ -357,7 +357,6 @@ function unc_gallery_admin_rebuild_data() {
         // enumerate all the files in the source folder
         foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $image_file) {
             if (!is_dir($image_file)) {
-                echo $image_file;
                 $check = unc_image_info_write($image_file);
                 if ($check) {
                     echo ".";
