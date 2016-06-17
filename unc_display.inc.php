@@ -521,8 +521,14 @@ function unc_display_tags_compare($F) {
         return;
     }
 
-    $selected_tags = $UNC_GALLERY['post_keywords'];
-
+    $append_tags = true;
+    $setting = $UNC_GALLERY['post_keywords'];
+    $set_split = explode("_", $setting);
+    $selected_tags = $set_split[0];
+    if (isset($set_split[1])) {
+        $append_tags = false;
+    }
+    
     $photo_tags = array();
     foreach ($F as $FD) {
         if (!isset($FD[$selected_tags]['keywords'])) {
@@ -558,7 +564,7 @@ function unc_display_tags_compare($F) {
     $comp_result = unc_array_analyse($photo_tags_unique, $post_tags_unique);
     $missing_tags = $comp_result['only_in_1'];
 
-    wp_set_post_tags($post_id, $missing_tags, true); // true means tags will be added, not replaced
+    wp_set_post_tags($post_id, $missing_tags, $append_tags); 
 }
 
 function unc_display_categories_compare($file_data) {
@@ -571,9 +577,13 @@ function unc_display_categories_compare($file_data) {
         return;
     }
 
-    // get the posts existing categories
-    $curr_cats = get_the_category($post_id);
-
+    $curr_cats = array();
+    // re-format the currnet categories so we can compare them
+    foreach (get_the_category($post_id) as $c_cat) {
+        $cat_name_id = strtolower($c_cat['name']);
+        $curr_cats[$cat_name_id] = $c_cat['name'];
+    }
+    
     // get all cats in nthe system
     $wp_all_cats = get_categories();
 
@@ -581,27 +591,39 @@ function unc_display_categories_compare($file_data) {
     $setting = $UNC_GALLERY['post_categories'];
     // split into array:
     $setting_array = explode("_", $setting);
-    $data_type = array_shift($setting_array);
+    $data_type = array_shift($setting_array); // remove the XPM/EXIF from the front of the array
     // iterate all files and get all the different levels of categories
     $cats = array();
+    
+    // we go through all files in the post and get all categories for this post uniquely
     foreach ($file_data as $F) {
-        foreach ($setting_array as $setting) {
-            $cats[$setting] = false; // with this we also catch empty levels
-            if (!isset($F[$data_type][$setting])) {
+        // we go through the wanted fields from the setting
+        foreach ($setting_array as $exif_code) {
+            $cats[$exif_code] = false; // with this we also catch empty levels
+            if (!isset($F[$data_type][$exif_code])) {
                 continue;
             }
-            $value = $F[$data_type][$setting];
-            $cats[$setting][$value] = $value;
+            $value = $F[$data_type][$exif_code];
+            $lowerc_value = strtolower($value);
+            $cats[$exif_code][$lowerc_value] = $value;
         }
+
     }
-    //$image_cats = array_unique($cats);
-    XMPP_ERROR_send_msg($cats);
-    foreach ($cats as $level => $cat) {
+    $depth = 1; // depth of the hierarchical cats
+    
+    // now we go through the collected categories and apply them to the poat
+    foreach ($cats as $exif_code => $C) {
+        // check if the post has a category of that name already
+        $cat_id = key($C);
+        if (isset($curr_cats[$cat_id])) {
+            continue;
+        } 
         // compare if the current cat already exists
 
 
         // add new cateogory to system
         $new_cat_id = wp_create_category( $cat_name, $parent );
+        $depth ++;
     }
 
     // we need to check if the categories we added have the right hierarchy, so let's get the whole list first
