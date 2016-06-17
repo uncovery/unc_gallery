@@ -139,7 +139,7 @@ function unc_uploads_iterate_files() {
         $F = $_FILES["userImage"];
         $count = count($F["name"]);
         $ini_max = ini_get('max_file_uploads');
-        if ($count >= $ini_max) {
+        if ($count > $ini_max) {
             echo "Your server does not allow you to upload more than $ini_max files, you picked $count!";
             wp_die();
         }

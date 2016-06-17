@@ -78,6 +78,7 @@ function unc_gallery_display_var_init($atts = array()) {
     // check if all the attributes exist
     foreach ($atts as $key => $value) {
         if (!isset($possible_attributes[$key])) {
+            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("You have an invalid setting '$key' in your gallery shortcode!");}
             echo unc_display_errormsg("You have an invalid setting '$key' in your gallery shortcode!");
             return false;
         }
@@ -330,11 +331,11 @@ function unc_gallery_display_page() {
         }
     }
 
-    if ($D['slideshow'] == true) {
+    /* if ($D['slideshow'] == true) {
         wp_register_script('unc_gallery_lightslider_js', plugin_dir_url( __FILE__ ) . 'js/lightslider.min.js', array(), '4.1.1', true);
         wp_enqueue_script('unc_gallery_lightslider_js');
         wp_enqueue_style('unc_gallery_lightslider_css', plugin_dir_url( __FILE__ ) . 'css/lightslider.css');
-    }
+    } */
 
     $date_path = unc_tools_date_path($D['dates'][0]);
     // TODO: This should check all dates
@@ -393,10 +394,11 @@ function unc_display_folder_images() {
 
     $header = '';
     if (current_user_can('manage_options') && is_admin()) {
+        $url = admin_url('admin.php?page=unc_gallery_admin_menu');
         $header .= "
         <span class=\"delete_folder_link\">
             Sample shortcode for this day: <input id=\"short_code_sample\" onClick=\"SelectAll('short_code_sample');\" type=\"text\" value=\"[unc_gallery date=&quot;$date_str&quot;]\">
-            <a href=\"?page=unc_gallery_admin_view&amp;folder_del=$date_str\">
+            <a href=\"$url&amp;folder_del=$date_str\">
                 Delete Date: $date_str
             </a>
         </span>\n";
@@ -414,16 +416,26 @@ function unc_display_folder_images() {
         $featured_fixed = $UNC_GALLERY['featured_size_for_mixed_sizes'];
     }
 
-    if ($D['slideshow']) {
+    /*if ($D['slideshow']) {
         $images .= '<ul id="lightSlider">';
-    }
+    } */
 
     $i = 0;
     
     // limit images
-    $max_images = $D['limit_images'];
+    $UNC_GALLERY['not_shown'] = false;
+    $max_images = intval($D['limit_images']);
     
     foreach ($files as $F) {
+        // stop looping once we have the max number of images
+        if ($max_images && $i >= $max_images) {
+            break;
+        } else if ($max_images && ($i == $max_images - 1)) {
+            $not_shown = count($files) - $max_images;
+            if ($not_shown > 0) {
+                $UNC_GALLERY['not_shown']  = $not_shown;
+            }
+        }
         $F['index'] = $i;
         if (!$D['slideshow'] && $F['featured']) { // slideshow does not have features
             // select size for featured images
@@ -443,25 +455,21 @@ function unc_display_folder_images() {
             $featured .= "<div class=\"featured_photo $height_css\">\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . "</div>\n";
-        } else if ($D['slideshow']) {
+        } /* else if ($Df['slideshow']) {
             $images .= "<li>\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . '<p>' . unc_tools_file_desc($F) . '</p>'
                 . "</li>\n";
-        } else {
+        } */ else {
             $images .= "<div class=\"one_photo\">\n"
                 . unc_display_image_html($F['file_path'], true, $F)
                 . "</div>\n";
         }
-        // stop looping once we have the max number of images
-        if ($max_images && $i >= $max_images) {
-            exit;
-        }
         $i++;
     }
-    if ($D['slideshow']) {
+    /* if ($D['slideshow']) {
         $images .= '</ul>';
-    }
+    } **/
 
     $photoswipe = '';
     if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
@@ -635,11 +643,15 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     } else if ($UNC_GALLERY['image_view_method'] == 'lightbox') {
         $gal_text = "data-lightbox=\"gallery_{$F['file_name']}\"";
     }
-
-    $dec = strip_tags($F['description']);
-    $out .= "        <a href=\"{$F['file_url']}\" $gal_text title=\"$dec\">\n"
-        . "            <img alt=\"$dec\" src=\"$shown_image\">\n"
-        . "        </a>\n";
+    // TODO: Decide on what the imamge description in HTML should look like.
+    if ($UNC_GALLERY['not_shown']) {
+        $overlay_text = "<span class=\"not_shown_overlay\">+" . $UNC_GALLERY['not_shown'] . "</span>";
+    } else {
+        $overlay_text = '';
+    }
+    $out .= "        <a href=\"{$F['file_url']}\" $gal_text title=\"image\">
+            <img alt=\"image\" src=\"$shown_image\">$overlay_text
+        </a>\n";
     if (current_user_can('manage_options') && is_admin()) {
         $out .= "         <button class=\"delete_image_link\" title=\"Delete Image\" onClick=\"delete_image('{$F['file_name']}','{$F['date_str']}')\">
             <img src=\"" . plugin_dir_url( __FILE__ ) . "/images/delete.png\" width=\"20px\" height=\"20px\">
@@ -661,7 +673,7 @@ function unc_display_photoswipe_js($files) {
         };
         var uncg_items_' . $slug . ' = [';
     foreach ($files  as $F) {
-        $desc = $F['description'] . " " . unc_tools_file_desc($F);
+        $desc = unc_tools_file_desc($F);
         $out .= "
     {
         src: '{$F['file_url']}',
