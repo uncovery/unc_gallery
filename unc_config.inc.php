@@ -72,6 +72,13 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'text',
         'title' => 'Picture Quality',
     ),
+    'no_image_alert' => array(
+        'help' => 'What to display if there is no image for a given date?',
+        'default' => 'not_found',
+        'type' => 'dropdown',
+        'options' => array('not_found' => 'A fiendly "No images available"', 'error' => 'A red Error mesage', 'nothing' => 'Nothing'),
+        'title' => 'No image found alert',
+    ),
     'featured_size' => array(
         'help' => 'When featuring an image, how many rows should it cover in height? Chose "dynamic" if you want a orientation-specific size instead.',
         'default' => '4',
@@ -132,7 +139,13 @@ $UNC_GALLERY['user_settings'] = array(
         'help' => 'Do you want to automatically add missing keywords from photos to posts? This will not remove any tags from posts, only create & add new ones.',
         'default' => 'none',
         'type' => 'dropdown',
-        'options' => array('none' => 'Do not auto-tag', 'xmp' => 'XMP Keywords', 'ipct' => 'IPCT Keywords'),
+        'options' => array(
+            'none' => 'Do not auto-tag',
+            'xmp' => 'XMP Keywords',
+            'xmp_force' => 'XMP Keywords, remove other tags',
+            'ipct' => 'IPCT Keywords',
+            'ipct_force' => 'IPCT Keywords, remove other tags'
+        ),
         'title' => 'Auto-Tag posts with Keywords',
     ),
     'post_categories' => array(
