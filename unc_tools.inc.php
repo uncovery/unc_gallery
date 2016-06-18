@@ -118,7 +118,7 @@ function unc_tools_folder_delete_empty($path) {
     if (!is_admin() === true) {
         echo "You are not admin!";
     }
-    
+
     $empty = true;
     $path_wildcard = $path . DIRECTORY_SEPARATOR . "*";
     foreach (@glob($path_wildcard) as $file) {
@@ -667,11 +667,15 @@ function unc_tools_date_path($date) {
         $date_str = $date_obj->format($format);
         $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
         if (!file_exists($photo_folder . DIRECTORY_SEPARATOR . $date_str)) {
-            echo unc_display_errormsg("Date not found (folder does not exist) $photo_folder/$date_str");
+            if ($UNC_GALLERY['no_image_alert'] == 'error') {
+                $UNC_GALLERY['errors'][] = unc_display_errormsg("No images found for this date!");
+            } else if ($UNC_GALLERY['no_image_alert'] == 'not_found') {
+                $UNC_GALLERY['errors'][] = "No images available for $date";
+            }
             return false;
         }
     } else {
-        echo unc_display_errormsg("Date not found (invalid date)");
+        $UNC_GALLERY['errors'][] = unc_display_errormsg("Date not found (invalid date)");
         return false;
     }
     return $date_str;
