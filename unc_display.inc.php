@@ -45,6 +45,9 @@ function unc_gallery_apply($atts = array()) {
     $check = unc_gallery_display_var_init($atts);
     if ($check) {
         return unc_gallery_display_page();
+    } else {
+        $err_text = implode("<br>", $UNC_GALLERY['error']);
+        return $err_text;
     }
 }
 
@@ -256,6 +259,16 @@ function unc_gallery_display_var_init($atts = array()) {
         $UNC_GALLERY['display']['files'] = unc_tools_images_list();
     }
 
+    if (count($UNC_GALLERY['display']['files']) == 0) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("No files found in date range!");}
+        if ($UNC_GALLERY['no_image_alert'] == 'error') {
+            $UNC_GALLERY['error'][] = unc_display_errormsg("No images found for this date!");
+        } else if ($UNC_GALLERY['no_image_alert'] == 'not_found') {
+            $UNC_GALLERY['error'][] = "No images available.";
+        }
+        return false;
+    }
+
     // this is needed to the JS function calls used for the displays
     $slug = '';
     if (isset($post->post_name)) {
@@ -358,7 +371,7 @@ function unc_gallery_display_page() {
         $file_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_path . DIRECTORY_SEPARATOR . $file;
         $out = unc_display_image_html($file_path, $thumb, false);
     } else {
-        $images = unc_display_folder_images();
+        $images_html = unc_display_folder_images();
         $delete_link = '';
         $limit_rows = '';
         if ($D['limit_rows']) {
@@ -369,7 +382,7 @@ function unc_gallery_display_page() {
                 $datepicker_div
                 $delete_link
                 <div class=\"photos $limit_rows\" id=\"datepicker_target\">
-        $images
+        $images_html
             </div>
             </div>
             <span style=\"clear:both;\"></span>";
@@ -421,11 +434,11 @@ function unc_display_folder_images() {
     } */
 
     $i = 0;
-    
+
     // limit images
     $UNC_GALLERY['not_shown'] = false;
     $max_images = intval($D['limit_images']);
-    
+
     foreach ($files as $F) {
         // stop looping once we have the max number of images
         if ($max_images && $i >= $max_images) {
@@ -528,7 +541,7 @@ function unc_display_tags_compare($F) {
     if (isset($set_split[1])) {
         $append_tags = false;
     }
-    
+
     $photo_tags = array();
     foreach ($F as $FD) {
         if (!isset($FD[$selected_tags]['keywords'])) {
@@ -564,7 +577,7 @@ function unc_display_tags_compare($F) {
     $comp_result = unc_array_analyse($photo_tags_unique, $post_tags_unique);
     $missing_tags = $comp_result['only_in_1'];
 
-    wp_set_post_tags($post_id, $missing_tags, $append_tags); 
+    wp_set_post_tags($post_id, $missing_tags, $append_tags);
 }
 
 function unc_display_categories_compare($file_data) {
@@ -583,9 +596,15 @@ function unc_display_categories_compare($file_data) {
         $cat_name_id = strtolower($c_cat['name']);
         $curr_cats[$cat_name_id] = $c_cat['name'];
     }
-    
+
     // get all cats in nthe system
     $wp_all_cats = get_categories();
+    $all_cat_index = array();
+    // reformat them so we can search easier
+    foreach ($wp_all_cats as $index => $C) {
+        $lower_name = strtolower($C['name']);
+        $all_cat_index[$lower_name] = $index;
+    }
 
     // find out what the current setting is
     $setting = $UNC_GALLERY['post_categories'];
@@ -594,36 +613,48 @@ function unc_display_categories_compare($file_data) {
     $data_type = array_shift($setting_array); // remove the XPM/EXIF from the front of the array
     // iterate all files and get all the different levels of categories
     $cats = array();
-    
+
     // we go through all files in the post and get all categories for this post uniquely
     foreach ($file_data as $F) {
         // we go through the wanted fields from the setting
+        $file_cats = array();
         foreach ($setting_array as $exif_code) {
             $cats[$exif_code] = false; // with this we also catch empty levels
             if (!isset($F[$data_type][$exif_code])) {
+                $value = '#';
+            } else {
+                $value = $F[$data_type][$exif_code];
+            }
+            $file_cats[] = $value;
+        }
+        // we try to create a code to make sure we do not make duplicates
+        $cats_id = implode("-", $file_cats);
+        $cats[$cats_id] = $file_cats;
+    }
+
+
+    // now we go through the collected categories and apply them to the poat
+    foreach ($cat_sets as $cat_set) {
+        // iterate each level
+        $depth = 1; // depth of the hierarchical cats
+        $next_parent = false;
+        foreach ($cat_set as $cat) {
+            // check if the post has a category of that name already
+            $cat_id = strtolower($cat);
+            if (isset($curr_cats[$cat_id])) {
                 continue;
             }
-            $value = $F[$data_type][$exif_code];
-            $lowerc_value = strtolower($value);
-            $cats[$exif_code][$lowerc_value] = $value;
+            // check if the current cat already exists in wordpress
+            if (!isset($all_cat_index[$cat_id])) {
+                if ($depth > 1) {
+
+                }
+                $next_parent = wp_create_category( $cat_name, $parent );
+            } else {
+                //$next_parent = $wp_all_cats[];
+            }
+            $depth++;
         }
-
-    }
-    $depth = 1; // depth of the hierarchical cats
-    
-    // now we go through the collected categories and apply them to the poat
-    foreach ($cats as $exif_code => $C) {
-        // check if the post has a category of that name already
-        $cat_id = key($C);
-        if (isset($curr_cats[$cat_id])) {
-            continue;
-        } 
-        // compare if the current cat already exists
-
-
-        // add new cateogory to system
-        $new_cat_id = wp_create_category( $cat_name, $parent );
-        $depth ++;
     }
 
     // we need to check if the categories we added have the right hierarchy, so let's get the whole list first
