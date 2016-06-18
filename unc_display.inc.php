@@ -46,7 +46,7 @@ function unc_gallery_apply($atts = array()) {
     if ($check) {
         return unc_gallery_display_page();
     } else {
-        $err_text = implode("<br>", $UNC_GALLERY['error']);
+        $err_text = implode("<br>", $UNC_GALLERY['errors']);
         return $err_text;
     }
 }
@@ -262,9 +262,9 @@ function unc_gallery_display_var_init($atts = array()) {
     if (count($UNC_GALLERY['display']['files']) == 0) {
         if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("No files found in date range!");}
         if ($UNC_GALLERY['no_image_alert'] == 'error') {
-            $UNC_GALLERY['error'][] = unc_display_errormsg("No images found for this date!");
+            $UNC_GALLERY['errors'][] = unc_display_errormsg("No images found for this date!");
         } else if ($UNC_GALLERY['no_image_alert'] == 'not_found') {
-            $UNC_GALLERY['error'][] = "No images available.";
+            $UNC_GALLERY['errors'][] = "No images available.";
         }
         return false;
     }
