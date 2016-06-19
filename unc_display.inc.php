@@ -622,6 +622,7 @@ function unc_display_categories_compare($file_data) {
     // iterate all files and get all the different levels of categories
     $cat_sets = array();
 
+    $has_cats = false;
     // we go through all files in the post and get all categories for this post uniquely
     foreach ($file_data as $F) {
         // we go through the wanted fields from the setting
@@ -631,6 +632,7 @@ function unc_display_categories_compare($file_data) {
             if (!isset($F[$data_type][$exif_code])) {
                 $value = '%%none%%';
             } else {
+                $has_cats = true;
                 $value = $F[$data_type][$exif_code];
             }
             $file_cats[] = $value;
@@ -639,7 +641,7 @@ function unc_display_categories_compare($file_data) {
         $cats_id = implode("-", $file_cats);
         $cat_sets[$cats_id] = $file_cats;
     }
-    if (count($cat_sets) < 1) {
+    if (!$has_cats) {
         return;
     }
 
@@ -667,31 +669,28 @@ function unc_display_categories_compare($file_data) {
                 // get the existing cat ID and add it to the post
                 $post_categories[] = $curr_cats[$cat_id]['id'];
                 //XMPP_ERROR_trace("cat is set already get ID for final assignment", $curr_cats[$cat_id]['id']);
+                $next_parent = $curr_cats[$cat_id]['id'];
                 continue;
             }
             // check if the current cat already exists in wordpress
             if (!isset($all_cat_index[$cat_id])) {
                 $this_id = wp_create_category($cat, $next_parent);
-                $next_parent = $this_id;
-                //XMPP_ERROR_trace("Creating category $cat, ID:", $this_id);
+                //XMPP_ERROR_trace("Creating category $cat, ID: $this_id, Parent $next_parent");
             } else {
                 //XMPP_ERROR_trace("Cat exists already, get parent for next level", $all_cat_index[$cat_id]['parent']);
-                $next_parent = $all_cat_index[$cat_id]['parent'];
                 $this_id = $all_cat_index[$cat_id]['id'];
 
             }
             $post_categories[] = $this_id; // collect the categories to add them to the post
+            $next_parent = $this_id;
             $depth++;
         }
     }
 
     // we need to check if the categories we added have the right hierarchy, so let's get the whole list first
-
-    //$comp_result = unc_array_analyse($photo_tags_unique, $post_tags_unique);
-    //$missing_cats = $comp_result['only_in_1'];
-    // XMPP_ERROR_trace("assign final list of cats", $post_categories);
+    //XMPP_ERROR_trace("assign final list of cats", $post_categories);
     wp_set_post_categories($post_id, $post_categories, false); // true means cats will be added, not replaced
-
+    //XMPP_ERROR_trigger("test");
 }
 
 
