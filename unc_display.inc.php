@@ -582,7 +582,6 @@ function unc_display_tags_compare($F) {
 
 function unc_display_categories_compare($file_data) {
     global $UNC_GALLERY;
-    return;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $post_id = get_the_ID();
@@ -590,21 +589,30 @@ function unc_display_categories_compare($file_data) {
         return;
     }
 
+    // need to include taxonomy to use category stuff
+    $admin_directory = ABSPATH . '/wp-admin/';
+    require_once($admin_directory . 'includes/taxonomy.php');
+
     $curr_cats = array();
     // re-format the currnet categories so we can compare them
+
     foreach (get_the_category($post_id) as $c_cat) {
-        $cat_name_id = strtolower($c_cat['name']);
-        $curr_cats[$cat_name_id] = $c_cat['name'];
+        $cat_name_id = strtolower($c_cat->name);
+        $curr_cats[$cat_name_id]['name'] = $c_cat->name;
+        $curr_cats[$cat_name_id]['id'] = $c_cat->cat_ID;
     }
+    //XMPP_ERROR_trace("got existing post categories:", $curr_cats);
 
     // get all cats in nthe system
     $wp_all_cats = get_categories();
     $all_cat_index = array();
     // reformat them so we can search easier
-    foreach ($wp_all_cats as $index => $C) {
-        $lower_name = strtolower($C['name']);
-        $all_cat_index[$lower_name] = $index;
+    foreach ($wp_all_cats as $C) {
+        $lower_name = strtolower($C->name);
+        $all_cat_index[$lower_name]['id'] = $C->cat_ID;
+        $all_cat_index[$lower_name]['parent'] = $C->parent;
     }
+    //XMPP_ERROR_trace("got all categories:", $all_cat_index);
 
     // find out what the current setting is
     $setting = $UNC_GALLERY['post_categories'];
@@ -612,16 +620,16 @@ function unc_display_categories_compare($file_data) {
     $setting_array = explode("_", $setting);
     $data_type = array_shift($setting_array); // remove the XPM/EXIF from the front of the array
     // iterate all files and get all the different levels of categories
-    $cats = array();
+    $cat_sets = array();
 
     // we go through all files in the post and get all categories for this post uniquely
     foreach ($file_data as $F) {
         // we go through the wanted fields from the setting
         $file_cats = array();
         foreach ($setting_array as $exif_code) {
-            $cats[$exif_code] = false; // with this we also catch empty levels
+            $cat_sets[$exif_code] = false; // with this we also catch empty levels
             if (!isset($F[$data_type][$exif_code])) {
-                $value = '#';
+                $value = '%%none%%';
             } else {
                 $value = $F[$data_type][$exif_code];
             }
@@ -629,41 +637,61 @@ function unc_display_categories_compare($file_data) {
         }
         // we try to create a code to make sure we do not make duplicates
         $cats_id = implode("-", $file_cats);
-        $cats[$cats_id] = $file_cats;
+        $cat_sets[$cats_id] = $file_cats;
+    }
+    if (count($cat_sets) < 1) {
+        return;
     }
 
+    //XMPP_ERROR_trace("iterated all files, got category sets:", $cat_sets);
+
+    $post_categories = array();
 
     // now we go through the collected categories and apply them to the poat
     foreach ($cat_sets as $cat_set) {
+        //XMPP_ERROR_trace("Checking cat set:", $cat_set);
         // iterate each level
         $depth = 1; // depth of the hierarchical cats
-        $next_parent = false;
+        $next_parent = 0;
+        if (!$cat_set) {
+            continue;
+        }
         foreach ($cat_set as $cat) {
+            //XMPP_ERROR_trace("Checking cat:", $cat);
             // check if the post has a category of that name already
             $cat_id = strtolower($cat);
-            if (isset($curr_cats[$cat_id])) {
+            if ($cat == '%%none%%') {
+                //XMPP_ERROR_trace("cat is emtpy, continue");
+                continue;
+            } else if (isset($curr_cats[$cat_id])) {
+                // get the existing cat ID and add it to the post
+                $post_categories[] = $curr_cats[$cat_id]['id'];
+                //XMPP_ERROR_trace("cat is set already get ID for final assignment", $curr_cats[$cat_id]['id']);
                 continue;
             }
             // check if the current cat already exists in wordpress
             if (!isset($all_cat_index[$cat_id])) {
-                if ($depth > 1) {
-
-                }
-                $next_parent = wp_create_category( $cat_name, $parent );
+                $this_id = wp_create_category($cat, $next_parent);
+                $next_parent = $this_id;
+                //XMPP_ERROR_trace("Creating category $cat, ID:", $this_id);
             } else {
-                //$next_parent = $wp_all_cats[];
+                //XMPP_ERROR_trace("Cat exists already, get parent for next level", $all_cat_index[$cat_id]['parent']);
+                $next_parent = $all_cat_index[$cat_id]['parent'];
+                $this_id = $all_cat_index[$cat_id]['id'];
+
             }
+            $post_categories[] = $this_id; // collect the categories to add them to the post
             $depth++;
         }
     }
 
     // we need to check if the categories we added have the right hierarchy, so let's get the whole list first
 
-
     //$comp_result = unc_array_analyse($photo_tags_unique, $post_tags_unique);
     //$missing_cats = $comp_result['only_in_1'];
+    // XMPP_ERROR_trace("assign final list of cats", $post_categories);
+    wp_set_post_categories($post_id, $post_categories, false); // true means cats will be added, not replaced
 
-    // wp_set_post_categories($post_id, $post_categories, true); // true means cats will be added, not replaced
 }
 
 
