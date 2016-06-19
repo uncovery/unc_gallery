@@ -389,6 +389,7 @@ function unc_uploads_process_file($i, $overwrite) {
  * @param int $size target size of the image
  * @param string $extension the file extension
  * @param int @quality quality from 1 (worst) to 100 (best)
+ * @param string $format
  * @return boolean
  */
 function unc_import_image_resize($image_file_path, $target_file_path, $size, $extension, $quality, $format = false) {
@@ -401,7 +402,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ex
         $image_data = unc_image_info_read($image_file_path);
         $original_width = $image_data['exif']['file_width'];
         $original_height = $image_data['exif']['file_height'];
-        $image_ext = $img_types[2]; // TODO this should not be hardcoded
+        $image_ext = $img_types[2]; // TODO this should not be hardcoded, but currently we only accept JPG
         $file_date = $image_data['date_str'];
     } else {
         // let's get the image size from the last check
