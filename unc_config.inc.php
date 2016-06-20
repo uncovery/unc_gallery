@@ -55,9 +55,9 @@ $UNC_GALLERY['user_settings'] = array(
     ),
     'thumbnail_format' => array(
         'help' => 'Crop the thumbnails to a specific format for easier layouts.',
-        'default' => 'false',
+        'default' => 'max_height',
         'type' => 'dropdown',
-        'options' => array('false' => 'Do not crop', 'square' => 'Square (like facebook/instagram)'),
+        'options' => array('max_height' => 'Do not crop', 'square' => 'Square (like facebook/instagram)'),
         'title' => 'Thumbnail Format',
     ),
     'picture_long_edge' => array(
