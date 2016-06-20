@@ -38,6 +38,7 @@ if (@file_exists('/home/includes/xmpp_error/xmpp_error.php')) {
     $XMPP_ERROR['config']['include_warnings'] = 'unc_gallery';
     $XMPP_ERROR['config']['track_globals'] = array('UNC_GALLERY', 'UNC_FILE_DATA');
 }
+
 // actions on activating and deactivating the plugin
 register_activation_hook( __FILE__, 'unc_gallery_plugin_activate');
 register_deactivation_hook( __FILE__, 'unc_gallery_plugin_deactivate');
@@ -48,8 +49,10 @@ if (is_admin() === true){ // admin actions
     // add an admin menu
     add_action('admin_menu', 'unc_gallery_admin_menu');
 }
+
 // shortcode for the [unc_gallery] replacements
 add_shortcode('unc_gallery', 'unc_gallery_apply');
+
 // this activates the returns without header & footer on upload Ajax POST
 if (is_admin() === true) {
     add_action('wp_ajax_unc_gallery_uploads', 'unc_uploads_iterate_files');
@@ -117,6 +120,11 @@ function unc_gallery_plugin_deactivate() {
     }
 }
 
+/**
+ * Unistalling the plugin
+ *
+ * @global type $UNC_GALLERY
+ */
 function unc_gallery_plugin_uninstall() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}

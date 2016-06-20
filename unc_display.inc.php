@@ -524,6 +524,13 @@ function unc_display_folder_images() {
     }
 }
 
+/**
+ * Compare existing post tags with the image and fix missing ones.
+ *
+ * @global type $UNC_GALLERY
+ * @param type $F
+ * @return boolean
+ */
 function unc_display_tags_compare($F) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
@@ -580,6 +587,13 @@ function unc_display_tags_compare($F) {
     wp_set_post_tags($post_id, $missing_tags, $append_tags);
 }
 
+/**
+ * Compare existing post categories with the image and fixing the missing
+ *
+ * @global type $UNC_GALLERY
+ * @param type $file_data
+ * @return type
+ */
 function unc_display_categories_compare($file_data) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
@@ -694,6 +708,15 @@ function unc_display_categories_compare($file_data) {
 }
 
 
+/**
+ * Display one simgle image
+ *
+ * @global type $UNC_GALLERY
+ * @param type $file_path
+ * @param type $show_thumb
+ * @param type $file_data
+ * @return string
+ */
 function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
@@ -740,6 +763,13 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     return $out;
 }
 
+/**
+ * generate the file list for photoswipe display
+ *
+ * @global type $UNC_GALLERY
+ * @param type $files
+ * @return type
+ */
 function unc_display_photoswipe_js($files) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
@@ -772,12 +802,24 @@ function unc_display_photoswipe_js($files) {
     return $out;
 }
 
+/**
+ * Display an error message
+ *
+ * @global type $UNC_GALLERY
+ * @param type $error
+ * @return type
+ */
 function unc_display_errormsg($error) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     return "<div class=\"unc_gallery_error\">ERROR: $error</div>";
 }
 
+/**
+ * Display the photswipe HTML. This comes at the bottom of the page, is normally not visible.
+ * 
+ * @global type $UNC_GALLERY
+ */
 function unc_display_photoswipe() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}

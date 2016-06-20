@@ -151,8 +151,6 @@ function unc_uploads_iterate_files() {
         wp_die();
     }
 
-
-
     // overwrite files?
     $overwrite = false;
     // filte_input is null when the vaiable is not in POST

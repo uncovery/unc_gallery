@@ -91,12 +91,14 @@ description is added to it if set. Example of a description set to "Don't panic"
 
 ![Sample screenshot of a description](/images/screenshot-6.png)
 
-#### `featured="filename.jpg"`
+#### `featured="filename.jpg|latest|random"`
 
 This will, in case you did not use `image` or `thumb` as a `type`, show the image
 used here as a featured image for the date, at the left edge and larger. It will
 not appear again among the other, smaller images. You can also add several of them
-by separating them with commas (do not add spaces!): `featured="filename1.jpg,filename2.jpg"`
+by separating them with commas (do not add spaces!): `featured="filename1.jpg,filename2.jpg"`.
+You can also add `latest` or `random` to the list and it will feature the latest or any random image.
+Please be aware that if you have both `latest` and `random` the same image might be shown twice!
 Sample screenshot of a featured image:
 
 ![Sample screenshot of a featured image](/images/screenshot-5.png)
