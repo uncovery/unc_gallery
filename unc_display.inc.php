@@ -450,7 +450,7 @@ function unc_display_folder_images() {
             }
         }
         $F['index'] = $i;
-        if (!$D['slideshow'] && $F['featured']) { // slideshow does not have features
+        if (!$D['slideshow'] && $F['featured']) {
             // select size for featured images
             if ($featured_fixed) {
                 $feat_size = $featured_fixed;
@@ -468,7 +468,7 @@ function unc_display_folder_images() {
             $featured .= "<div class=\"featured_photo $height_css\">\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . "</div>\n";
-        } /* else if ($Df['slideshow']) {
+        } /* else if ($Df['slideshow']) { // slideshow does not have features
             $images .= "<li>\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . '<p>' . unc_tools_file_desc($F) . '</p>'

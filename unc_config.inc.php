@@ -27,6 +27,7 @@ $UNC_GALLERY['keywords'] = array(
     ),
     'date' => array('random', 'latest'),  // whichdate to chose
     'file' => array('random', 'latest'), // in case of image or icon type, you can chose one filename
+    'featured' => array('random', 'latest'),
     'limt_rows' => 'intval',
     'limit_images' => 'intval',
 );

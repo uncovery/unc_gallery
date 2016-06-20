@@ -268,6 +268,15 @@ function unc_tools_images_list($D = false) {
         }
     }
     ksort($files);
+
+    // random featured file
+    if (in_array('random', $D['featured_image'])) {
+        $new_featured_key = array_rand($files);
+        $new_featured_arr = $files[$new_featured_key];
+        $new_featured_arr['featured'] = true;
+        $featured_list[] = $new_featured_arr;
+    }
+
     foreach ($featured_list as $feat) {
         array_unshift($files, $feat);
     }
