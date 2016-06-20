@@ -275,6 +275,16 @@ function unc_tools_images_list($D = false) {
         $new_featured_arr = $files[$new_featured_key];
         $new_featured_arr['featured'] = true;
         $featured_list[] = $new_featured_arr;
+        unset($files[$new_featured_key]);
+    }
+
+    if (in_array('latest', $D['featured_image'])) {
+        reset($files);
+        $first_key = key($files);
+        $new_featured_arr = $files[$first_key];
+        $new_featured_arr['featured'] = true;
+        $featured_list[] = $new_featured_arr;
+        unset($files[$first_key]);
     }
 
     foreach ($featured_list as $feat) {
