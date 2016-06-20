@@ -352,6 +352,9 @@ function unc_tools_recurse_folders($base_folder) {
         die("Error, recursive path! $base_folder");
     }
     $has_subfolder = false;
+    if (!file_exists($base_folder)) {
+        return false;
+    }
     foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $folder) {
         // found a sub-folder, go deeper
         if (is_dir($folder)) {
