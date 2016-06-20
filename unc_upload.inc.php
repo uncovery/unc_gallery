@@ -97,8 +97,9 @@ function unc_gallery_admin_upload() {
     </form>
     <h2>Import Images</h2>
     <form id="importForm" method="POST" enctype="multipart/form-data">
+        Current path: <?php echo getcwd(); ?><br>
         Import photos from path on this server: <input type="text" id="import_path" name="import_path[]" class="import_path"/><br>
-        <label>Overwrite existing files?</label><input id="import_overwrite" type="checkbox" name="overwrite"><br><br>
+        <label>Overwrite existing files?</label>&nbsp;<input id="import_overwrite" type="checkbox" name="overwrite" size="150"><br><br>
         <button class="button button-primary" onclick="unc_gallery_import_images(); return false;">
             Import
         </button>
@@ -150,42 +151,40 @@ function unc_uploads_iterate_files() {
         wp_die();
     }
 
-    echo "Processing $count image(s)....<br>";
+
 
     // overwrite files?
     $overwrite = false;
     // filte_input is null when the vaiable is not in POST
-    if (!is_null(filter_input(INPUT_POST, 'overwrite'))) {
-        $overwrite = true;
+    if ($UNC_GALLERY['import']) {
+        echo "Importing $count images ";
+        if (!is_null(filter_input(INPUT_POST, 'import_overwrite'))) {
+            $overwrite = true;
+            echo ", Overwriting existing files";
+        }
+    } else {
+        echo "Uploading $count images ";
+        if (!is_null(filter_input(INPUT_POST, 'overwrite'))) {
+            $overwrite = true;
+            echo ", Overwriting existing files";
+        }
     }
+    echo "<br>";
 
     // count up
-    $out_arr = array();
-    $errors = array();
     for ($i=0; $i<$count; $i++){
         // process one file
         $result_arr = unc_uploads_process_file($i, $overwrite);
         $date_str = $result_arr['date'];
         $action = $result_arr['action'];
+        echo $i;
         if (!$date_str) {
-            $errors[] = $action;
+            echo unc_display_errormsg($action);
         } else {
-            if (!isset($out_arr[$date_str][$action])) {
-                $out_arr[$date_str][$action] = 0;
-            }
-            $out_arr[$date_str][$action]++;
-        }
-    }
-    // display results
-    foreach ($out_arr as $date_str => $data) {
-        foreach ($data as $action => $count) {
             echo "$date_str: image $action<br>\n";
         }
+    }
 
-    }
-    foreach ($errors as $error) {
-         echo "$error<br>\n";
-    }
     echo "<br>All images processed!";
     // ob_clean();
     wp_die();
@@ -333,7 +332,14 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // finally, move the file
     if ($UNC_GALLERY['picture_long_edge'] > 0) {
-        $resize_check = unc_import_image_resize($F['tmp_name'][$i], $new_path, $UNC_GALLERY['picture_long_edge'], $extension, $UNC_GALLERY['image_quality'], false);
+        $resize_check = unc_import_image_resize(
+            $F['tmp_name'][$i],
+            $new_path,
+            $UNC_GALLERY['picture_long_edge'],
+            $extension,
+            $UNC_GALLERY['image_quality'],
+            'max_height'
+        );
         if (!$resize_check) {
             return array('date'=> false, 'action' => "Could not resize {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path");
         }
@@ -356,13 +362,12 @@ function unc_uploads_process_file($i, $overwrite) {
 
     // now make the thumbnail
     $thumb_format = $UNC_GALLERY['thumbnail_format'];
-  
     $check = unc_import_image_resize(
-        $new_path, 
-        $new_thumb_path, 
-        $UNC_GALLERY['thumbnail_height'], 
-        $UNC_GALLERY['thumbnail_ext'], 
-        $UNC_GALLERY['thumbnail_quality'], 
+        $new_path,
+        $new_thumb_path,
+        $UNC_GALLERY['thumbnail_height'],
+        $UNC_GALLERY['thumbnail_ext'],
+        $UNC_GALLERY['thumbnail_quality'],
         $thumb_format
     );
     if (!$check) {
@@ -397,7 +402,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ex
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $img_types = array(1 => 'GIF', 2 => 'JPEG', 3 => 'PNG');
 
-    // 
+    //
     if (!isset($UNC_GALLERY['upload_file_info'])) {
         $image_data = unc_image_info_read($image_file_path);
         $original_width = $image_data['exif']['file_width'];
@@ -413,17 +418,21 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ex
         $file_date = $UNC_GALLERY['upload_file_info']['date_str'];
     }
 
+    //XMPP_ERROR_trace("width / height", "$original_width / $original_height");
+
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("Read image date result", $file_date);}
+
     // for long-edge fitting, check which one is longer
-    //if ($edge == 'long') { // resize so that the long edge fits
-        if ($original_height > $original_width) {
-            $long_edge = 'height';
-            $short_edge = 'width';
-        } else {
-            $long_edge = 'width';
-            $short_edge = 'height';
-        }
-    //}
-    
+    if ($original_height > $original_width) {
+        $long_edge = 'height';
+        $short_edge = 'width';
+    } else {
+        $long_edge = 'width';
+        $short_edge = 'height';
+    }
+
+    //XMPP_ERROR_trace("Long edge", $long_edge);
+
     if ($original_height > $original_width) {
         $square_x = 0;
         $square_y = ceil(($original_height - $original_width) / 2);
@@ -431,37 +440,30 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ex
         $square_x = ceil(($original_width - $original_height) / 2);
         $square_y = 0;
     }
-    
+
     // if we go for square, the target edge is the short one
     if ($format == 'square') {
         $new_height = $size;
         $new_width = $size;
-    } else if ($long_edge == 'height') {
+    } else { // if ($format == 'max_height') {
         $new_height = $size;
         $new_width = intval($original_width * ($size / $original_height));
-    } else if ($long_edge == 'width') {
-        $new_width = $size;
-        $new_height = intval($original_height * ($size / $original_width));
     }
 
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("New image dims", "$original_width x $original_height ==> $new_width x $new_height");}
     // get image extension from MIME type
-    
+
 
     // set the function names for processing
     $img_generator = "Image" . $extension;
     $imgcreatefrom = "ImageCreateFrom" . $image_ext;
 
-    // get original file date
-    
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("Read image date result", $file_date);}
-
     $new_image = imagecreatetruecolor($new_width, $new_height); // create a blank canvas
     $old_image = $imgcreatefrom($image_file_path); // take the old image to memort
-    
+
     $source_width = $original_width;
     $source_height = $original_height;
-    
+
     if ($format == 'square') {
         $source_x = $square_x;
         $source_y = $square_y;
@@ -474,7 +476,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ex
         $source_x = 0;
         $source_y = 0;
     }
-    
+
     $resize_check = imagecopyresized($new_image, $old_image, 0, 0, $source_x, $source_y, $new_width, $new_height, $source_width, $source_height); // resize it
     if (!$resize_check) { // ;et's check if the file was resized
         echo "Could not resize image to dimensions $new_width, $new_height, $original_width, $original_height!";
@@ -491,7 +493,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ex
     unc_ipct_date_write($target_file_path, $file_date);
     $new_file_date = unc_image_date($target_file_path);
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("check IPCT result", $new_file_date);}
-
+    //XMPP_ERROR_trigger("test");
     imagedestroy($new_image); // free up the memory
     return true;
 }
