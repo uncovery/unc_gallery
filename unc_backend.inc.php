@@ -5,11 +5,17 @@ if (!defined('WPINC')) {
     die;
 }
 
+/**
+ * create the admin menu optionally in the admin bar or the settings benu
+ *
+ * @global type $UNC_GALLERY
+ */
 function unc_gallery_admin_menu() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // the main page where we manage the options
 
+    // in the settings page
     if (isset($UNC_GALLERY['settings_location']) && $UNC_GALLERY['settings_location'] == 'submenu') {
         $main_options_page_hook_suffix = add_options_page(
             'Uncovery Gallery Options',
@@ -18,7 +24,7 @@ function unc_gallery_admin_menu() {
             'unc_gallery_admin_menu',
             'unc_gallery_admin_settings'
         );
-    } else {
+    } else {  // main admin menu
         $main_options_page_hook_suffix = add_menu_page(
             'Uncovery Gallery Options', // $page_title,
             'Uncovery Gallery', // $menu_title,
@@ -28,7 +34,6 @@ function unc_gallery_admin_menu() {
         );
     }
     add_action('admin_print_scripts-' . $main_options_page_hook_suffix, 'unc_gallery_add_css_and_js');
-
 }
 
 
@@ -48,6 +53,7 @@ function unc_gallery_admin_init() {
         'unc_gallery_settings_page' // need to match menu_slug
     );
 
+    // we iterate the plugin settings and creat the menus dynamically from there
     foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
         $prefix = $UNC_GALLERY['settings_prefix'];
         register_setting('unc_gallery_settings_page', $prefix . $setting);
@@ -67,7 +73,7 @@ function unc_gallery_admin_init() {
             $callback = 'unc_gallery_setting_multiple_render';
             $args['options'] = $D['options'];
         } else if ($UNC_GALLERY['debug']) {
-            XMPP_ERROR_trigger("Illegal option type ". $D['type']);
+            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("Illegal option type ". $D['type']);}
         }
         add_settings_field(
             $prefix . $setting,
@@ -79,7 +85,6 @@ function unc_gallery_admin_init() {
         );
     }
 
-    //add_settings_field( 'field-one', 'Field One', 'unc_gallery_backend_image_upload', 'unc_gallery', 'basic_settings');
     // check if the upload folder exists:
     $dirPath =  $UNC_GALLERY['upload_path'];
     if (!file_exists($dirPath)) {
@@ -333,6 +338,11 @@ function unc_gallery_admin_rebuild_thumbs() {
     wp_die();
 }
 
+/**
+ * re-load all image data and store to data files
+ *
+ * @global type $UNC_GALLERY
+ */
 function unc_gallery_admin_rebuild_data() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
