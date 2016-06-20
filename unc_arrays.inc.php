@@ -47,6 +47,15 @@ function unc_array2file($data, $array_name, $file, $global = false) {
     return file_put_contents($file, $out);
 }
 
+/**
+ * Write one line of an array
+ *
+ * @global type $UNC_GALLERY
+ * @param type $array
+ * @param type $layer
+ * @param type $val_change_func
+ * @return type
+ */
 function unc_array2file_line($array, $layer, $val_change_func = false) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
@@ -73,6 +82,13 @@ function unc_array2file_line($array, $layer, $val_change_func = false) {
     return $out;
 }
 
+/**
+ * Calculate the indentation for the array written to file
+ *
+ * @global type $UNC_GALLERY
+ * @param type $layer
+ * @return string
+ */
 function unc_array2file_indent($layer) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
