@@ -296,11 +296,13 @@ function unc_gallery_admin_rebuild_thumbs() {
     // cleanup empty folders first
     unc_tools_folder_delete_empty($dirPath);
 
-    // TODO Delete all old thumbnails before re-writing them.
-
     $thumb_root = $dirPath . DIRECTORY_SEPARATOR . $UNC_GALLERY['thumbnails'];
     // iterate all image folders
     $photo_folder = $dirPath . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
+
+    // delete all thumbnails
+    unc_gallery_recurse_files($photo_folder, 'unlink', 'rmdir');
+
     $target_folders = unc_tools_recurse_folders($photo_folder);
 
     // create thumbnaisl
@@ -316,11 +318,11 @@ function unc_gallery_admin_rebuild_thumbs() {
                 $filename = basename($image_file);
                 $thumb_filename = $thumb_folder . DIRECTORY_SEPARATOR . $filename;
                 unc_import_image_resize(
-                    $image_file, 
-                    $thumb_filename, 
-                    $UNC_GALLERY['thumbnail_height'], 
-                    $UNC_GALLERY['thumbnail_ext'], 
-                    $UNC_GALLERY['thumbnail_quality'], 
+                    $image_file,
+                    $thumb_filename,
+                    $UNC_GALLERY['thumbnail_height'],
+                    $UNC_GALLERY['thumbnail_ext'],
+                    $UNC_GALLERY['thumbnail_quality'],
                     $UNC_GALLERY['thumbnail_format']
                 );
             }
