@@ -234,6 +234,7 @@ function unc_image_info_read($file_path, $D = false) {
 
 /**
  * On upload, get all information from a file and write it to a PHP file
+ * TODO: Move this to MySQL / SQLite
  *
  * @global type $UNC_GALLERY
  * @param type $file_path
@@ -451,7 +452,7 @@ function unc_exif_get($image_path) {
             $data[$code] = basename($image_path);
             continue;
         }
-        
+
         $hex_tag =  'UndefinedTag:' . $C['hex'];
         if (is_array($C['key'])) { // gps for example is made out of multiple keys
             $val = array();
