@@ -570,6 +570,11 @@ function unc_display_tags_compare($F) {
     }
     $photo_tags_unique = array_unique($photo_tags);
 
+    // in case there are no tags in the photos, we won't do anything
+    if (count($photo_tags_unique) == 0) {
+        return;
+    }
+
     // get all post tags
     $post_tags = array();
     $posttags_obj = get_the_tags();
@@ -817,7 +822,7 @@ function unc_display_errormsg($error) {
 
 /**
  * Display the photswipe HTML. This comes at the bottom of the page, is normally not visible.
- * 
+ *
  * @global type $UNC_GALLERY
  */
 function unc_display_photoswipe() {
