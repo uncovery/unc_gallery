@@ -11,10 +11,16 @@ sorted by date.
 The galleries are then displayed by inserting a short code into any wordpress element
 such as posts or pages in the basic format `[unc_gallery date="2006-03-30"]`.
 
+The main target of this plugin is to reduce duplication of work. You can now manage
+all the information about your photos in lightroom or similar software and Uncovery Gallery
+will take all this information and display it on your images. You can auto-tag your posts
+with keywords, auto-categorize with the location info, show all EXIF/IPCT/XMP information
+on each image etc.
+
 One key advantage of this system is that you can remove individual photos and
-they will disappear without errors from the whole page (unless they have been
-featured somewhere) and you can also re-upload photos and overwrite old ones in
-case you changed them without going through delete & replace processes.
+they will disappear without errors from the whole page and you can also re-upload
+photos and overwrite old ones in case you changed them without going through
+delete & replace processes.
 
 ## Example gallery
 
@@ -108,7 +114,9 @@ Sample screenshot of a featured image:
 This allows you to display a description for specific images. The format for one
 image is `filename.jpg:Description;`. Make sure that the last description does
 not have NOT have a colon `;` in the end. Also, no double quotes `"` or line breaks
-can be used in the details.
+can be used in the details. It is highly recommended to use your catalogue software
+(lightroom et al.) instead, add the description there and then chose the fields in the
+settings to display it automatically in the gallery.
 
 ### `limit_images="12"`
 
