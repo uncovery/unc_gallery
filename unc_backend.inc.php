@@ -306,21 +306,25 @@ function unc_gallery_admin_rebuild_thumbs() {
     $photo_folder = $dirPath . "/" . $UNC_GALLERY['photos'];
 
     // delete all thumbnails
-    unc_gallery_recurse_files($photo_folder, 'unlink', 'rmdir');
+    unc_gallery_recurse_files($thumb_root, 'unlink', 'rmdir');
 
     $target_folders = unc_tools_recurse_folders($photo_folder);
+
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('target folders:', $target_folders);}
 
     // create thumbnaisl
     foreach ($target_folders as $date => $folder) {
         // construct the thumb folder where we put the thumbnails
         $thumb_folder = $thumb_root . "/" . $date;
         echo "Processing $date: ";
+        unc_date_folder_create($date);
 
         // enumerate all the files in the source folder
         foreach (glob($folder . "/*") as $image_file) {
             if (!is_dir($image_file)) {
                 echo ".";
                 $filename = basename($image_file);
+
                 $thumb_filename = $thumb_folder . "/" . $filename;
                 unc_import_image_resize(
                     $image_file,

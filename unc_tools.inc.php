@@ -345,6 +345,9 @@ function unc_gallery_recurse_files($base_folder, $file_function, $dir_function) 
     if (strpos($base_folder, './')) {
         die("Error, recursive path! $base_folder");
     }
+    if (!file_exists($base_folder)) {
+        return false;
+    }
     foreach (glob($base_folder . "/*") as $file) {
         if (is_dir($file)) {
             $TMP_FOLDERS[] = unc_gallery_recurse_files($file, $file_function, $dir_function);
@@ -372,6 +375,7 @@ function unc_tools_recurse_folders($base_folder) {
     }
     $has_subfolder = false;
     if (!file_exists($base_folder)) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("Base folder does not exist: ", $base_folder);}
         return false;
     }
     foreach (glob($base_folder . "/*") as $folder) {
