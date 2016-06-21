@@ -258,7 +258,7 @@ for touch devices such as mobile phones and tablets.
 
 | Lightbox | Photoswipe|
 |---------------------------------|----------------------------------|
-|![Lightbox](/images/screenshot-13.png)|![Photoswipe](/images/screenshot-12.png)|
+|![Lightbox](/images/screenshot-13.jpg)|![Photoswipe](/images/screenshot-12.jpg)|
 
 ## Limitations
 
