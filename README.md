@@ -236,7 +236,7 @@ as a submenu of the "Settings" menu.
 
 |Side bar Menu|Settings submenu|
 |---------------------------------|----------------------------------|
-|![Calendar](/images/screenshot-14.png)|![Datelist](/images/screenshot-15.png)|
+|![Calendar](/images/screenshot-14.jpg)|![Datelist](/images/screenshot-15.jpg)|
 
 ### Admin Date Selector
 
