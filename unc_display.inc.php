@@ -303,7 +303,7 @@ function unc_gallery_display_page() {
     // do not let wp manipulate linebreaks
     remove_filter('the_content', 'wpautop');
 
-    $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
+    $photo_folder =  $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'];
 
     // get a json datepicker
     $datepicker_div = '';
@@ -368,7 +368,7 @@ function unc_gallery_display_page() {
         } else {
             $file = $D['file'];
         }
-        $file_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_path . DIRECTORY_SEPARATOR . $file;
+        $file_path = $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'] . "/" . $date_path . "/" . $file;
         $out = unc_display_image_html($file_path, $thumb, false);
     } else {
         $images_html = unc_display_folder_images();

@@ -30,13 +30,13 @@ function unc_date_folder_create($date_str) {
     // iterate them
     foreach ($path_arr as $img_folder) {
         // create the complete folder
-        $base_folder = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $img_folder;
+        $base_folder = $UNC_GALLERY['upload_path'] . "/" . $img_folder;
         // iterate the date strings y m d
         foreach ($date_folders as $date_folder) {
             // if it's not the root folder, we format the date to reflect he element
             if ($date_folder) {
                 $date_element = $date_obj->format($date_folder);
-                $base_folder .= DIRECTORY_SEPARATOR . "$date_element";
+                $base_folder .= "/$date_element";
             }
             // take the final folder string and check if already exists
             if (!file_exists($base_folder)) {
@@ -71,7 +71,7 @@ function unc_date_folder_delete($date_str) {
         return unc_display_errormsg("Invalid date folder!");
     }
     // convert date to folder string
-    $fstr = DIRECTORY_SEPARATOR;
+    $fstr = "/";
     $out = "";
     $date_folder = date_format($date_obj, "Y{$fstr}m{$fstr}d");
 
@@ -80,7 +80,7 @@ function unc_date_folder_delete($date_str) {
     // iterate both
     foreach ($path_arr as $img_folder) {
         // now let's get the path of that date
-        $base_folder = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $img_folder . DIRECTORY_SEPARATOR . $date_folder;
+        $base_folder = $UNC_GALLERY['upload_path'] . "/" . $img_folder . "/" . $date_folder;
         if (!file_exists($base_folder)) {
             // the folder does not exist, so let's not delete anything
             return unc_display_errormsg("Folder $base_folder could not be deleted!");
@@ -100,7 +100,7 @@ function unc_date_folder_delete($date_str) {
         // $out .= " /$base_folder... <br>";
         rmdir($base_folder);
         // now we iterate the tree and make sure we delete all leftover empty months & year folders.
-        unc_tools_folder_delete_empty($UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $img_folder);
+        unc_tools_folder_delete_empty($UNC_GALLERY['upload_path'] . "/" . $img_folder);
     }
     return $out;
 }
@@ -120,7 +120,7 @@ function unc_tools_folder_delete_empty($path) {
     }
 
     $empty = true;
-    $path_wildcard = $path . DIRECTORY_SEPARATOR . "*";
+    $path_wildcard = $path . "/*";
     foreach (@glob($path_wildcard) as $file) {
         if (is_dir($file)) { // recurse lower directory
            if (!unc_tools_folder_delete_empty($file)) {
@@ -150,7 +150,7 @@ function unc_tools_import_enumerate($path) {
     if (!current_user_can('manage_options')) {
         return false;
     }
-    foreach (glob($path . DIRECTORY_SEPARATOR . "*") as $file) {
+    foreach (glob($path . "/*") as $file) {
         if (is_dir($file)) { // recurse lower directory
            unc_tools_import_enumerate($file);
         } else {
@@ -243,10 +243,10 @@ function unc_tools_images_list($D = false) {
 
     foreach ($dates as $date_str) {
         // translate date string to folder
-        $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
-        $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
-        $folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
-        foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
+        $date_path = str_replace("-", "/", $date_str);
+        $photo_folder =  $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'];
+        $folder = $photo_folder . "/" . $date_path;
+        foreach (glob($folder . "/*") as $file_path) {
             $F = unc_image_info_read($file_path, $D);
             if (($D['range']['end_time'] && $D['range']['start_time']) && // only if both are set
                     ($D['range']['end_time'] < $D['range']['start_time'])) { // AND the end is before the start
@@ -342,10 +342,10 @@ function unc_gallery_recurse_files($base_folder, $file_function, $dir_function) 
     global $TMP_FOLDERS, $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // safety net
-    if (strpos($base_folder, '.' . DIRECTORY_SEPARATOR)) {
+    if (strpos($base_folder, './')) {
         die("Error, recursive path! $base_folder");
     }
-    foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file) {
+    foreach (glob($base_folder . "/*") as $file) {
         if (is_dir($file)) {
             $TMP_FOLDERS[] = unc_gallery_recurse_files($file, $file_function, $dir_function);
         } else {
@@ -367,14 +367,14 @@ function unc_gallery_recurse_files($base_folder, $file_function, $dir_function) 
 function unc_tools_recurse_folders($base_folder) {
     global $TMP_FOLDERS, $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    if (strpos($base_folder, '.' . DIRECTORY_SEPARATOR)) {
+    if (strpos($base_folder, './')) {
         die("Error, recursive path! $base_folder");
     }
     $has_subfolder = false;
     if (!file_exists($base_folder)) {
         return false;
     }
-    foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $folder) {
+    foreach (glob($base_folder . "/*") as $folder) {
         // found a sub-folder, go deeper
         if (is_dir($folder)) {
             unc_tools_recurse_folders($folder);
@@ -382,9 +382,9 @@ function unc_tools_recurse_folders($base_folder) {
         }
     }
     if (!$has_subfolder) {
-        $path_arr = explode(DIRECTORY_SEPARATOR, $base_folder);
+        $path_arr = explode("/", $base_folder);
         $date_elements = array_slice($path_arr, -3, 3);
-        $date_string = implode(DIRECTORY_SEPARATOR, $date_elements);
+        $date_string = implode("/", $date_elements);
         $TMP_FOLDERS[$date_string] = $base_folder;
     }
     return $TMP_FOLDERS;
@@ -400,7 +400,7 @@ function unc_tools_date_latest() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
-    $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
+    $photo_folder =  $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'];
     $folders = unc_tools_recurse_folders($photo_folder);
     if (count($folders) == 1 ) {
         $val = reset($folders);
@@ -424,7 +424,7 @@ function unc_tools_date_latest() {
 function unc_tools_date_random() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
+    $photo_folder =  $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'];
     $folders = unc_tools_recurse_folders($photo_folder);
     if (count($folders) == 0) {
         return false;
@@ -445,15 +445,15 @@ function unc_tools_date_random() {
 function unc_tools_file_latest($date_path) {
     global $UNC_GALLERY, $UNC_FILE_DATA;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    $base_folder = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['file_data'] . DIRECTORY_SEPARATOR . $date_path;
+    $base_folder = $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['file_data'] . "/" . $date_path;
     $folder_files = array();
 
-    foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file_path) {
+    foreach (glob($base_folder . "/*") as $file_path) {
         // found a sub-folder, go deeper
         if (!is_dir($file_path)) {
             require_once($file_path);
             $file_name = basename($file_path, ".php");
-            $file_code = md5($date_path . DIRECTORY_SEPARATOR . $file_name . ".php");
+            $file_code = md5($date_path . "/" . $file_name . ".php");
             $file_timestamp = $UNC_FILE_DATA[$file_code]['time_stamp'];
             $folder_files[$file_timestamp] = $UNC_FILE_DATA[$file_code];
         }
@@ -474,9 +474,9 @@ function unc_tools_file_latest($date_path) {
 function unc_tools_file_random($date_path) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    $base_folder = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] . DIRECTORY_SEPARATOR . $date_path;
+    $base_folder = $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'] . "/" . $date_path;
     $files = array();
-    foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $file) {
+    foreach (glob($base_folder . "/*") as $file) {
         // found a sub-folder, go deeper
         if (!is_dir($file)) {
             $files[] = $file;
@@ -499,7 +499,7 @@ function unc_tools_file_random($date_path) {
 function unc_tools_folder_date($folder) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    $path_arr = explode(DIRECTORY_SEPARATOR, $folder);
+    $path_arr = explode("/", $folder);
     // get last 3 elements
     $new_date_arr = array_slice($path_arr, -3, 3);
     $new_date_str = implode("-", $new_date_arr);
@@ -540,9 +540,9 @@ function unc_tools_bytes_get($ini_val) {
 function unc_tools_image_path($date_path, $file_name) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'] ;
-    $curr_photo_folder = $photo_folder . DIRECTORY_SEPARATOR . $date_path;
-    $file_path = $curr_photo_folder . DIRECTORY_SEPARATOR . $file_name;
+    $photo_folder =  $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'] ;
+    $curr_photo_folder = $photo_folder . "/" . $date_path;
+    $file_path = $curr_photo_folder . "/" . $file_name;
     return $file_path;
 }
 
@@ -558,15 +558,15 @@ function unc_tools_image_path($date_path, $file_name) {
 function unc_tools_folder_list($base_folder) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
+    $photo_folder =  $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'];
     $base_length = strlen($photo_folder) + 1;
 
     $dates = array();
-    foreach (glob($base_folder . DIRECTORY_SEPARATOR . "*") as $current_path) {
+    foreach (glob($base_folder . "/*") as $current_path) {
         $file = basename($current_path);
         // get current date from subfolder
         if (is_dir($current_path)) { // we have a directory
-            $cur_date = str_replace(DIRECTORY_SEPARATOR, "-", substr($current_path, $base_length));
+            $cur_date = str_replace("/", "-", substr($current_path, $base_length));
             if (strlen($cur_date) == 10) { // we have a full date, add to array
                 $dates[$cur_date] = 0;
             }
@@ -576,7 +576,7 @@ function unc_tools_folder_list($base_folder) {
                 $dates = array_merge($dates, $new_dates);
             }
         } else { // we have a file
-            $cur_date = str_replace(DIRECTORY_SEPARATOR, "-", substr($base_folder, $base_length));
+            $cur_date = str_replace("/", "-", substr($base_folder, $base_length));
             $dates[$cur_date][] = $file;
         }
     }
@@ -608,7 +608,7 @@ function unc_tools_image_delete() {
     }
 
     $date_wrong = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
-    $date_str = str_replace("-", DIRECTORY_SEPARATOR, $date_wrong);
+    $date_str = str_replace("-", "/", $date_wrong);
 
 
     $paths = array(
@@ -618,7 +618,7 @@ function unc_tools_image_delete() {
     );
 
     foreach ($paths as $path => $del_file_name) {
-        $full_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $path . DIRECTORY_SEPARATOR . $date_str . DIRECTORY_SEPARATOR . $del_file_name;
+        $full_path = $UNC_GALLERY['upload_path'] . "/" . $path . "/" . $date_str . "/" . $del_file_name;
         if (file_exists($full_path)) {
             $check = unlink($full_path);
             if ($check) {
@@ -685,10 +685,10 @@ function unc_tools_date_path($date) {
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $date_obj = new DateTime($date . " 00:00:00");
     if ($date_obj) {
-        $format = implode(DIRECTORY_SEPARATOR, array('Y', 'm', 'd'));
+        $format = implode("/", array('Y', 'm', 'd'));
         $date_str = $date_obj->format($format);
-        $photo_folder =  $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
-        if (!file_exists($photo_folder . DIRECTORY_SEPARATOR . $date_str)) {
+        $photo_folder =  $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'];
+        if (!file_exists($photo_folder . "/" . $date_str)) {
             if ($UNC_GALLERY['no_image_alert'] == 'error') {
                 $UNC_GALLERY['errors'][] = unc_display_errormsg("No images found for this date!");
             } else if ($UNC_GALLERY['no_image_alert'] == 'not_found') {

@@ -277,9 +277,9 @@ function unc_gallery_admin_maintenance() {
 function unc_gallery_admin_show_documentation() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    require_once(__DIR__ .  DIRECTORY_SEPARATOR . 'libraries' . DIRECTORY_SEPARATOR . 'Parsedown.php');
+    require_once(__DIR__  . '/libraries/Parsedown.php');
 
-    $markdown_docs = file_get_contents(__DIR__ .  DIRECTORY_SEPARATOR . 'README.md');
+    $markdown_docs = file_get_contents(__DIR__  . '/README.md');
     $markdown_fixed = str_replace('/images/', plugins_url( '/images/', __FILE__ ), $markdown_docs);
     $Parsedown = new Parsedown();
     return $Parsedown->text($markdown_fixed);
@@ -301,9 +301,9 @@ function unc_gallery_admin_rebuild_thumbs() {
     // cleanup empty folders first
     unc_tools_folder_delete_empty($dirPath);
 
-    $thumb_root = $dirPath . DIRECTORY_SEPARATOR . $UNC_GALLERY['thumbnails'];
+    $thumb_root = $dirPath . "/" . $UNC_GALLERY['thumbnails'];
     // iterate all image folders
-    $photo_folder = $dirPath . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
+    $photo_folder = $dirPath . "/" . $UNC_GALLERY['photos'];
 
     // delete all thumbnails
     unc_gallery_recurse_files($photo_folder, 'unlink', 'rmdir');
@@ -313,15 +313,15 @@ function unc_gallery_admin_rebuild_thumbs() {
     // create thumbnaisl
     foreach ($target_folders as $date => $folder) {
         // construct the thumb folder where we put the thumbnails
-        $thumb_folder = $thumb_root . DIRECTORY_SEPARATOR . $date;
+        $thumb_folder = $thumb_root . "/" . $date;
         echo "Processing $date: ";
 
         // enumerate all the files in the source folder
-        foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $image_file) {
+        foreach (glob($folder . "/*") as $image_file) {
             if (!is_dir($image_file)) {
                 echo ".";
                 $filename = basename($image_file);
-                $thumb_filename = $thumb_folder . DIRECTORY_SEPARATOR . $filename;
+                $thumb_filename = $thumb_folder . "/" . $filename;
                 unc_import_image_resize(
                     $image_file,
                     $thumb_filename,
@@ -359,7 +359,7 @@ function unc_gallery_admin_rebuild_data() {
     // TODO: delete all old data files
 
     // iterate all image folders
-    $photo_folder = $dirPath . DIRECTORY_SEPARATOR . $UNC_GALLERY['photos'];
+    $photo_folder = $dirPath . "/" . $UNC_GALLERY['photos'];
     $target_folders = unc_tools_recurse_folders($photo_folder);
     // create thumbnaisl
     foreach ($target_folders as $date => $folder) {
@@ -367,7 +367,7 @@ function unc_gallery_admin_rebuild_data() {
         echo "Processing $date: ";
 
         // enumerate all the files in the source folder
-        foreach (glob($folder . DIRECTORY_SEPARATOR . "*") as $image_file) {
+        foreach (glob($folder . "/*") as $image_file) {
             if (!is_dir($image_file)) {
                 $check = unc_image_info_write($image_file);
                 if ($check) {

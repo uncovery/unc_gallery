@@ -199,17 +199,17 @@ function unc_image_info_read($file_path, $D = false) {
 
     $folder_info = pathinfo($file_path);
     $date_str = unc_tools_folder_date($folder_info['dirname']);
-    $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
+    $date_path = str_replace("-", "/", $date_str);
     $file_name = $folder_info['basename'];
 
-    $data_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['file_data'] . DIRECTORY_SEPARATOR . $date_path . DIRECTORY_SEPARATOR . $file_name . ".php";
+    $data_path = $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['file_data'] . "/" . $date_path . "/" . $file_name . ".php";
 
     // in case the data is missing, write a new file
     if (!file_exists($data_path)){
         if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger($data_path . " Not found!");}
         $check = unc_image_info_write($file_path);
     }
-    $file_code = md5($date_path . DIRECTORY_SEPARATOR . $file_name . ".php");
+    $file_code = md5($date_path . "/" . $file_name . ".php");
     // reset the data so we re-read it from file
     $UNC_FILE_DATA[$file_code] = false;
     require($data_path);
@@ -255,7 +255,7 @@ function unc_image_info_write($file_path) {
     $time_stamp = $dtime->getTimestamp(); // time stamp is easier to compare
     $folder_info = pathinfo($file_path);
     $date_str = unc_tools_folder_date($folder_info['dirname']);
-    $date_path = str_replace("-", DIRECTORY_SEPARATOR, $date_str);
+    $date_path = str_replace("-", "/", $date_str);
     $file_name = $folder_info['basename'];
 
     $orientation = 'landscape';
@@ -267,7 +267,7 @@ function unc_image_info_write($file_path) {
     $photo_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
     $thumb_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
 
-    $data_path = $UNC_GALLERY['upload_path'] . DIRECTORY_SEPARATOR . $UNC_GALLERY['file_data'] . DIRECTORY_SEPARATOR . $date_path . DIRECTORY_SEPARATOR . $file_name . ".php";
+    $data_path = $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['file_data'] . "/" . $date_path . "/" . $file_name . ".php";
 
     $data = array(
         'data_version' => $UNC_GALLERY['data_version'],
@@ -289,7 +289,7 @@ function unc_image_info_write($file_path) {
     }
 
     // write the file
-    $file_code = md5($date_path . DIRECTORY_SEPARATOR . $file_name . ".php");
+    $file_code = md5($date_path . "/" . $file_name . ".php");
     global $UNC_FILE_DATA;
     $UNC_FILE_DATA[$file_code] = $data;
 
