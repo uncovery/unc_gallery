@@ -130,7 +130,6 @@ function unc_tools_folder_delete_empty($path) {
            $empty = false;
         }
     }
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('empty folder', $empty);}
     if ($empty) {
         rmdir($path);
     }
@@ -391,6 +390,7 @@ function unc_tools_recurse_folders($base_folder) {
         $date_string = implode("/", $date_elements);
         $TMP_FOLDERS[$date_string] = $base_folder;
     }
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('folders', $TMP_FOLDERS);}
     return $TMP_FOLDERS;
 }
 

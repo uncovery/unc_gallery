@@ -103,6 +103,39 @@ function unc_gallery_plugin_activate() {
             echo unc_display_errormsg("There was an error creating the upload folder {$UNC_GALLERY['upload_path']}!");
         }
     }
+    // create the DB structure
+    unc_mysql_db_create();
+}
+
+function unc_mysql_db_create() {
+    global $wpdb, $UNC_GALLERY;
+
+    $charset_collate = $wpdb->get_charset_collate();
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+
+    $table_name_img = $wpdb->prefix . "unc_gallery_img";
+    $sql_img = "CREATE TABLE $table_name_img (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        file_time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+        file_name tinytext NOT NULL,
+        UNIQUE KEY id (id)
+    ) $charset_collate;";
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('SQL1', $sql_img);}
+    dbDelta($sql_img);
+
+    $table_name_att = $wpdb->prefix . "unc_gallery_att";
+    $sql_att = "CREATE TABLE $table_name_att (
+        `att_id` mediumint(9) NOT NULL AUTO_INCREMENT,
+        `file_id` mediumint(9) NOT NULL,
+        `group` tinytext,
+        `att_name` tinytext NOT NULL,
+        `att_value` tinytext NOT NULL,
+        UNIQUE KEY id (att_id)
+    ) $charset_collate;";
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('SQL2', $sql_att);}
+    dbDelta($sql_att);
+
+    add_option( "unc_gallery_db_version", "1.0" );
 }
 
 /**

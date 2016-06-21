@@ -468,12 +468,12 @@ function unc_display_folder_images() {
             $featured .= "<div class=\"featured_photo $height_css\">\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . "</div>\n";
-        } /* else if ($Df['slideshow']) { // slideshow does not have features
+        /*} else if ($Df['slideshow']) { // slideshow does not have features
             $images .= "<li>\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . '<p>' . unc_tools_file_desc($F) . '</p>'
-                . "</li>\n";
-        } */ else {
+                . "</li>\n";*/
+        } else {
             $images .= "<div class=\"one_photo\">\n"
                 . unc_display_image_html($F['file_path'], true, $F)
                 . "</div>\n";

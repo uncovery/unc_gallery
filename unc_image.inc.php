@@ -194,7 +194,7 @@ $UNC_GALLERY['codes']['ipct'] = array(
 );
 
 function unc_image_info_read($file_path, $D = false) {
-    global $UNC_GALLERY, $UNC_FILE_DATA;
+    global $UNC_GALLERY, $UNC_FILE_DATA, $wpdb;;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $folder_info = pathinfo($file_path);
@@ -204,12 +204,39 @@ function unc_image_info_read($file_path, $D = false) {
 
     $data_path = $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['file_data'] . "/" . $date_path . "/" . $file_name . ".php";
 
+    $img_table_name = $wpdb->prefix . "unc_gallery_img";
+    $att_table_name = $wpdb->prefix . "unc_gallery_att";
+    $sql = "SELECT `group`, `att_name`, `att_value` FROM $img_table_name
+        LEFT JOIN $att_table_name ON id=file_id
+        WHERE file_name = '$file_name' AND file_time LIKE '$date_str%';";
+    $file_data = $wpdb->get_results($sql);
+
+    if (count($file_data) == 0) {
+        unc_image_info_write($file_path);
+    }
+
+    $F = array();
+    foreach ($file_data as $D) {
+        $field = $D->att_name;
+        $group = $D->group;
+        $value = unserialize($D->att_value);
+        if ($group == 'default') {
+            $F[$field] = $value;
+        } else {
+            $F[$group][$field] = $value;
+        }
+    }
+
+    $file_code = md5($date_path . "/" . $file_name . ".php");
+    $UNC_FILE_DATA[$file_code] = $F;
+    return $UNC_FILE_DATA[$file_code];
+
     // in case the data is missing, write a new file
     if (!file_exists($data_path)){
         if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger($data_path . " Not found!");}
         $check = unc_image_info_write($file_path);
     }
-    $file_code = md5($date_path . "/" . $file_name . ".php");
+
     // reset the data so we re-read it from file
     $UNC_FILE_DATA[$file_code] = false;
     require($data_path);
@@ -241,7 +268,7 @@ function unc_image_info_read($file_path, $D = false) {
  * @return boolean
  */
 function unc_image_info_write($file_path) {
-    global $UNC_GALLERY;
+    global $UNC_GALLERY, $UNC_FILE_DATA, $wpdb;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $exif = unc_exif_get($file_path);
     $xmp = unc_xmp_get($file_path);
@@ -267,9 +294,22 @@ function unc_image_info_write($file_path) {
     $photo_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
     $thumb_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
 
-    $data_path = $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['file_data'] . "/" . $date_path . "/" . $file_name . ".php";
+    $file_code = md5($date_path . "/" . $file_name . ".php");
+    // insert file into DB
+    $wpdb->insert(
+        $wpdb->prefix . "unc_gallery_img",
+        array(
+            'file_time' => $file_date,
+            'file_name' => $file_name,
+        )
+    );
 
-    $data = array(
+    $insert_id = $wpdb->insert_id;
+    if ($insert_id == 0) {
+        return false;
+    }
+
+    $default = array(
         'data_version' => $UNC_GALLERY['data_version'],
         'file_name' => $file_name,
         'file_path' => $file_path,
@@ -279,22 +319,42 @@ function unc_image_info_write($file_path) {
         'file_date' => $file_date, // full date including time
         'date_str' => substr($file_date, 0, 10), // only the day 0000-00-00
         'orientation' => $orientation,
+    );
+    $data_sets = array(
+        'default' => $default,
         'exif' => $exif,
         'xmp' => $xmp,
-        'ipct' => $ipct,
+        'ipct' => $ipct
     );
 
-    if (isset($UNC_GALLERY['errors'][$file_path])) {
-        $data['errors'] = $UNC_GALLERY['errors'][$file_path];
+    foreach ($data_sets as $set_name => $set) {
+        foreach ($set as $name => $value) {
+            // insert into DB
+            $final_value = serialize($value);
+            $wpdb->insert(
+                $wpdb->prefix . "unc_gallery_att",
+                array(
+                    'file_id' => $insert_id,
+                    'group' => $set_name,
+                    'att_name' => $name,
+                    'att_value' => $final_value,
+                )
+            );
+            $insert_id2 = $wpdb->insert_id;
+            if ($insert_id2 == 0) {
+                return false;
+            }
+            // insert into global var
+            // we split it like this since that was the legacy format.
+            if ($set_name == 'default') {
+                $UNC_FILE_DATA[$file_code][$name] = $value;
+            } else {
+                $UNC_FILE_DATA[$file_code][$set_name][$name] = $value;
+            }
+        }
     }
 
-    // write the file
-    $file_code = md5($date_path . "/" . $file_name . ".php");
-    global $UNC_FILE_DATA;
-    $UNC_FILE_DATA[$file_code] = $data;
-
-    $check = unc_array2file($data, 'UNC_FILE_DATA', $data_path, $file_code);
-    return $check;
+    return true;
 }
 
 

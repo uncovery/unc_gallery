@@ -348,7 +348,7 @@ function unc_gallery_admin_rebuild_thumbs() {
  * @global type $UNC_GALLERY
  */
 function unc_gallery_admin_rebuild_data() {
-    global $UNC_GALLERY;
+    global $UNC_GALLERY, $wpdb;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
     if (!current_user_can('manage_options')) {
@@ -356,11 +356,19 @@ function unc_gallery_admin_rebuild_data() {
         wp_die();
     }
     $dirPath = $UNC_GALLERY['upload_path'];
+    XMPP_ERROR_trigger("test");
 
-    // cleanup empty folders first
-    unc_tools_folder_delete_empty($dirPath);
+    $sql1 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_img";
+    $wpdb->get_results($sql1);
+    $sql2 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_att";
+    $wpdb->get_results($sql2);
 
-    // TODO: delete all old data files
+    // delete all old data files
+    $data_folder = $dirPath . "/" . $UNC_GALLERY['file_data'];
+
+    //unc_gallery_recurse_files($data_folder, 'unlink', 'rmdir');
+
+    // unc_tools_folder_delete_empty($data_folder);
 
     // iterate all image folders
     $photo_folder = $dirPath . "/" . $UNC_GALLERY['photos'];
