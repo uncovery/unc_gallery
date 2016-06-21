@@ -110,12 +110,21 @@ image is `filename.jpg:Description;`. Make sure that the last description does
 not have NOT have a colon `;` in the end. Also, no double quotes `"` or line breaks
 can be used in the details.
 
+### `limit_images="12"`
+
+This will limit the amount of images that will be displayed. Users will still be
+able to swipe beyond the last displayed image with photoswipe. This feature is specially
+handy when using square thumbnail icons (see settings). The last image will have an
+overlay indicating the amount of images not shown (similar to facebook galleries).
+
+![Sample screenshot of a limited images with square thumbnails](/images/screenshot-16.png)
+
 #### `limit_rows="3"`
 
 This will hide all photos except for the first 3 rows. Options are 2,3,4 or 5.
 This is helpful for use in post excerpts. Please note that the rest of the photos
 will still be loaded by the browser, but is simply hidden. Also, the user can still
-swipe through the photos if the display method is photoswipe or lightbox.
+swipe through the photos if the display method is photoswipe.
 
 #### `options="calendar|datelist"`
 
