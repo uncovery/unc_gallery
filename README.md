@@ -35,12 +35,15 @@ the whole day, several whole days or any photo between any two points in time
 * One Photo only: Show only one photo of one day. Either a specific photo, random,
 the or the latest
 * Dynamic date: Instead of showing a specific date, show random or latest
-* Descriptions: Whole days and individual photos can have specific description
+* EXIF / XMP / IPCT data: Chose which information will be shown on your images
+* Auto-tagging of posts with XMP/IPCT keywords
+* Auto-categorizing posts with XMP/IPCT location info (hierarchically, eg. Country -> City -> Location)
+* Descriptions: Whole days and individual photos can have additional description
 set in the short code
 * Re-Uploads: If you want to update a picture with a new version, simply re-upload it and it will be updated
 in the posts where the photos is shown automatically.
-* EXIF data: The photo description can show automatically generated photo data such as ISO, F-stop etc.
-* XMP data: Display keywords added by Adobe Lightroom or other software
+* Hassle-free image deletion: If you delete one ore more images from your library,
+you do not need to update the posts or pages where it was displayed.
 
 ## Shortcodes
 
