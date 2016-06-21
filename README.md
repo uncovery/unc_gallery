@@ -141,6 +141,14 @@ This determines the JPEG quality of your thumbnails and their file size. The low
 value is `1` with the lowest quality and the smallest files. The highest number is
 `100` with the largest file size and the highest quality.
 
+### Thumbnail Format
+
+Instead of creating thumbnails in the same shape as the original image, you can
+crop them so that they are always square, similar to how galleries are presented
+on facebook or images show in your profile on Instagram. This allows for cleaner
+layouts. If you change this function, make sure to re-build all existing thumbnails
+in the "Maintenance" menu.
+
 ### Picture Long Edge
 
 If this is not `0`, the images will be resized on upload so that their longest edge
@@ -154,16 +162,60 @@ be compressed with the quality set for this value.  The lowest value is `1` with
 the lowest quality and the smallest files. The highest number is `100` with the
 largest file size and the highest quality.
 
-## Featured Size
+### No image found alert
+
+What kind of message should appear on the web site in case no image can be found for the given date?
+This is useful if you have a calendar and always insert a default gallery for that day
+just in case you add images later. Then, instead of seeing a big red alert, it will just show
+a friendly "No images available" or even nothing.
+
+### Featured Size
 
 How many image rows tall should a featured image be? You can select 2,3,4 or 5 rows.
 It's recommended to chose a smaller number if the majority of your images are landscape
 format. You can set this to dynamic to enable orientation-specific scaling.
 
-## Orientation specific scaling (Featured size for portrait/landscape)
+### Orientation specific scaling (Featured size for portrait/landscape)
 
 Same as above, but the system will automatically detect if the featured image is landscape
 or portrait dimension (wider than high or the opposite) and scale the picture according to that.
+This will be ignored if you have several images of different orientations featured and the
+setting below is not set to "Dynamic".
+
+### Featured image scaling for several featured images
+
+In case you feature several images of the same orientation in one gallery,
+how many image rows high should they appear? Chose "Dynamic" to use the setting above instead.
+
+### Description EXIF / XMP / IPCS Data choices
+
+Chose here what information is shown for images when clicked on them. Please
+be aware that many of them show the same content, depending on your photo catalogue software.
+
+### Auto-Tag posts with Keywords
+
+You can have the Gallery automatically tag posts with the keywords found in
+your image. New tags will be created as needed.
+Chose which keywords to use and if they should remove existing keywords
+in case they are different. If an image does not have any keywords, existing
+keywords will not be removed, no matter what setting.
+
+### Auto-Categorize posts with Location info
+
+You can have the Gallery automatically categorize posts hierarchically with the location
+found in the image XMP/IPCT information. There are several patterns available.
+New categories will be created as needed. If there is no location info in an image
+nothing will happen, no matter what setting. If you need different patterns, let us know
+we can add them very quickly.
+
+### Admin menu location
+
+You can chose to display the Plugin menu in the side bar of the dashboard or
+as a submenu of the "Settings" menu.
+
+|Side bar Menu|Settings submenu|
+|---------------------------------|----------------------------------|
+|![Calendar](/images/screenshot-14.png)|![Datelist](/images/screenshot-15.png)|
 
 ### Admin Date Selector
 
