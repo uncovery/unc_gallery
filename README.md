@@ -29,6 +29,7 @@ delete & replace processes.
 ## Features
 
 * Photo and Thumbnail resizing: The admin can choose the quality and size of thumbnails.
+* Square thumbnails: Optionally render square thumbnails for a cleaner look
 * Time Limits: Define a specific time span during the day to be displayed instead of
 the whole day, several whole days or any photo between any two points in time
 * Featured photo: Display one or several photos at the start and larger than the other photos
