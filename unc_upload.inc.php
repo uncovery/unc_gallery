@@ -82,9 +82,18 @@ function unc_gallery_admin_upload() {
                     <td><input type="file" id="userImage" name="userImage[]" class="uploadInputBox" multiple required/></td>
                 </tr>
                 <tr>
-                    <td><label>Overwrite existing files?</label></td>
-                    <td><input type="checkbox" name="overwrite"></td>
+                    <td rowspan="3">File handling:</td><td><label>Only write new files, ignore existing</label></td>
+                    <td><input type="radio" name="overwrite" value="new" checked></td>
                 </tr>
+                <tr>
+                    <td><label>Upload all, overwrite existing files</label></td>
+                    <td><input type="radio" name="overwrite" value="all"></td>
+                </tr>
+                <tr>
+                    <td><label>Only write already existing files, ignore the rest</label></td>
+                    <td><input type="radio" name="overwrite" value="existing"></td>
+                </tr>
+
             </table>
         </div>
         <div id="progress-div">
@@ -98,8 +107,24 @@ function unc_gallery_admin_upload() {
     <h2>Import Images</h2>
     <form id="importForm" method="POST" enctype="multipart/form-data">
         Current path: <?php echo getcwd(); ?><br>
-        Import photos from path on this server: <input type="text" id="import_path" name="import_path[]" class="import_path"/><br>
-        <label>Overwrite existing files?</label>&nbsp;<input id="import_overwrite" type="checkbox" name="overwrite" size="150"><br><br>
+        <table>
+            <tr>
+                <td><label>Import photos from path on this server:</label></td>
+                <td><input type="text" id="import_path" name="import_path[]" class="import_path"/></td>
+            </tr>
+            <tr>
+                <td rowspan="3">File handling:</td><td><label>Only write new files, ignore existing</label></td>
+                <td><input type="radio" name="overwrite_import" value="new" checked></td>
+            </tr>
+            <tr>
+                <td><label>Upload all, overwrite existing files</label></td>
+                <td><input type="radio" name="overwrite_import" value="all"></td>
+            </tr>
+            <tr>
+                <td><label>Only write already existing files, ignore the rest</label></td>
+                <td><input type="radio" name="overwrite_import" value="existing"></td>
+            </tr>
+        </table>
         <button class="button button-primary" onclick="unc_gallery_import_images(); return false;">
             Import
         </button>
@@ -151,22 +176,20 @@ function unc_uploads_iterate_files() {
         wp_die();
     }
 
-    // overwrite files?
-    $overwrite = false;
+    $valid_options = array('new' => ", only using new files", 'all' => ', using new, overwriting existing', 'existing' => ', ignoring new files only overwriting existing');
     // filte_input is null when the vaiable is not in POST
     if ($UNC_GALLERY['import']) {
         echo "Importing $count images ";
-        if (!is_null(filter_input(INPUT_POST, 'import_overwrite'))) {
-            $overwrite = true;
-            echo ", Overwriting existing files";
-        }
+        $import_option = filter_input(INPUT_POST, 'import_overwrite');
     } else {
         echo "Uploading $count images ";
-        if (!is_null(filter_input(INPUT_POST, 'overwrite'))) {
-            $overwrite = true;
-            echo ", Overwriting existing files";
-        }
+        $import_option = filter_input(INPUT_POST, 'overwrite');
     }
+    if (is_null($import_option) || in_array($import_option, $valid_options)) {
+        return false;
+    }
+    $overwrite = $import_option;
+    echo $valid_options[$import_option];
     echo "<br>";
 
     // count up
@@ -319,12 +342,15 @@ function unc_uploads_process_file($i, $overwrite) {
     $new_thumb_path =  $thumb_subfolder . "/" . $target_filename;
 
     // let's check that file already exists
-    if (!$overwrite && file_exists($new_path)) {
+    if ($overwrite == 'new' && file_exists($new_path)) {
         return array('date'=> false, 'action' => "skipped file $target_filename, already exists");
-    } else if ($overwrite && file_exists($new_path)) {
+    } else if ($overwrite == 'existing' && !file_exists($new_path)) {
+        return array('date'=> false, 'action' => "skipped file $target_filename, is new");
+    } else if ($overwrite == 'existing' && file_exists($new_path)) {
         unlink($new_path);
-        // unlink($new_thumb_path); thumbs are always overwritten
-        // echo "$target_filename already exists, overwriting!<br>";
+        $action = 'overwritten';
+    } else if ($overwrite == 'all' && file_exists($new_path)) {
+        unlink($new_path);
         $action = 'overwritten';
     }
 
