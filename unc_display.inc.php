@@ -65,7 +65,7 @@ function unc_gallery_display_var_init($atts = array()) {
     $possible_attributes = array(
         'type' => 'day',    // display type
         'date' => false, // which date?
-        'file' => false,    // specifix file?
+        'file' => false,    // specific file?
         'featured' => false,  // is there a featured file?
         'options' => false, // we cannot set it to an array here
         'start_time' => false, // time of the day when we start displaying this date
@@ -77,6 +77,9 @@ function unc_gallery_display_var_init($atts = array()) {
         'limit_rows' => false,
         'limit_images' => false,
     );
+
+    // defaults
+    $UNC_GALLERY['not_shown'] = false;
 
     // check if all the attributes exist
     foreach ($atts as $key => $value) {
@@ -236,9 +239,10 @@ function unc_gallery_display_var_init($atts = array()) {
     }
     $UNC_GALLERY['display']['type'] = $a['type'];
 
+    // TODO: this is likely redundant
     $UNC_GALLERY['display']['link'] = false;
     if (in_array('link', $UNC_GALLERY['options'])) {
-        $UNC_GALLERY['display']['link'] = true;
+        $UNC_GALLERY['display']['link'] = 'image';
     }
 
     $UNC_GALLERY['display']['slideshow'] = false;
@@ -253,13 +257,14 @@ function unc_gallery_display_var_init($atts = array()) {
         $UNC_GALLERY['display']['date_selector'] = 'datelist';
     }
     if ($a['file']) {
-        $UNC_GALLERY['display']['file'] = unc_tools_filename_validate($a['file']);
+        $UNC_GALLERY['display']['file'] = unc_tools_filename_validate(trim($a['file']));
+        $UNC_GALLERY['display']['files'] = array();
     } else {
         $UNC_GALLERY['display']['file'] = false;
         $UNC_GALLERY['display']['files'] = unc_tools_images_list();
     }
 
-    if (count($UNC_GALLERY['display']['files']) == 0) {
+    if (count($UNC_GALLERY['display']['files']) == 0 && !$UNC_GALLERY['display']['file']) {
         if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("No files found in date range!");}
         if ($UNC_GALLERY['no_image_alert'] == 'error') {
             $UNC_GALLERY['errors'][] = unc_display_errormsg("No images found for this date!");
@@ -369,7 +374,12 @@ function unc_gallery_display_page() {
             $file = $D['file'];
         }
         $file_path = $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'] . "/" . $date_path . "/" . $file;
-        $out = unc_display_image_html($file_path, $thumb, false);
+        if (isset($UNC_GALLERY['options']) && in_array('link_post', $UNC_GALLERY['options'])) {
+            $link_type = 'link_post';
+        } else {
+            $link_type = false;
+        }
+        $out = unc_display_image_html($file_path, $thumb, false, $link_type);
     } else {
         $images_html = unc_display_folder_images();
         $delete_link = '';
@@ -387,7 +397,6 @@ function unc_gallery_display_page() {
             </div>
             <span style=\"clear:both;\"></span>";
     }
-
     return $out;
 }
 
@@ -436,7 +445,6 @@ function unc_display_folder_images() {
     $i = 0;
 
     // limit images
-    $UNC_GALLERY['not_shown'] = false;
     $max_images = intval($D['limit_images']);
 
     foreach ($files as $F) {
@@ -720,9 +728,10 @@ function unc_display_categories_compare($file_data) {
  * @param type $file_path
  * @param type $show_thumb
  * @param type $file_data
+ * @param type $link_type
  * @return string
  */
-function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
+function unc_display_image_html($file_path, $show_thumb, $file_data = false, $link_type = false) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $out = '';
@@ -757,7 +766,15 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false) {
     } else {
         $overlay_text = '';
     }
-    $out .= "        <a href=\"{$F['file_url']}\" $gal_text title=\"image\">
+
+    // what do we link to?
+    if (!$link_type) {
+        $link_url = $F['file_url'];
+    } else if ($link_type == 'link_post') {
+        $link_url = get_post_permalink();
+    }
+
+    $out .= "        <a href=\"$link_url\" $gal_text title=\"image\">
             <img alt=\"image\" src=\"$shown_image\">$overlay_text
         </a>\n";
     if (current_user_can('manage_options') && is_admin()) {

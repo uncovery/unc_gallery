@@ -22,8 +22,8 @@ $UNC_GALLERY['settings_prefix'] = 'unc_gallery_';   // internal prefix for the c
 $UNC_GALLERY['keywords'] = array(
     'type' => array(
         'day' => array('calendar', 'datelist', 'slideshow'), // shows a single date's gallery, optional date picker
-        'image' => array('link'), // only one image, requires file addon unless random or latest
-        'thumb' => array('link'), // only the icon of one image, requires file addon unless random or latest
+        'image' => array('link','link_post'), // only one image, requires file addon unless random or latest
+        'thumb' => array('link','link_post'), // only the icon of one image, requires file addon unless random or latest
     ),
     'date' => array('random', 'latest'),  // whichdate to chose
     'file' => array('random', 'latest'), // in case of image or icon type, you can chose one filename

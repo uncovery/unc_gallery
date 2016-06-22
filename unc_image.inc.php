@@ -197,6 +197,11 @@ function unc_image_info_read($file_path, $D = false) {
     global $UNC_GALLERY, $UNC_FILE_DATA, $wpdb;;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
+    if (!file_exists($file_path)) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("tried to read info for non-existing file!", $file_path);}
+        return false;
+    }
+
     $folder_info = pathinfo($file_path);
     $date_str = unc_tools_folder_date($folder_info['dirname']);
     $date_path = str_replace("-", "/", $date_str);
@@ -270,6 +275,12 @@ function unc_image_info_read($file_path, $D = false) {
 function unc_image_info_write($file_path) {
     global $UNC_GALLERY, $UNC_FILE_DATA, $wpdb;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
+    if (!file_exists($file_path)) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("tried to write info for non-existing file!", $file_path);}
+        return false;
+    }
+
     $exif = unc_exif_get($file_path);
     $xmp = unc_xmp_get($file_path);
     $ipct = unc_ipct_get($file_path);
