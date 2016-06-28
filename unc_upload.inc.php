@@ -1,4 +1,9 @@
 <?php
+
+if (!defined('WPINC')) {
+    die;
+}
+
 /**
  * Main form for uploads in the admin screen
  * @return string

@@ -65,6 +65,8 @@ uploaded photos from the server if you don't set the proper admin option!
 1. The system cannot handle 2 files that are taken exactly at the same time (date, minute & second).
 1. The system works only on images which have valid EXIF or IPCT creation dates
 
+== Changelog ==
+
 = 4.2 =
 
 1. Fix an issue with replacement of existing tags
@@ -72,8 +74,6 @@ uploaded photos from the server if you don't set the proper admin option!
 1. Allow uploads to ignore new files and only overwrite existing ones.
 1. Allow links in single images to point to the posts' permalink (good for excerpt post)
 1. Change to use MySQL instead of files for faster data access
-
-== Changelog ==
 
 = 4.1.3 =
 

@@ -1,5 +1,9 @@
 <?php
 
+if (!defined('WPINC')) {
+    die;
+}
+
 global $UNC_GALLERY;
 // detailed info on EXIF Codes
 // http://www.exiv2.org/tags.html
