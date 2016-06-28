@@ -300,7 +300,7 @@ function unc_gallery_display_var_init($atts = array()) {
  */
 function unc_gallery_display_page() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
 
     $D = $UNC_GALLERY['display'];
     $date = $D['dates'][0];
@@ -408,7 +408,7 @@ function unc_gallery_display_page() {
  */
 function unc_display_folder_images() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
 
     $D = $UNC_GALLERY['display'];
 
@@ -497,10 +497,16 @@ function unc_display_folder_images() {
         $photoswipe = unc_display_photoswipe_js($files);
     }
     if ($UNC_GALLERY['post_keywords'] != 'none') {
-        unc_display_tags_compare($files);
+        $check_tags = unc_display_tags_compare($files);
+        if ($check_tags) {
+            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("Tags have been updated");}
+        }
     }
     if ($UNC_GALLERY['post_categories'] != 'none') {
-        unc_display_categories_compare($files);
+        $check_cats = unc_display_categories_compare($files);
+        if ($check_cats) {
+            if ($UNC_GALLERY['debug']) {XMPP_ERROR_send_msg("Categories have been updated");}
+        }
     }
 
     if ($D['slideshow']) {
@@ -541,35 +547,45 @@ function unc_display_folder_images() {
  */
 function unc_display_tags_compare($F) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    // get all image tags
-
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "file_data");}
+    
+    // do we havea post? If so get the id, otherwise bail
     $post_id = get_the_ID();
     if (!$post_id) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("unc_display_tags_compare", "No post ID available");}
         return;
     }
 
+    // we assume first we append tags
     $append_tags = true;
+    // get the system setting
     $setting = $UNC_GALLERY['post_keywords'];
+    // it's a string a_b_c, split it
     $set_split = explode("_", $setting);
+    // 
     $selected_tags = $set_split[0];
     if (isset($set_split[1])) {
         $append_tags = false;
     }
 
+    // let's create an array that will hold a list of unique tags of this post
     $photo_tags = array();
+    // lets iterate all files
     foreach ($F as $FD) {
+        // if the file has no keywords, continue to next one
         if (!isset($FD[$selected_tags]['keywords'])) {
             if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("unc_display_tags_compare", "No $selected_tags Keywords set");}
             continue;
         }
+        // otherwise, the field is set, check if we have keywords in it
         $image_tags = $FD[$selected_tags]['keywords'];
         if (!is_array($image_tags)) {
             if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("unc_display_tags_compare", "Keyword set is not an array (i.e. no keywords)");}
             continue;
         }
+        // now, we hae tags, go through them
         foreach ($image_tags as $tag) {
-            $photo_tags[] = $tag;
+            $photo_tags[] = ucwords($tag);
         }
     }
     if (count($photo_tags) == 0) {
@@ -578,6 +594,8 @@ function unc_display_tags_compare($F) {
     }
     $photo_tags_unique = array_unique($photo_tags);
 
+    asort($photo_tags_unique);
+    
     // in case there are no tags in the photos, we won't do anything
     if (count($photo_tags_unique) == 0) {
         return;
@@ -588,16 +606,31 @@ function unc_display_tags_compare($F) {
     $posttags_obj = get_the_tags();
     if ($posttags_obj) {
         foreach($posttags_obj as $tag) {
-            $post_tags[] = $tag->name;
+            $post_tags[] = ucwords($tag->name);
         }
     }
+    asort($post_tags);
+    
     $post_tags_unique = array_unique($post_tags);
-
-    //compare
     $comp_result = unc_array_analyse($photo_tags_unique, $post_tags_unique);
+    $complete_set = $comp_result['complete_set'];
+    asort($complete_set);
     $missing_tags = $comp_result['only_in_1'];
-
-    wp_set_post_tags($post_id, $missing_tags, $append_tags);
+        
+    $retval = false;
+    // if we append tags, we only look for the missing ones.
+    if ($append_tags) {
+        if (count($missing_tags) > 0) {
+            $retval = true;
+            wp_set_post_tags($post_id, $missing_tags, $append_tags);
+        }
+    } else if ($complete_set != $post_tags_unique) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, array('post' => $post_tags_unique, 'set' => $complete_set));}
+        // if we replace tags, we overwrite only if the tags are not identical
+        wp_set_post_tags($post_id, $photo_tags_unique, $append_tags);
+        $retval = true;
+    }
+    return $retval;
 }
 
 /**
@@ -609,7 +642,7 @@ function unc_display_tags_compare($F) {
  */
 function unc_display_categories_compare($file_data) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "File_data");}
 
     $post_id = get_the_ID();
     if (!$post_id) {
@@ -714,6 +747,7 @@ function unc_display_categories_compare($file_data) {
         }
     }
 
+    // TODO only update if we need to!
     // we need to check if the categories we added have the right hierarchy, so let's get the whole list first
     //XMPP_ERROR_trace("assign final list of cats", $post_categories);
     wp_set_post_categories($post_id, $post_categories, false); // true means cats will be added, not replaced
@@ -779,7 +813,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false, $li
         </a>\n";
     if (current_user_can('manage_options') && is_admin()) {
         $out .= "         <button class=\"delete_image_link\" title=\"Delete Image\" onClick=\"delete_image('{$F['file_name']}','{$F['date_str']}')\">
-            <img src=\"" . plugin_dir_url( __FILE__ ) . "/images/delete.png\" width=\"20px\" height=\"20px\">
+            <img src=\"" . plugin_dir_url( __FILE__ ) . "images/delete.png\" width=\"20\" height=\"20\" alt=\"Delete Image\">
             </button>";
     }
     return $out;
@@ -794,7 +828,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false, $li
  */
 function unc_display_photoswipe_js($files) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "file data");}
 
     $slug = $UNC_GALLERY['display']['slug'];
     $out = '
@@ -833,7 +867,7 @@ function unc_display_photoswipe_js($files) {
  */
 function unc_display_errormsg($error) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
     return "<div class=\"unc_gallery_error\">ERROR: $error</div>";
 }
 
@@ -844,7 +878,7 @@ function unc_display_errormsg($error) {
  */
 function unc_display_photoswipe() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
     $out = '<!-- Root element of PhotoSwipe. Must have class pswp. -->
 <div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
 

@@ -195,7 +195,7 @@ $UNC_GALLERY['codes']['ipct'] = array(
 
 function unc_image_info_read($file_path, $D = false) {
     global $UNC_GALLERY, $UNC_FILE_DATA, $wpdb;;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, $file_path);}
 
     if (!file_exists($file_path)) {
         if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("tried to read info for non-existing file!", $file_path);}
@@ -300,6 +300,8 @@ function unc_image_info_write($file_path) {
     if ($exif['file_width'] < $exif['file_height']) {
         $orientation = 'portrait';
     }
+    
+    // TODO: Clean up/ remove file functions
     unc_date_folder_create($date_str);
 
     $photo_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
@@ -364,7 +366,6 @@ function unc_image_info_write($file_path) {
             }
         }
     }
-
     return true;
 }
 

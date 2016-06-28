@@ -306,7 +306,7 @@ function unc_gallery_admin_rebuild_thumbs() {
     $photo_folder = $dirPath . "/" . $UNC_GALLERY['photos'];
 
     // delete all thumbnails
-    unc_gallery_recurse_files($thumb_root, 'unlink', 'rmdir');
+    unc_tools_recurse_files($thumb_root, 'unlink', 'rmdir');
 
     $target_folders = unc_tools_recurse_folders($photo_folder);
 
@@ -366,8 +366,9 @@ function unc_gallery_admin_rebuild_data() {
     // delete all old data files
     $data_folder = $dirPath . "/" . $UNC_GALLERY['file_data'];
 
-    //unc_gallery_recurse_files($data_folder, 'unlink', 'rmdir');
-
+    // TODO: Fix folder delete
+    // unc_tools_recurse_files($data_folder, 'unlink', 'rmdir');
+    
     // unc_tools_folder_delete_empty($data_folder);
 
     // iterate all image folders
@@ -409,7 +410,9 @@ function unc_gallery_admin_delete_everything() {
         echo "Cannot delete all, you are not admin!";
     } else {
         // delete all images
-        unc_gallery_recurse_files($UNC_GALLERY['upload_path'], 'unlink', 'rmdir');
+        unc_tools_recurse_files($UNC_GALLERY['upload_path'], 'unlink', 'rmdir');
+        // TODO Also delete databases
+        
         echo "Done!";
     }
     wp_die();

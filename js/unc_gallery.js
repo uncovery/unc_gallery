@@ -67,7 +67,7 @@ function datelist_change(inst) {
 
 /**
  * action for the delete image link
- * 
+ *
  * @param {type} file_name
  * @param {type} rel_date
  * @returns {undefined}
@@ -92,7 +92,7 @@ function delete_image(file_name, rel_date) {
 
 /**
  * do-all can-all generic ajax
- * 
+ *
  * @param {type} action
  * @param {type} target_div
  * @param {type} confirmation_message
@@ -138,18 +138,27 @@ Date.prototype.addMinutes= function(m){
 
 /**
  * importing images in the admin screen
- * 
+ *
  * @returns {undefined}
  */
 function unc_gallery_import_images() {
     var path = jQuery('#import_path').val();
-    var overwrite = jQuery('#import_overwrite').val();
+    var overwrite_import_stats = [
+        jQuery('#overwrite_import1').prop("checked"),
+        jQuery('#overwrite_import2').prop("checked"),
+        jQuery('#overwrite_import3').prop("checked")
+    ];
+    var overwrite_import_vals = [
+        jQuery('#overwrite_import1').val(),
+        jQuery('#overwrite_import2').val(),
+        jQuery('#overwrite_import3').val()
+    ];
     jQuery('#import_targetLayer').html('');
     jQuery.ajax({
         url: ajaxurl,
         method: 'POST',
         dataType: 'text',
-        data: {action: 'unc_gallery_import_images', import_path: path, overwrite: overwrite},
+        data: {action: 'unc_gallery_import_images', import_path: path, overwrite_import: [overwrite_import_stats, overwrite_import_vals]},
         complete: function (response) {
             jQuery('#import_targetLayer').html(response.responseText);
         },

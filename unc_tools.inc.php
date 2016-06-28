@@ -299,7 +299,7 @@ function unc_tools_images_list($D = false) {
  */
 function unc_tools_file_desc($F) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
     $out = '';
     $code_sets = array('exif', 'xmp', 'ipct');
     // we iterate the 3 information sets
@@ -337,7 +337,7 @@ function unc_tools_file_desc($F) {
  * @param type $function
  * @return array
  */
-function unc_gallery_recurse_files($base_folder, $file_function, $dir_function) {
+function unc_tools_recurse_files($base_folder, $file_function, $dir_function) {
     global $TMP_FOLDERS, $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // safety net
@@ -349,7 +349,7 @@ function unc_gallery_recurse_files($base_folder, $file_function, $dir_function) 
     }
     foreach (glob($base_folder . "/*") as $file) {
         if (is_dir($file)) {
-            $TMP_FOLDERS[] = unc_gallery_recurse_files($file, $file_function, $dir_function);
+            $TMP_FOLDERS[] = unc_tools_recurse_files($file, $file_function, $dir_function);
         } else {
             // working on $file in folder $main
             $TMP_FOLDERS[] = $file_function($file);
@@ -502,7 +502,7 @@ function unc_tools_file_random($date_path) {
  */
 function unc_tools_folder_date($folder) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    // if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $path_arr = explode("/", $folder);
     // get last 3 elements
     $new_date_arr = array_slice($path_arr, -3, 3);

@@ -198,3 +198,11 @@
     font-size: large;
     border: 1px #000 solid;
 }
+
+#import_targetLayer .unc_gallery_error {
+    margin: 0px;
+    display: inline;
+    padding: 0px;
+    font-size: medium;
+    border: 0px;
+}

@@ -36,7 +36,7 @@ if (@file_exists('/home/includes/xmpp_error/xmpp_error.php')) {
     $XMPP_ERROR['config']['project_name'] = 'unc_gallery';
     $XMPP_ERROR['config']['enabled'] = true;
     $XMPP_ERROR['config']['include_warnings'] = 'unc_gallery';
-    $XMPP_ERROR['config']['track_globals'] = array('UNC_GALLERY', 'UNC_FILE_DATA');
+    $XMPP_ERROR['config']['track_globals'] = array('UNC_GALLERY');
 }
 
 // actions on activating and deactivating the plugin
@@ -164,8 +164,9 @@ function unc_gallery_plugin_uninstall() {
     // delete all images optional
 
     if ($UNC_GALLERY['uninstall_deletes_images'] == 'yes') {
-        unc_gallery_recurse_files($UNC_GALLERY['upload_path'], 'unlink', 'rmdir');
+        unc_tools_ecurse_files($UNC_GALLERY['upload_path'], 'unlink', 'rmdir');
     }
+    // TODO: check and remove databases
 
     //delete all settings properly
     $prefix = $UNC_GALLERY['settings_prefix'];
