@@ -47,6 +47,7 @@ function unc_gallery_apply($atts = array()) {
         return unc_gallery_display_page();
     } else {
         $err_text = implode("<br>", $UNC_GALLERY['errors']);
+        $UNC_GALLERY['errors'] = array();
         return $err_text;
     }
 }
@@ -64,7 +65,7 @@ function unc_gallery_display_var_init($atts = array()) {
 
     $possible_attributes = array(
         'type' => 'day',    // display type
-        'date' => false, // which date?
+        'date' => 'latest', // which date?
         'file' => false,    // specific file?
         'featured' => false,  // is there a featured file?
         'options' => false, // we cannot set it to an array here
@@ -76,6 +77,8 @@ function unc_gallery_display_var_init($atts = array()) {
         'offset' => false, // offset for date string to cover photos after midnight
         'limit_rows' => false,
         'limit_images' => false,
+        'filter' => false, // if type=tag, the tags will be here
+        'files' => false, // internal variable, used by filters
     );
 
     // defaults
@@ -93,21 +96,6 @@ function unc_gallery_display_var_init($atts = array()) {
     // parse the attributes
     $a = shortcode_atts($possible_attributes, $atts);
     $type = $a['type'];
-    // we convert the start time and end time to unix timestamp for better
-    // comparison
-    $UNC_GALLERY['display']['range'] = array('start_time' => false, 'end_time' => false);
-    foreach ($UNC_GALLERY['display']['range'] as $key => $value) {
-        if ($a[$key]) {
-            // convert to UNIX timestamp
-            $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $a[$key]);
-            // TODO: catch here if the date is invalid
-            $UNC_GALLERY['display']['range'][$key] = $dtime->getTimestamp();
-            // get the date for the same
-            $var_name = 'date_' . $key;
-            $$var_name = substr($a[$key], 0, 10);
-        }
-    }
-
 
     // several featured
     // we do not need to validate featured files since we only compare with the list
@@ -126,7 +114,7 @@ function unc_gallery_display_var_init($atts = array()) {
     } else {
         $options = explode(" ", trim($a['options']));
     }
-    $UNC_GALLERY['options'] = $options;
+    $UNC_GALLERY['display']['options'] = $options;
     $UNC_GALLERY['display']['echo'] = trim($a['echo']);
 
     // icon or image?
@@ -135,6 +123,8 @@ function unc_gallery_display_var_init($atts = array()) {
         $thumb = true;
     }
 
+    $UNC_GALLERY['display']['filter'] = trim($a['filter']);
+
     $UNC_GALLERY['display']['description'] = trim($a['description']);
     $UNC_GALLERY['display']['limit_rows'] = trim($a['limit_rows']);
     $UNC_GALLERY['display']['limit_images'] = trim($a['limit_images']);
@@ -142,63 +132,11 @@ function unc_gallery_display_var_init($atts = array()) {
     // date
     $keywords = $UNC_GALLERY['keywords'];
 
-    if ($a['end_time']) {
-        $date_end_time = substr(trim($a['end_time']), 0, 10);
-    }
+    if ($type == 'day') {
+        unc_day_var_init($a);
 
-    if ($a['start_time']) {
-        $date_start_time = substr(trim($a['start_time']), 0, 10);
-    }
-    $UNC_GALLERY['display']['date_description'] = false; // false by default, only true if not set explicitly (latest or random date)
+    } else if ($type == 'filter') {
 
-    if ($a['date'] && in_array($a['date'], $keywords['date'])) { // we have a latest or random date
-        // get the latest or a random date if required
-        if ($a['date'] == 'latest') {
-            $date_str = unc_tools_date_latest();
-        } else if ($a['date'] == 'random') {
-            $date_str = unc_tools_date_random();
-        }
-        $UNC_GALLERY['display']['date_description'] = true;
-        $UNC_GALLERY['display']['dates'] = array($date_str);
-    } else if ($a['date'] && strstr($a['date'], ",")) { // we have several dates in the string
-        $dates = explode(",", $a['date']);
-        if (count($dates) > 2) {
-            echo unc_display_errormsg("You can only enter 2 dates!");
-            return false;
-        }
-        // validate both dates
-        $date_str1 = unc_tools_validate_date(trim($dates[0]));
-        if (!$date_str1) {
-            echo unc_display_errormsg("All dates needs to be in the format '2016-01-31'");
-            return false;
-        }
-        $date_str2 = unc_tools_validate_date(trim($dates[1]));
-        if (!$date_str2) {
-            echo unc_display_errormsg("All dates needs to be in the format '2016-01-31'");
-            return false;
-        }
-        // create a list of dates between the 1st and the 2nd
-        $date_arr = unc_tools_date_span($dates[0], $dates[1]);
-        $UNC_GALLERY['display']['dates'] = $date_arr;
-    } else if ($a['date']) {
-        $date_str = unc_tools_validate_date($a['date']);
-        if (!$date_str) {
-            echo unc_display_errormsg("All dates needs to be in the format '2016-01-31'");
-            return false;
-        }
-        $UNC_GALLERY['display']['dates'] = array($date_str);
-    } else if ($a['end_time'] && $a['start_time']) {
-        $date_arr = unc_tools_date_span($date_start_time, $date_end_time);
-        $UNC_GALLERY['display']['dates'] = $date_arr;
-    } else if ($a['end_time']) {
-        $date_str = $date_end_time;
-        $UNC_GALLERY['display']['dates'] = array($date_str);
-    } else if ($a['start_time']) {
-        $date_str = $date_start_time;
-        $UNC_GALLERY['display']['dates'] = array($date_str);
-    } else { // no date set at all, take latest
-        $date_str = unc_tools_date_latest();
-        $UNC_GALLERY['display']['dates'] = array($date_str);
     }
 
     // details
@@ -230,7 +168,7 @@ function unc_gallery_display_var_init($atts = array()) {
         return false;
     }
     $possible_type_options = $keywords['type'][$type];
-    foreach ($UNC_GALLERY['options'] as $option) {
+    foreach ($UNC_GALLERY['display']['options'] as $option) {
         if (!in_array($option, $possible_type_options)) {
             echo unc_display_errormsg("You have an invalid option for the display type \"option\" in your tag."
                 . "<br>Valid options are: " . implode(", ", $keywords['type'][$type]));
@@ -241,12 +179,12 @@ function unc_gallery_display_var_init($atts = array()) {
 
     // TODO: this is likely redundant
     $UNC_GALLERY['display']['link'] = false;
-    if (in_array('link', $UNC_GALLERY['options'])) {
+    if (in_array('link', $UNC_GALLERY['display']['options'])) {
         $UNC_GALLERY['display']['link'] = 'image';
     }
 
     $UNC_GALLERY['display']['slideshow'] = false;
-    if (in_array('slideshow', $UNC_GALLERY['options'])) {
+    if (in_array('slideshow', $UNC_GALLERY['display']['options'])) {
         $UNC_GALLERY['display']['slideshow'] = true;
     }
 
@@ -255,13 +193,6 @@ function unc_gallery_display_var_init($atts = array()) {
         $UNC_GALLERY['display']['date_selector'] = 'calendar';
     } else if (in_array('datelist', $options)) {
         $UNC_GALLERY['display']['date_selector'] = 'datelist';
-    }
-    if ($a['file']) {
-        $UNC_GALLERY['display']['file'] = unc_tools_filename_validate(trim($a['file']));
-        $UNC_GALLERY['display']['files'] = array();
-    } else {
-        $UNC_GALLERY['display']['file'] = false;
-        $UNC_GALLERY['display']['files'] = unc_tools_images_list();
     }
 
     if (count($UNC_GALLERY['display']['files']) == 0 && !$UNC_GALLERY['display']['file']) {
@@ -302,64 +233,57 @@ function unc_gallery_display_page() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
 
-    $D = $UNC_GALLERY['display'];
-    $date = $D['dates'][0];
 
+    $D = $UNC_GALLERY['display'];
     // do not let wp manipulate linebreaks
     remove_filter('the_content', 'wpautop');
-
     $photo_folder =  $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'];
 
-    // get a json datepicker
-    $datepicker_div = '';
-    $out = '';
-    if ($D['date_description']) {
-        $datepicker_div = "<span id=\"photodate\">Showing $date</span>";
-    }
+    if ($D['type'] == 'day') {
+        $date = $D['dates'][0];
 
-    // we need a unique ID for datepicker div targets
-    /* global $post;
-    $slug = 'ID_';
-    if (isset($post->post_name)) {
-        $slug .= str_replace("-", "_", $post->post_name);
-    }
-     */
-    if ($D['date_selector'] == 'calendar' || $D['date_selector'] == 'datelist') {
-        $avail_dates = unc_tools_folder_list($photo_folder);
-        $fixed_dates = unc_display_fix_timezones($avail_dates);
-        if (!$fixed_dates) {
-            return "There are no images in the libray yet. Please upload some first.";
+        $datepicker_div = '';
+        $out = '';
+        if ($D['date_description']) {
+            $datepicker_div = "<span id=\"photodate\">Showing $date</span>";
         }
-        if ($D['date_selector'] == 'calendar') {
-            $out .= "\n     <script type=\"text/javascript\">
-            var availableDates = [\"" . implode("\",\"", array_keys($fixed_dates)) . "\"];
-            var ajaxurl = \"" . admin_url('admin-ajax.php') . "\";
-            jQuery(document).ready(function($) {
-                datepicker_ready('{$date}');
-            });
-            </script>";
-            $datepicker_div = "Pick a Date: <input type=\"text\" id=\"datepicker\" value=\"$date\" size=\"10\">";
-        } else if ($D['date_selector'] == 'datelist') {
-            $datepicker_div = "<select id=\"datepicker\" onchange=\"datelist_change()\">\n";
-            foreach ($fixed_dates as $folder_date => $folder_files) {
-                $counter = count($folder_files);
-                $datepicker_div .= "<option value=\"$folder_date\">$folder_date ($counter)</option>\n";
+
+        if ($D['date_selector'] == 'calendar' || $D['date_selector'] == 'datelist') {
+            $avail_dates = unc_tools_folder_list($photo_folder);
+            $fixed_dates = unc_display_fix_timezones($avail_dates);
+            if (!$fixed_dates) {
+                return "There are no images in the libray yet. Please upload some first.";
             }
-            $datepicker_div .="</select>\n";
+            if ($D['date_selector'] == 'calendar') {
+                $out .= "\n     <script type=\"text/javascript\">
+                var availableDates = [\"" . implode("\",\"", array_keys($fixed_dates)) . "\"];
+                var ajaxurl = \"" . admin_url('admin-ajax.php') . "\";
+                jQuery(document).ready(function($) {
+                    datepicker_ready('{$date}');
+                });
+                </script>";
+                $datepicker_div = "Pick a Date: <input type=\"text\" id=\"datepicker\" value=\"$date\" size=\"10\">";
+            } else if ($D['date_selector'] == 'datelist') {
+                $datepicker_div = "<select id=\"datepicker\" onchange=\"datelist_change()\">\n";
+                foreach ($fixed_dates as $folder_date => $folder_files) {
+                    $counter = count($folder_files);
+                    $datepicker_div .= "<option value=\"$folder_date\">$folder_date ($counter)</option>\n";
+                }
+                $datepicker_div .="</select>\n";
+            }
         }
+        $date_path = unc_tools_date_path($D['dates'][0]);
+
+        // TODO: This should check all dates
+        if (!$date_path) {
+            return;
+        }
+
     }
 
-    /* if ($D['slideshow'] == true) {
-        wp_register_script('unc_gallery_lightslider_js', plugin_dir_url( __FILE__ ) . 'js/lightslider.min.js', array(), '4.1.1', true);
-        wp_enqueue_script('unc_gallery_lightslider_js');
-        wp_enqueue_style('unc_gallery_lightslider_css', plugin_dir_url( __FILE__ ) . 'css/lightslider.css');
-    } */
 
-    $date_path = unc_tools_date_path($D['dates'][0]);
-    // TODO: This should check all dates
-    if (!$date_path) {
-        return;
-    }
+
+
 
     if ($D['type'] == 'image' || $D['type'] == 'thumb') {
         $thumb = false;
@@ -374,13 +298,13 @@ function unc_gallery_display_page() {
             $file = $D['file'];
         }
         $file_path = $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'] . "/" . $date_path . "/" . $file;
-        if (isset($UNC_GALLERY['options']) && in_array('link_post', $UNC_GALLERY['options'])) {
+        if (isset($UNC_GALLERY['display']['options']) && in_array('link_post', $UNC_GALLERY['display']['options'])) {
             $link_type = 'link_post';
         } else {
             $link_type = false;
         }
         $out = unc_display_image_html($file_path, $thumb, false, $link_type);
-    } else {
+    } else { // type = day
         $images_html = unc_display_folder_images();
         $delete_link = '';
         $limit_rows = '';
@@ -591,7 +515,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false, $li
         $link_url = get_post_permalink();
     }
 
-    $out .= "        <a href=\"$link_url\" $gal_text title=\"image\">
+    $out .= "        <a href=\"$link_url\" $gal_text title=\"{$F['file_name']}\">
             <img alt=\"image\" src=\"$shown_image\">$overlay_text
         </a>\n";
     if (current_user_can('manage_options') && is_admin()) {

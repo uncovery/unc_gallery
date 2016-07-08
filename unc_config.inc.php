@@ -25,8 +25,7 @@ $UNC_GALLERY['keywords'] = array(
         'day' => array('calendar', 'datelist'), //, 'slideshow'), // shows a single date's gallery, optional date picker
         'image' => array('link','link_post'), // only one image, requires file addon unless random or latest
         'thumb' => array('link','link_post'), // only the icon of one image, requires file addon unless random or latest
-        'tag' => array('dropdown'),
-        'category' => array('map', 'dropdown'),
+        'filter' => array('dropdown', 'list', 'map'),
     ),
     'date' => array('random', 'latest'),  // whichdate to chose
     'file' => array('random', 'latest'), // in case of image or icon type, you can chose one filename
@@ -82,6 +81,12 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'dropdown',
         'options' => array('not_found' => 'A fiendly "No images available"', 'error' => 'A red Error mesage', 'nothing' => 'Nothing'),
         'title' => 'No image found alert',
+    ),
+    'limit_results' => array(
+        'help' => 'When displaying images by location or keyword, you should have a maximum limit or results to display. Set to 0 to disable the limit',
+        'default' => '50',
+        'type' => 'text',
+        'title' => 'Limit filter results',
     ),
     'featured_size' => array(
         'help' => 'When featuring an image, how many rows should it cover in height? Chose "dynamic" if you want a orientation-specific size instead.',

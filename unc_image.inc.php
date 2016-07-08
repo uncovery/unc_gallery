@@ -197,12 +197,12 @@ $UNC_GALLERY['codes']['ipct'] = array(
     'local_caption' => array('code' => '100', 'description' => 'Local Caption'),
 );
 
-function unc_image_info_read($file_path, $D = false) {
-    global $UNC_GALLERY, $UNC_FILE_DATA, $wpdb;;
+function unc_image_info_read($file_path) {
+    global $UNC_GALLERY, $UNC_FILE_DATA, $wpdb;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, $file_path);}
 
     if (!file_exists($file_path)) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("tried to read info for non-existing file!", $file_path);}
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("tried to read info for non-existing file!");}
         return false;
     }
 
@@ -210,8 +210,6 @@ function unc_image_info_read($file_path, $D = false) {
     $date_str = unc_tools_folder_date($folder_info['dirname']);
     $date_path = str_replace("-", "/", $date_str);
     $file_name = $folder_info['basename'];
-
-    $data_path = $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['file_data'] . "/" . $date_path . "/" . $file_name . ".php";
 
     $img_table_name = $wpdb->prefix . "unc_gallery_img";
     $att_table_name = $wpdb->prefix . "unc_gallery_att";
@@ -221,51 +219,49 @@ function unc_image_info_read($file_path, $D = false) {
     $file_data = $wpdb->get_results($sql);
 
     if (count($file_data) == 0) {
-        unc_image_info_write($file_path);
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "File not found in DB, reading from file");}
+        $check = unc_image_info_write($file_path);
+        if ($check) {
+            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger(__FUNCTION__, "could not write file data to database!");}
+        }
+        $file_code = md5($date_path . "/" . $file_name . ".php");
+        return $UNC_FILE_DATA[$file_code];
     }
 
     $F = array();
     foreach ($file_data as $D) {
         $field = $D->att_name;
         $group = $D->group;
-        $value = unserialize($D->att_value);
+        $value = $D->att_value;
         if ($group == 'default') {
-            $F[$field] = $value;
+            if (isset($F[$field])) {
+                if (is_array($F[$field])) {
+                    $F[$field][] = $value;
+                } else {
+                    $F[$field] = array($F[$field], $value);
+                }
+            } else {
+                $F[$field] = $value;
+            }
         } else {
-            $F[$group][$field] = $value;
+            if (isset($F[$group][$field])) {
+                if (is_array($F[$group][$field])) {
+                    $F[$group][$field][] = $value;
+                } else {
+                    $F[$group][$field] = array($F[$group][$field], $value);
+                }
+            } else {
+                $F[$group][$field] = $value;
+            }
         }
+    }
+    if (count($F) == 0) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("did not read any information from file!");}
     }
 
     $file_code = md5($date_path . "/" . $file_name . ".php");
     $UNC_FILE_DATA[$file_code] = $F;
-    return $UNC_FILE_DATA[$file_code];
-
-    // in case the data is missing, write a new file
-    if (!file_exists($data_path)){
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger($data_path . " Not found!");}
-        $check = unc_image_info_write($file_path);
-    }
-
-    // reset the data so we re-read it from file
-    $UNC_FILE_DATA[$file_code] = false;
-    require($data_path);
-    if ($UNC_FILE_DATA[$file_code] == false) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("File data failed", $file_name);}
-    }
-    // check if we have the correc latest file version, otherwise re-create:
-    if (!isset($UNC_FILE_DATA[$file_code]['data_version']) || $UNC_FILE_DATA[$file_code]['data_version'] <> $UNC_GALLERY['data_version']) {
-        $check = unc_image_info_write($file_path);
-        // read again
-        require($data_path);
-    }
-
-    if (!$D && isset($UNC_GALLERY['display'])) {
-        $D = $UNC_GALLERY['display'];
-    } else { // we need this for the thumbnail rebuild function
-        return $UNC_FILE_DATA[$file_code];
-    }
-
-    return $UNC_FILE_DATA[$file_code];
+    return $F;
 }
 
 /**
@@ -304,9 +300,17 @@ function unc_image_info_write($file_path) {
     if ($exif['file_width'] < $exif['file_height']) {
         $orientation = 'portrait';
     }
-    
-    // TODO: Clean up/ remove file functions
-    unc_date_folder_create($date_str);
+
+    // remove existing file info
+    $sql = "SELECT id FROM " . $wpdb->prefix . "unc_gallery_img WHERE file_time=%s AND file_name=%s;";
+    $check_data = $wpdb->get_results($wpdb->prepare($sql, $file_date, $file_name), 'ARRAY_A');
+    if (count($check_data) > 0) {
+        foreach ($check_data as $row) {
+            $id = $row['id'];
+            $wpdb->delete($wpdb->prefix . "unc_gallery_img", array('id' => $id));
+            $wpdb->delete($wpdb->prefix . "unc_gallery_att", array('file_id' => $id));
+        }
+    }
 
     $photo_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
     $thumb_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
@@ -323,6 +327,7 @@ function unc_image_info_write($file_path) {
 
     $insert_id = $wpdb->insert_id;
     if ($insert_id == 0) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("tried to write info for file, already exists in database", $file_path);}
         return false;
     }
 
@@ -347,19 +352,38 @@ function unc_image_info_write($file_path) {
     foreach ($data_sets as $set_name => $set) {
         foreach ($set as $name => $value) {
             // insert into DB
-            $final_value = serialize($value);
-            $wpdb->insert(
-                $wpdb->prefix . "unc_gallery_att",
-                array(
-                    'file_id' => $insert_id,
-                    'group' => $set_name,
-                    'att_name' => $name,
-                    'att_value' => $final_value,
-                )
-            );
-            $insert_id2 = $wpdb->insert_id;
-            if ($insert_id2 == 0) {
-                return false;
+            if (is_array($value)) {
+                foreach ($value as $arr_value) {
+                    $wpdb->insert(
+                        $wpdb->prefix . "unc_gallery_att",
+                        array(
+                            'file_id' => $insert_id,
+                            'group' => $set_name,
+                            'att_name' => $name,
+                            'att_value' => $arr_value,
+                        )
+                    );
+                    $insert_id2 = $wpdb->insert_id;
+                    if ($insert_id2 == 0) {
+                        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("tried to write array info for attributes, already exists in database", $file_path);}
+                        return false;
+                    }
+                }
+            } else {
+                $wpdb->insert(
+                    $wpdb->prefix . "unc_gallery_att",
+                    array(
+                        'file_id' => $insert_id,
+                        'group' => $set_name,
+                        'att_name' => $name,
+                        'att_value' => $value,
+                    )
+                );
+                $insert_id2 = $wpdb->insert_id;
+                if ($insert_id2 == 0) {
+                    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("tried to write string info for attributes, already exists in database", $file_path);}
+                    return false;
+                }
             }
             // insert into global var
             // we split it like this since that was the legacy format.

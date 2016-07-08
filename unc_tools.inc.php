@@ -182,115 +182,6 @@ function unc_display_fix_timezones($dates) {
 }
 
 
-/**
- * create a list of all dates between 2 dates
- *
- * @param string $date1 (date_str format)
- * @param string $date2
- * @return array
- */
-function unc_tools_date_span($date1, $date2) {
-    global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    // we try to sort the dates
-    if ($date1 < $date2) {
-        $early = $date1;
-        $later = $date2;
-    } else if ($date1 == $date2) {
-        return array($date1);
-    } else {
-        $early = $date2;
-        $later = $date1;
-    }
-
-    if (strlen($later) == 10) {
-        $later .= " 23:59:59";
-    }
-
-    $dates_arr = new DatePeriod(
-         new DateTime($early),
-         new DateInterval('P1D'),
-         new DateTime($later)
-    );
-    $date_str_arr = array();
-    foreach($dates_arr as $date_obj) {
-        $date_str_arr[] = $date_obj->format("Y-m-d");
-    }
-    return $date_str_arr;
-}
-
-/**
- * Iterate all files in a folder and make a list of all the images with all the info
- * for them
- *
- * @global type $UNC_GALLERY
- * @param type $folder
- * @return array
- */
-function unc_tools_images_list($D = false) {
-    global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-
-    if (!$D) {
-        $D = $UNC_GALLERY['display'];
-    }
-
-    $dates = $D['dates'];
-
-    $files = array();
-    $featured_list = array();
-
-    foreach ($dates as $date_str) {
-        // translate date string to folder
-        $date_path = str_replace("-", "/", $date_str);
-        $photo_folder =  $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'];
-        $folder = $photo_folder . "/" . $date_path;
-        foreach (glob($folder . "/*") as $file_path) {
-            $F = unc_image_info_read($file_path, $D);
-            if (($D['range']['end_time'] && $D['range']['start_time']) && // only if both are set
-                    ($D['range']['end_time'] < $D['range']['start_time'])) { // AND the end is before the start
-                if (($D['range']['end_time'] < $F['time_stamp'])
-                        && ($F['time_stamp'] < $D['range']['start_time'])) {  // then skip over the files inbetween end and start
-                    continue;
-                }
-            } else if (($D['range']['start_time'] && ($F['time_stamp'] < $D['range']['start_time'])) || // if there is a start and the file is earlier
-                ($D['range']['end_time'] && ($D['range']['end_time'] < $F['time_stamp']))) { // or if there is an end and the file is later then skip
-                continue;
-            }
-            if (in_array($F['file_name'], $D['featured_image'])) {
-                $F['featured'] = true;
-                $featured_list[] = $F;
-            } else {
-                $F['featured'] = false;
-                $files[$F['file_date']] = $F;
-            }
-        }
-    }
-    ksort($files);
-
-    // random featured file
-    if (in_array('random', $D['featured_image'])) {
-        $new_featured_key = array_rand($files);
-        $new_featured_arr = $files[$new_featured_key];
-        $new_featured_arr['featured'] = true;
-        $featured_list[] = $new_featured_arr;
-        unset($files[$new_featured_key]);
-    }
-
-    if (in_array('latest', $D['featured_image'])) {
-        reset($files);
-        $first_key = key($files);
-        $new_featured_arr = $files[$first_key];
-        $new_featured_arr['featured'] = true;
-        $featured_list[] = $new_featured_arr;
-        unset($files[$first_key]);
-    }
-
-    foreach ($featured_list as $feat) {
-        array_unshift($files, $feat);
-    }
-    return $files;
-}
 
 /**
  * Assemble a file description from EXIF values
@@ -395,52 +286,6 @@ function unc_tools_recurse_folders($base_folder) {
 }
 
 /**
- * returns the latest date
- *
- * @global type $UNC_GALLERY
- * @return type
- */
-function unc_tools_date_latest() {
-    global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-
-    $photo_folder =  $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'];
-    $folders = unc_tools_recurse_folders($photo_folder);
-    if (count($folders) == 1 ) {
-        $val = reset($folders);
-        if ($val == $photo_folder) {
-            return false;
-        }
-    }
-    rsort($folders);
-
-    $my_folder = $folders[0];
-    $new_date_str = unc_tools_folder_date($my_folder);
-    return $new_date_str;
-}
-
-/**
- * returns a random date
- *
- * @global type $UNC_GALLERY
- * @return type
- */
-function unc_tools_date_random() {
-    global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    $photo_folder =  $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'];
-    $folders = unc_tools_recurse_folders($photo_folder);
-    if (count($folders) == 0) {
-        return false;
-    }
-    $my_folder = array_rand($folders);
-    // split by path
-    $new_date_str = unc_tools_folder_date($my_folder);
-    return $new_date_str;
-}
-
-
-/**
  * returns the latest file from a folder
  *
  * @param type $date_path
@@ -470,7 +315,7 @@ function unc_tools_file_latest($date_path) {
 
 
 /**
- * returns a random file from a folder
+ * returns a random file from a day
  *
  * @param type $date_path
  * @return type
@@ -661,23 +506,6 @@ function unc_tools_filename_validate($file_name) {
 }
 
 /**
- * Validate Datestr
- *
- * @param type $date_str
- * @return boolean
- */
-function unc_tools_validate_date($date_str) {
-    global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    $pattern = "/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/";
-    if (preg_match($pattern, $date_str)) {
-        return $date_str;
-    }else{
-        return false;
-    }
-}
-
-/**
  * converts a 2013-12-12 to 2013/12/12 and checks if the file exists
  *
  * @global type $UNC_GALLERY
@@ -715,4 +543,28 @@ function unc_tools_divide_string($string) {
     $f = explode("/", $string);
     $result = $f[0] / $f[1];
     return number_format($result, 1);
+}
+
+/**
+ * analyses arrays for differences
+ *
+ * @param type $array1
+ * @param type $array2
+ * @return type
+ */
+function unc_tools_array_analyse($array1, $array2) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    $only_1 = array_diff($array1, $array2);
+    $only_2 = array_diff($array2, $array1);
+    $section = array_intersect($array1, $array2);
+    $union = array_merge($only_1, $only_2, $section);
+
+    $out = array(
+        'only_in_1' => $only_1,
+        'only_in_2' => $only_2,
+        'common' => $section,
+        'complete_set' => $union,
+    );
+    return $out;
 }

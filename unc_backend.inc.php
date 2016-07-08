@@ -242,7 +242,7 @@ function unc_gallery_admin_display_images() {
     }
 
     // get a standard short-tag output for latest date with datepicker
-    $out .= unc_gallery_apply(array('options'=> $UNC_GALLERY['admin_date_selector']));
+    $out .= unc_gallery_apply(array('date'=> 'latest', 'options'=> $UNC_GALLERY['admin_date_selector']));
     echo $out;
 }
 
@@ -356,7 +356,6 @@ function unc_gallery_admin_rebuild_data() {
         wp_die();
     }
     $dirPath = $UNC_GALLERY['upload_path'];
-    XMPP_ERROR_trigger("test");
 
     $sql1 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_img";
     $wpdb->get_results($sql1);
@@ -364,11 +363,11 @@ function unc_gallery_admin_rebuild_data() {
     $wpdb->get_results($sql2);
 
     // delete all old data files
-    $data_folder = $dirPath . "/" . $UNC_GALLERY['file_data'];
+    // $data_folder = $dirPath . "/" . $UNC_GALLERY['file_data'];
 
     // TODO: Fix folder delete
     // unc_tools_recurse_files($data_folder, 'unlink', 'rmdir');
-    
+
     // unc_tools_folder_delete_empty($data_folder);
 
     // iterate all image folders
@@ -412,7 +411,7 @@ function unc_gallery_admin_delete_everything() {
         // delete all images
         unc_tools_recurse_files($UNC_GALLERY['upload_path'], 'unlink', 'rmdir');
         // TODO Also delete databases
-        
+
         echo "Done!";
     }
     wp_die();

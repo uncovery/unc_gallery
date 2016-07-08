@@ -65,6 +65,28 @@ function datelist_change(inst) {
     datepicker_select(datelist_value, inst);
 }
 
+
+function filter_select(filter_group, filter_key, filter_value, inst) {
+    jQuery.ajax({
+        url: ajaxurl,
+        method: 'GET',
+        dataType: 'text',
+        data: {action: 'unc_filter_result', filter_group: filter_group, filter_key: filter_key, filter_value: filter_value},
+        complete: function (response) {
+            jQuery('#filter_result').html(response.responseText);
+        },
+        error: function () {
+
+        }
+    });
+}
+
+function filter_change(filter_group, filter_key, inst) {
+    var filter_value = jQuery('#filter').val();
+    filter_select(filter_group, filter_key, filter_value, inst);
+}
+
+
 /**
  * action for the delete image link
  *

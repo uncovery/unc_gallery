@@ -23,10 +23,10 @@ $UNC_GALLERY['data_version'] = 1; // increase this number when you change the fo
 require_once( plugin_dir_path( __FILE__ ) . "unc_backend.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_upload.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_display.inc.php");
+require_once( plugin_dir_path( __FILE__ ) . "unc_type_day.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_tools.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_image.inc.php");
-require_once( plugin_dir_path( __FILE__ ) . "unc_arrays.inc.php");
-require_once( plugin_dir_path( __FILE__ ) . "unc_taxonomy.inc.php");
+require_once( plugin_dir_path( __FILE__ ) . "unc_filter.inc.php");
 // co nfig has to be last because it runs function in unc_image.inc.php
 require_once( plugin_dir_path( __FILE__ ) . "unc_config.inc.php");
 
@@ -60,6 +60,8 @@ if (is_admin() === true) {
     add_action('wp_ajax_unc_gallery_import_images', 'unc_uploads_iterate_files');
     add_action('wp_ajax_nopriv_unc_gallery_datepicker', 'unc_display_ajax_folder');
     add_action('wp_ajax_unc_gallery_datepicker', 'unc_display_ajax_folder');
+    add_action('wp_ajax_nopriv_unc_filter_result', 'unc_filter_result');
+    add_action('wp_ajax_unc_filter_result', 'unc_filter_result');
     add_action('wp_ajax_unc_gallery_image_delete', 'unc_tools_image_delete');
     add_action('wp_ajax_unc_gallery_images_refresh', 'unc_gallery_images_refresh');
     add_action('wp_ajax_unc_gallery_thumbnails_rebuild', 'unc_gallery_admin_rebuild_thumbs');
@@ -118,8 +120,9 @@ function unc_mysql_db_create() {
     $sql_img = "CREATE TABLE $table_name_img (
         id mediumint(9) NOT NULL AUTO_INCREMENT,
         file_time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-        file_name tinytext NOT NULL,
-        UNIQUE KEY id (id)
+        file_name VARCHAR(128) NOT NULL,
+        UNIQUE KEY `id` (`id`),
+        UNIQUE KEY `file_time` (`file_time`,`file_name`);
     ) $charset_collate;";
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('SQL1', $sql_img);}
     dbDelta($sql_img);
@@ -135,7 +138,6 @@ function unc_mysql_db_create() {
     ) $charset_collate;";
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('SQL2', $sql_att);}
     dbDelta($sql_att);
-
     add_option( "unc_gallery_db_version", "1.0" );
 }
 
