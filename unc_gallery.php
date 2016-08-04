@@ -10,6 +10,11 @@ License:     GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
 
+/**
+ * This is the main file of the plugin and contains the most basic plugin-handling
+ * functions that are relevant for wordpress in handling this plugin.
+ */
+
 // If this file is called directly, abort.
 if (!defined('WPINC')) {
     die;
@@ -24,9 +29,9 @@ require_once( plugin_dir_path( __FILE__ ) . "unc_backend.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_upload.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_display.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_type_day.inc.php");
+require_once( plugin_dir_path( __FILE__ ) . "unc_type_filter.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_tools.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_image.inc.php");
-require_once( plugin_dir_path( __FILE__ ) . "unc_filter.inc.php");
 // co nfig has to be last because it runs function in unc_image.inc.php
 require_once( plugin_dir_path( __FILE__ ) . "unc_config.inc.php");
 
@@ -60,8 +65,8 @@ if (is_admin() === true) {
     add_action('wp_ajax_unc_gallery_import_images', 'unc_uploads_iterate_files');
     add_action('wp_ajax_nopriv_unc_gallery_datepicker', 'unc_display_ajax_folder');
     add_action('wp_ajax_unc_gallery_datepicker', 'unc_display_ajax_folder');
-    add_action('wp_ajax_nopriv_unc_filter_result', 'unc_filter_result');
-    add_action('wp_ajax_unc_filter_result', 'unc_filter_result');
+    add_action('wp_ajax_nopriv_unc_filter_update', 'unc_filter_update');
+    add_action('wp_ajax_unc_filter_update', 'unc_filter_update');
     add_action('wp_ajax_unc_gallery_image_delete', 'unc_tools_image_delete');
     add_action('wp_ajax_unc_gallery_images_refresh', 'unc_gallery_images_refresh');
     add_action('wp_ajax_unc_gallery_thumbnails_rebuild', 'unc_gallery_admin_rebuild_thumbs');
@@ -121,6 +126,7 @@ function unc_mysql_db_create() {
         id mediumint(9) NOT NULL AUTO_INCREMENT,
         file_time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
         file_name VARCHAR(128) NOT NULL,
+        file_path VARCHAR(256) NOT NULL,
         UNIQUE KEY `id` (`id`),
         UNIQUE KEY `file_time` (`file_time`,`file_name`);
     ) $charset_collate;";
@@ -214,4 +220,13 @@ function unc_gallery_add_css_and_js() {
         add_action('wp_footer', 'unc_display_photoswipe');
         add_action('admin_footer', 'unc_display_photoswipe');
     }
+    // load google maps if it's set
+    if (strlen($UNC_GALLERY['google_api_key']) > 1) {
+        $api_key = $UNC_GALLERY['google_api_key'];
+        wp_register_script('unc_gallery_google_maps', "https://maps.googleapis.com/maps/api/js?key=$api_key", array(), '', false);
+        wp_register_script('unc_gallery_makerwithlabel_js', plugin_dir_url( __FILE__ ) . 'js/markerwithlabel.js', array(), '', false);
+        wp_enqueue_script('unc_gallery_google_maps');
+        wp_enqueue_script('unc_gallery_makerwithlabel_js');
+    }
+
 }

@@ -206,3 +206,31 @@
     font-size: medium;
     border: 0px;
 }
+
+.filter_row {
+    overflow:auto;
+}
+
+.filter_row h3 {
+    border-bottom-style: solid;
+}
+
+.filter_column {
+    padding-right: 20px;
+    margin: 0px;
+    width: 24%;
+    float: left;
+}
+
+.filter_column ul {
+    padding-left: 0px;
+    margin-left: 20px;
+}
+
+.filter_column li {
+    cursor: pointer;
+}
+
+.filter_column li:hover {
+    text-decoration: underline;
+}

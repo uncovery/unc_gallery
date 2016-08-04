@@ -1,5 +1,16 @@
 <?php
+/**
+ * This file handles all day-type shortcodes (the default type) variables and
+ * output.
+ */
 
+
+/**
+ * Analyse the shortcode vars relevant for the day type.
+ * @global type $UNC_GALLERY
+ * @param type $a
+ * @return boolean
+ */
 function unc_day_var_init($a) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
@@ -80,6 +91,25 @@ function unc_day_var_init($a) {
         $UNC_GALLERY['display']['file'] = false;
         $UNC_GALLERY['display']['files'] = unc_day_images_list();
     }
+
+    $UNC_GALLERY['display']['date_selector'] = false;
+    if (in_array('calendar', $UNC_GALLERY['display']['options'])) {
+        $UNC_GALLERY['display']['date_selector'] = 'calendar';
+    } else if (in_array('datelist', $UNC_GALLERY['display']['options'])) {
+        $UNC_GALLERY['display']['date_selector'] = 'datelist';
+    }
+
+    if (count($UNC_GALLERY['display']['files']) == 0 && !$UNC_GALLERY['display']['file']) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("No files found in date range!");}
+        if ($UNC_GALLERY['no_image_alert'] == 'error') {
+            $UNC_GALLERY['errors'][] = unc_display_errormsg("No images found for this date!");
+        } else if ($UNC_GALLERY['no_image_alert'] == 'not_found') {
+            $UNC_GALLERY['errors'][] = "No images available.";
+        }
+        return false;
+    }
+
+    return true;
 }
 
 /**

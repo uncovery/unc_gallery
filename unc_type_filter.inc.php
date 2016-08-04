@@ -1,0 +1,680 @@
+<?php
+/**
+ * This file handles all filter-type shortcodes variables and
+ * output.
+ */
+
+if (!defined('WPINC')) {
+    die;
+}
+
+/**
+ * Process filter vars
+ *
+ * @global type $UNC_GALLERY
+ * @param type $a
+ */
+function unc_filter_var_init($a) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
+    $filter_str = $a['filter'];
+    if ($filter_str == '') {
+        $filter_arr = false;
+    } else {
+        $filter_arr = explode("|", $filter_str);
+    }
+    if (count($filter_arr) == 3) {
+        $files = unc_filter_image_list($filter_arr);
+    } else {
+        $files = array();
+    }
+
+    // get all the files that apply to the filter
+
+    $UNC_GALLERY['display']['files'] = $files;
+    $UNC_GALLERY['display']['file'] = false;
+    $UNC_GALLERY['display']['filter_arr'] = $filter_arr;
+
+    //$valid_options = $UNC_GALLERY['keywords']['type']['filter'];
+    //$options = $a['options'];
+    return true;
+}
+
+/**
+ * find all files with a certain filter value
+ *
+ * @param array $filter_arr
+ */
+function unc_filter_image_list($filter_arr) {
+    global $UNC_GALLERY, $wpdb;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
+    $img_table_name = $wpdb->prefix . "unc_gallery_img";
+    $att_table_name = $wpdb->prefix . "unc_gallery_att";
+    $group_filter = esc_sql($filter_arr[0]);
+
+    $sql_str_filter = '';
+    $sql_str_arr = array('', 'att_name', 'att_value');
+    for ($i=1; $i<= count($filter_arr); $i++) {
+        if (isset($filter_arr[$i])) {
+            $filter_arr_str = esc_sql($filter_arr[$i]);
+            $sql_str_filter .= "AND {$sql_str_arr[$i]}='$filter_arr_str' ";
+        }
+    }
+
+    $sql = "SELECT `file_path`, `file_time` FROM $att_table_name
+        LEFT JOIN $img_table_name ON id=file_id
+        WHERE `group`='$group_filter' $sql_str_filter
+        LIMIT 50";
+
+    $files = $wpdb->get_results($sql, 'ARRAY_A');
+    $myfiles = array();
+    foreach ($files as $file) {
+        $file_path = $file['file_path'];
+        $file_date = $file['file_time'];
+        $F = unc_image_info_read($file_path);
+        $F['featured'] = false;
+        $myfiles[$file_date] = $F;
+    }
+
+    ksort($myfiles);
+    return $myfiles;
+}
+
+function unc_filter_choice($filter_arr) {
+    global $UNC_GALLERY, $wpdb;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
+    $img_table_name = $wpdb->prefix . "unc_gallery_img";
+    $att_table_name = $wpdb->prefix . "unc_gallery_att";
+    $group_filter = esc_sql($filter_arr[0]);
+
+    $filter_group = false;
+    $filter_name = false;
+
+    $desc2 = '';
+    $desc1 = '';
+    if (!$filter_arr || count($filter_arr) == 0) {
+        $names_sql = "SELECT `group` as `term` FROM $att_table_name
+            LEFT JOIN $img_table_name ON id=file_id
+            GROUP BY `group`";
+        $filter_key = 'group';
+        $desc1 = "Please select filter group:&nbsp;";
+    } else if (count($filter_arr) == 1) {
+        $names_sql = "SELECT `att_name` as `term` FROM $att_table_name
+            LEFT JOIN $img_table_name ON id=file_id
+            WHERE `group`='$group_filter'
+            GROUP BY att_name
+            ORDER By att_name";
+        $filter_key = 'att_name';
+        $filter_group = $filter_arr[0];
+        $desc1 = "Please select filter field:&nbsp;";
+    } else if (count($filter_arr) > 1 ) { // if we have all 3, always dislay the last one
+        $att_name_filter = esc_sql($filter_arr[1]);
+        $names_sql = "SELECT `att_value` as `term` FROM $att_table_name
+            LEFT JOIN $img_table_name ON id=file_id
+            WHERE `group`='$group_filter' AND `att_name`='$att_name_filter'
+            GROUP BY att_value
+            ORDER BY att_value";
+        $filter_key = 'att_value';
+        $filter_group = $filter_arr[0];
+        $filter_name = $filter_arr[1];
+        if (count($filter_arr) < 3 ) {
+            $desc1 = "Please select filter field value:&nbsp;";
+        }
+    }
+    if (count($filter_arr) == 3 ) { // we have enough info for the image list, count result
+        $att_value_filter = esc_sql($filter_arr[2]);
+        $count_sql = "SELECT count(`file_id`) as `counter` FROM $att_table_name
+            LEFT JOIN $img_table_name ON id=file_id
+            WHERE `group`='$group_filter' AND `att_name`='$att_name_filter' AND `att_value`='$att_value_filter'";
+        $counter = $wpdb->get_results($count_sql, 'ARRAY_A');
+        $row_count = $counter[0]['counter'];
+        $desc2 = "Filtering for $att_name_filter: $att_value_filter";
+        if ($row_count > 49) {
+            $desc2  .= "<br>More than 50 images found! ($row_count results)";
+        }
+    }
+
+
+    $names = $wpdb->get_results($names_sql, 'ARRAY_A');
+
+    // add the given filter_vars
+    $options = $UNC_GALLERY['display']['options'];
+
+    // display the optional tag list
+    $out = '';
+    if (in_array('dropdown', $options)) {
+        $out .=  $desc1 . "<select id=\"filter\" onchange=\"filter_change('$filter_key', '$filter_group', '$filter_name', 'dropdown')\">\n"
+            . "<option value=\"false\" selected=\"selected\">Please select</option>\n";
+        foreach ($names as $N) {
+            $nice_term = ucwords(str_replace("_", " ", $N['term']));
+            $out .= "<option value=\"{$N['term']}\">$nice_term</option>\n";
+        }
+        $out .="</select>\n$desc2\n";
+    } else if (in_array('list', $options)) {
+        $columns = 4;
+        $out .= $desc1;
+        if (count($names) < 20) { // we make colums only for large lists
+            $out .= "<ul>\n";
+            foreach ($names as $N) {
+                $nice_term = ucwords(str_replace("_", " ", $N['term']));
+                $out .= "<li onclick=\"filter_select('$filter_key', '{$N['term']}', '$filter_group', '$filter_name', 'list')\">$nice_term</li>\n";
+            }
+            $out .= "</ul>\n";
+        } else { // make columns
+            $columns = 4;
+            $last_letter = false;
+            $start = true;
+            $this_column = 0;
+            $out .= "<div class=\"filter_row\">\n";
+            foreach ($names as $N) {
+                $nice_term = ucwords(str_replace("_", " ", $N['term']));
+                $first_letter = mb_substr($nice_term, 0, 1);
+                if ($first_letter <> $last_letter) {
+                    if (!$start) {
+                        $this_column++;
+                        $out .= "</ul>\n</div>\n";
+                        if ($this_column == $columns) {
+                            $this_column = 0;
+                            $out .= "</div>\n";
+                            $out .= "<div class=\"filter_row\">\n";
+                        }
+                    }
+                    // make letter header
+                    $out .= "<div class=\"filter_column\">\n<h3>$first_letter</h3>\n"
+                        . "<ul>\n";
+                }
+                $out .= "<li onclick=\"filter_select('$filter_key', '{$N['term']}', '$filter_group', '$filter_name', 'list')\">$nice_term</li>\n";
+                $last_letter = $first_letter;
+                $start = false;
+            }
+            $out .= "</ul>\n</div>\n</div>\n";
+        }
+        $out .= $desc2;
+    } else {
+        $valid_options = $UNC_GALLERY['keywords']['type']['filter'];
+        $val_opt_text = implode(", ", $valid_options);
+        $out .= unc_display_errormsg("You have an option set () that us not compatible with filters! Valid options are: $val_opt_text");
+    }
+
+    return $out;
+}
+
+function unc_filter_map_data($type) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
+
+    if ($type == 'xmp') {
+        $levels = array('country', 'state', 'city', 'location');
+
+    } else { //ipct
+        $levels = array('country', 'province_state', 'city');
+    }
+
+    $my_levels = array();
+    // lets construct a new $levels array from the GET data
+    $i = 0;
+    $queries = array();
+    foreach ($levels as $level) {
+        $temp_value = filter_input(INPUT_GET, $level, FILTER_SANITIZE_STRING);
+        // if one value is missing or empty we take what we got so far.
+        if (is_null($temp_value)) {
+            break;
+        }
+        $my_levels[$level] = $temp_value;
+        $queries[] = "$level=$temp_value";
+        $i++;
+    }
+
+    $link_code = 'window.location.href = this.url;';
+    if (count($my_levels) == $i) {
+        $link_code = 'map_filter(point[1],point[2]);';
+    }
+
+
+    // we need to always add one level to the existing so that it will be shown
+    $add_level = $levels[$i];
+    // false is the wildcard to display all contents
+    $my_levels[$add_level] = false;
+
+    // let's get all the locations from the DB:
+    $locations_details = unc_filter_map_locations($my_levels, $type);
+    // var_dump($locations);
+    if (count($locations_details) == 0) {
+        return "Could not find any results on this location;";
+    }
+
+    // we are interested only in the average GPS data per location
+    $locations = unc_filter_gps_avg($locations_details);
+
+    $markers_list = "var points = [\n";
+    $z_index = 100;
+
+    $all_long = 0;
+    $all_lat = 0;
+    foreach ($locations as $L) {
+        foreach ($L as $loc_name => $gps) {
+            $z_index++;
+
+            $this_queries = $queries;
+            $this_queries[] = "$level=$loc_name";
+            if (count($queries) == count($levels)) {
+                $link = "https://uncovery.net/";
+            } else {
+                $link = "?" . implode("&", $this_queries);
+            }
+
+            $lat = $gps['lat'];
+            $all_lat += $lat;
+            $long = $gps['long'];
+            $all_long += $long;
+            $markers_list .= "['$loc_name',$lat,$long,$z_index,'$link',''],\n";
+        }
+    }
+
+    $avg_long = $all_long / count($locations);
+    $avg_lat = $all_lat / count($locations);
+
+    $zoom = 4;
+    $markers_list .= "\n];\n";
+
+    // mapwithmarker reference:
+    // http://google-maps-utility-library-v3.googlecode.com/svn/trunk/markerwithlabel/docs/reference.html
+
+    // on-hover visibility method from
+    // http://stackoverflow.com/questions/25981512/markerwithlabel-mouseover-issue
+
+    // google maps API
+    // https://developers.google.com/maps/documentation/javascript/examples/event-simple
+
+
+    $out = '
+    <div id="map" style="height:600px"></div>
+
+    <script>
+        var map;
+        var marker;
+        function initMap() {
+            map = new google.maps.Map(document.getElementById(\'map\'), {
+                center: {lat: '.$avg_lat.', lng: '.$avg_long.'},
+                zoom: '.$zoom.',
+                mapTypeId: google.maps.MapTypeId.HYBRID
+            });
+            ' . $markers_list . '
+            for (var i = 0; i < points.length; i++) {
+                var point = points[i];
+                marker = MarkerWithLabelAndHover(
+                    new MarkerWithLabel({
+                        pane: "overlayMouseTarget",
+                        position: new google.maps.LatLng(point[1], point[2]),
+                        labelContent: "",
+                        hoverContent: point[0] + "<br>Click to open",
+                        labelAnchor: new google.maps.Point(40, -5),
+                        map: map,
+                        labelClass: "labels",
+                        hoverClass: "hoverlabels",
+                        url: point[4],
+                    })
+                );
+                google.maps.event.addListener(marker, \'click\', function() {
+                    '.$link_code.'
+                });
+            }
+        }
+        google.maps.event.addDomListener(window, \'load\', initMap);
+    </script>';
+    return $out;
+}
+
+function unc_filter_map_locations($levels, $type) {
+    global $UNC_GALLERY, $wpdb;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
+
+    $levels_sql = implode("','", array_keys($levels));
+
+    $att_table_name = $wpdb->prefix . "unc_gallery_att";
+    $sql = "SELECT * FROM `$att_table_name`
+        WHERE
+            (`group`='$type' AND att_name IN ('$levels_sql')) OR
+            (`group`='exif' AND att_name IN ('gps_lon','gps_lat'))";
+
+    $locations = $wpdb->get_results($sql, 'ARRAY_A');
+
+    $files = array();
+    foreach ($locations as $L) {
+        $file_id = $L['file_id'];
+        $loc_type = $L['att_name'];
+        $files[$file_id][$loc_type] = $L['att_value'];
+    }
+    $must_have = array('gps_lon','gps_lat');
+    $my_levels_reverse = array_reverse($levels);
+    $final = array();
+    foreach ($files as $F) {
+        foreach ($must_have as $must) {
+            if (!isset($F[$must])) {
+                continue 2;
+            }
+        }
+        foreach ($levels as $loc_type => $loc_name) {
+            if (!isset($F[$loc_type])) {
+                $F[$loc_type] = '';
+            }
+        }
+
+        $cur_array = array('gps' => array('long'=> floatval($F['gps_lon']), 'lat'=>floatval($F['gps_lat'])));
+        foreach ($my_levels_reverse as $level => $level_name){
+            if (!$level_name || ($level_name && $F[$level] == $level_name)) {
+                $cur_array = array($level => array($F[$level] => $cur_array));
+            } else {
+                continue 2; // invalid term, bail
+            }
+        }
+        $final = array_merge_recursive($final, $cur_array);
+    }
+    // now we have the full data array, but we need only the last level above the GPS data
+
+    return $final;
+}
+
+
+/**
+ * iterate an array and
+ */
+function unc_filter_gps_avg($array) {
+    foreach ($array as $name => $lower) {
+        if (isset($lower['gps'])) {
+            $lat = array_sum($lower['gps']['lat']) / count($lower['gps']['lat']);
+            $lon = array_sum($lower['gps']['long']) / count($lower['gps']['long']);
+            $next_step[] = array($name => array('lat'=>$lat, 'long'=>$lon));
+        } else {
+            $next_step = unc_filter_gps_avg($lower);
+        }
+    }
+    return $next_step;
+}
+
+
+/**
+ * This is the function called by Ajax when the filter dropdown on the website is updated
+ *
+ * @global type $wpdb
+ * @global type $UNC_GALLERY
+ * @return type
+ */
+function unc_filter_update(){
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
+
+    $filter_key = filter_input(INPUT_GET, 'filter_key', FILTER_SANITIZE_STRING);
+    $filter_value = filter_input(INPUT_GET, 'filter_value', FILTER_SANITIZE_STRING);
+    $filter_group = filter_input(INPUT_GET, 'filter_group', FILTER_SANITIZE_STRING);
+    $filter_name = filter_input(INPUT_GET, 'filter_name', FILTER_SANITIZE_STRING);
+    $options = filter_input(INPUT_GET, 'options', FILTER_SANITIZE_STRING);
+
+    $filter_str = '';
+    if (strlen($filter_group) > 1) { // we have a group set
+        $filter_str = $filter_group;
+    } else if ($filter_key == 'group' ) { // the group was chosen
+        $filter_str = $filter_value;
+    } else {
+        echo "error in filter group!";
+    }
+
+    if (strlen($filter_name) > 0) { // we have a name set
+        $filter_str .= "|$filter_name";
+    } else if ($filter_key == 'att_name') { // the group was chosen
+        $filter_str .= "|$filter_value";
+    }
+    if ($filter_key == 'att_value' && $filter_value <> 'false') {
+        $filter_str .= "|$filter_value";
+    }
+    // the following line as ECHO = FALSE because we do the echo here
+    unc_gallery_display_var_init(array('type' => 'filter', 'filter' => $filter_str, 'echo' => false, 'options' => $options));
+    ob_clean();
+    echo unc_gallery_display_page();
+    wp_die();
+}
+
+function unc_filter_check_type($group, $key) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    // get the possible filter values from the codes
+    $codes = $UNC_GALLERY['codes'];
+    if (!isset($codes[$group])) {
+        $valid_filter_types_arr = array_keys($codes);
+        $valid_filter_types = implode(",", $valid_filter_types_arr);
+        return unc_display_errormsg("You have an invalid filter type set. Possible values are: $valid_filter_types");
+    }
+    $code_group = $codes[$group];
+    if (!isset($code_group[$key])) {
+        $valid_filter_keys_arr = array_keys($code_group);
+        $valid_filter_keys = implode(",", $valid_filter_keys_arr);
+        return unc_display_errormsg("You have an invalid filter key set. Possible values are: $valid_filter_keys");
+    }
+    return false;
+}
+
+
+/**
+ * Compare existing post tags with the image and fix missing ones.
+ *
+ * @global type $UNC_GALLERY
+ * @param type $F
+ * @return boolean
+ */
+function unc_tags_apply($F) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "file_data");}
+
+    // do we havea post? If so get the id, otherwise bail
+    $post_id = get_the_ID();
+    if (!$post_id) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("unc_display_tags_compare", "No post ID available");}
+        return;
+    }
+
+    // we assume first we append tags
+    $append_tags = true;
+    // get the system setting
+    $setting = $UNC_GALLERY['post_keywords'];
+    // it's a string a_b_c, split it
+    $set_split = explode("_", $setting);
+    //
+    $selected_tags = $set_split[0];
+    if (isset($set_split[1])) {
+        $append_tags = false;
+    }
+
+    // let's create an array that will hold a list of unique tags of this post
+    $photo_tags = array();
+    // lets iterate all files
+    foreach ($F as $FD) {
+        // if the file has no keywords, continue to next one
+        if (!isset($FD[$selected_tags]['keywords'])) {
+            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("unc_display_tags_compare", "No $selected_tags Keywords set");}
+            continue;
+        }
+        // otherwise, the field is set, check if we have keywords in it
+        $image_tags = $FD[$selected_tags]['keywords'];
+        if (!is_array($image_tags)) {
+            $image_tags = array($FD[$selected_tags]['keywords']);
+        }
+        // now, we have tags, go through them
+        foreach ($image_tags as $tag) {
+            // we lowercase them to make them comparable
+            $photo_tags[] = ucwords(strtolower($tag));
+        }
+    }
+    if (count($photo_tags) == 0) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("unc_display_tags_compare", "collected zero keywords from array");}
+        return false;
+    }
+
+    // TODO: Create a second Array that does not lowercase the tags for the final application
+    $photo_tags_unique = array_unique($photo_tags);
+    asort($photo_tags_unique);
+
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("new collected tags from Photos:", $photo_tags_unique);}
+
+    // in case there are no tags in the photos, we won't do anything
+    if (count($photo_tags_unique) == 0) {
+        return;
+    }
+
+    // get all post tags
+    $post_tags = array();
+    $posttags_obj = get_the_tags();
+    if ($posttags_obj) {
+        foreach($posttags_obj as $tag) {
+            $post_tags[] = ucwords(strtolower($tag->name));
+        }
+    }
+
+    $post_tags_unique = array_unique($post_tags);
+    asort($post_tags_unique);
+
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("new collected tags from Post:", $post_tags_unique);}
+
+    $comp_result = unc_tools_array_analyse($photo_tags_unique, $post_tags_unique);
+    $complete_set = $comp_result['complete_set'];
+    asort($complete_set);
+    $missing_tags = $comp_result['only_in_1'];
+
+    $retval = false;
+    // if we append tags, we only look for the missing ones.
+    if ($append_tags) {
+        if (count($missing_tags) > 0) {
+            $retval = true;
+            wp_set_post_tags($post_id, $missing_tags, $append_tags);
+        }
+    } else if ($complete_set != $post_tags_unique) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, array('post' => $post_tags_unique, 'set' => $complete_set));}
+        // if we replace tags, we overwrite only if the tags are not identical
+        wp_set_post_tags($post_id, $photo_tags_unique, $append_tags);
+        $retval = true;
+    }
+    return $retval;
+}
+
+/**
+ * Compare existing post categories with the image and fixing the missing
+ *
+ * @global type $UNC_GALLERY
+ * @param type $file_data
+ * @return type
+ */
+function unc_categories_apply($file_data) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "File_data");}
+
+    $post_id = get_the_ID();
+    if (!$post_id) {
+        return;
+    }
+
+    // need to include taxonomy to use category stuff
+    $admin_directory = ABSPATH . '/wp-admin/';
+    require_once($admin_directory . 'includes/taxonomy.php');
+
+    $curr_cats = array();
+    // re-format the currnet categories so we can compare them
+
+    foreach (get_the_category($post_id) as $c_cat) {
+        $cat_name_id = strtolower($c_cat->name);
+        $curr_cats[$cat_name_id]['name'] = $c_cat->name;
+        $curr_cats[$cat_name_id]['id'] = $c_cat->cat_ID;
+    }
+    //XMPP_ERROR_trace("got existing post categories:", $curr_cats);
+
+    // get all cats in nthe system
+    $wp_all_cats = get_categories();
+    $all_cat_index = array();
+    // reformat them so we can search easier
+    foreach ($wp_all_cats as $C) {
+        $lower_name = strtolower($C->name);
+        $all_cat_index[$lower_name]['id'] = $C->cat_ID;
+        $all_cat_index[$lower_name]['parent'] = $C->parent;
+    }
+    //XMPP_ERROR_trace("got all categories:", $all_cat_index);
+
+    // find out what the current setting is
+    $setting = $UNC_GALLERY['post_categories'];
+    // split into array:
+    $setting_array = explode("_", $setting);
+    $data_type = array_shift($setting_array); // remove the XPM/EXIF from the front of the array
+    // iterate all files and get all the different levels of categories
+    $cat_sets = array();
+
+    $has_cats = false;
+    // we go through all files in the post and get all categories for this post uniquely
+    foreach ($file_data as $F) {
+        // we go through the wanted fields from the setting
+        $file_cats = array();
+        foreach ($setting_array as $exif_code) {
+            $cat_sets[$exif_code] = false; // with this we also catch empty levels
+            if (!isset($F[$data_type][$exif_code])) {
+                $value = '%%none%%';
+            } else {
+                $has_cats = true;
+                $value = $F[$data_type][$exif_code];
+            }
+            $file_cats[] = $value;
+        }
+        // we try to create a code to make sure we do not make duplicates
+        $cats_id = implode("-", $file_cats);
+        $cat_sets[$cats_id] = $file_cats;
+    }
+    if (!$has_cats) {
+        return;
+    }
+
+    //XMPP_ERROR_trace("iterated all files, got category sets:", $cat_sets);
+
+    $post_categories = array();
+
+    // now we go through the collected categories and apply them to the poat
+    foreach ($cat_sets as $cat_set) {
+        //XMPP_ERROR_trace("Checking cat set:", $cat_set);
+        // iterate each level
+        $depth = 1; // depth of the hierarchical cats
+        $next_parent = 0;
+        if (!$cat_set) {
+            continue;
+        }
+        foreach ($cat_set as $cat) {
+            //XMPP_ERROR_trace("Checking cat:", $cat);
+            // check if the post has a category of that name already
+            $cat_id = strtolower($cat);
+            if ($cat == '%%none%%') {
+                //XMPP_ERROR_trace("cat is emtpy, continue");
+                continue;
+            } else if (isset($curr_cats[$cat_id])) {
+                // get the existing cat ID and add it to the post
+                $post_categories[] = $curr_cats[$cat_id]['id'];
+                //XMPP_ERROR_trace("cat is set already get ID for final assignment", $curr_cats[$cat_id]['id']);
+                $next_parent = $curr_cats[$cat_id]['id'];
+                continue;
+            }
+            // check if the current cat already exists in wordpress
+            if (!isset($all_cat_index[$cat_id])) {
+                $this_id = wp_create_category($cat, $next_parent);
+                //XMPP_ERROR_trace("Creating category $cat, ID: $this_id, Parent $next_parent");
+            } else {
+                //XMPP_ERROR_trace("Cat exists already, get parent for next level", $all_cat_index[$cat_id]['parent']);
+                $this_id = $all_cat_index[$cat_id]['id'];
+
+            }
+            $post_categories[] = $this_id; // collect the categories to add them to the post
+            $next_parent = $this_id;
+            $depth++;
+        }
+    }
+
+    // TODO only update if we need to!
+    // we need to check if the categories we added have the right hierarchy, so let's get the whole list first
+    //XMPP_ERROR_trace("assign final list of cats", $post_categories);
+    wp_set_post_categories($post_id, $post_categories, false); // true means cats will be added, not replaced
+    //XMPP_ERROR_trigger("test");
+}

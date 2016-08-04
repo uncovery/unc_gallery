@@ -169,6 +169,12 @@ $UNC_GALLERY['user_settings'] = array(
         ),
         'title' => 'Auto-Categorize posts by Location',
     ),
+    'google_api_key' => array(
+        'help' => 'Your google API key to display maps.',
+        'default' => '',
+        'type' => 'text',
+        'title' => 'Google API key',
+    ),
     'settings_location' => array(
         'help' => 'Do you want the admin screen of this plugin to be shown as a menu entry in the sidebar or a sub-menu of the settings menu?',
         'default' => 'sidebar',

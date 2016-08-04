@@ -4,6 +4,7 @@ if (!defined('WPINC')) {
     die;
 }
 
+
 /**
  * Take a date string (with time!) and create the respective folders
  *
@@ -346,7 +347,7 @@ function unc_tools_file_random($date_path) {
  * @return type
  */
 function unc_tools_folder_date($folder) {
-    global $UNC_GALLERY;
+    // global $UNC_GALLERY;
     // if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $path_arr = explode("/", $folder);
     // get last 3 elements

@@ -37,7 +37,7 @@ function datepicker_select(dateText, inst) {
         dataType: 'text',
         data: {action: 'unc_gallery_datepicker', date: dateText},
         complete: function (response) {
-            jQuery('#datepicker_target').html(response.responseText);
+            jQuery('#selector_target').html(response.responseText);
             jQuery('#photodate').html("Showing " + dateText);
         },
         error: function () {
@@ -66,14 +66,15 @@ function datelist_change(inst) {
 }
 
 
-function filter_select(filter_group, filter_key, filter_value, inst) {
+function filter_select(filter_key, filter_value, filter_group, filter_name, options, inst) {
     jQuery.ajax({
         url: ajaxurl,
         method: 'GET',
         dataType: 'text',
-        data: {action: 'unc_filter_result', filter_group: filter_group, filter_key: filter_key, filter_value: filter_value},
+        data: {action: 'unc_filter_update', filter_key: filter_key, filter_value: filter_value, filter_group: filter_group, filter_name: filter_name, options: options},
         complete: function (response) {
-            jQuery('#filter_result').html(response.responseText);
+            jQuery('#filter_selector').html(response.responseText);
+            window.scrollTo(0,document.body.scrollHeight);
         },
         error: function () {
 
@@ -81,9 +82,14 @@ function filter_select(filter_group, filter_key, filter_value, inst) {
     });
 }
 
-function filter_change(filter_group, filter_key, inst) {
+function filter_change(filter_key, filter_group, filter_name, options, inst) {
     var filter_value = jQuery('#filter').val();
-    filter_select(filter_group, filter_key, filter_value, inst);
+    filter_select(filter_key, filter_value, filter_group, filter_name, options, inst);
+}
+
+function map_filter(latitude, longitude) {
+    confirm("Map event: " + latitude + ", " + longitude);
+    filter_select(filter_key, filter_value, filter_group, filter_name, options, inst)
 }
 
 
@@ -103,7 +109,7 @@ function delete_image(file_name, rel_date) {
             dataType: 'text',
             data: {action: 'unc_gallery_image_delete', date: rel_date, file_name: file_name},
             complete: function (response) {
-                jQuery('#datepicker_target').html(response.responseText);
+                jQuery('#selector_target').html(response.responseText);
             },
             error: function () {
 

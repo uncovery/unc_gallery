@@ -1,4 +1,7 @@
 <?php
+/**
+ * This file hosts all the runctions that deal with the EXIF/XMP/IPCT data of images
+ */
 
 if (!defined('WPINC')) {
     die;
@@ -71,16 +74,30 @@ $UNC_GALLERY['codes']['exif'] = array(
         'unit' => false,
         'description' => 'Created',
     ),
-    'gps' => array(
-        'hex' => false, // not sure how to use keys here, need to see some valid data using keys
-        'key' => array('GPSLatitudeRef', 'GPSLatitude', 'GPSLongitudeRef', 'GPSLongitude'),
+    'gps_lat' => array(
+        'hex' => false,
+        'key' => array('GPSLatitudeRef' => 'Hemisphere', 'GPSLatitude' => 'Coordinates'),
         'conversion' => 'unc_exif_convert_gps',
         'unit' => false,
-        'description' => 'GPS',
+        'description' => 'GPS Latitude',
+    ),
+    'gps_lon' => array(
+        'hex' => false,
+        'key' => array('GPSLongitudeRef' => 'Hemisphere', 'GPSLongitude' => 'Coordinates'),
+        'conversion' => 'unc_exif_convert_gps',
+        'unit' => false,
+        'description' => 'GPS Longitude',
+    ),
+    'gps' => array(
+        'hex' => false,
+        'key' => array('GPSLatitudeRef' => 'GPSLatitudeRef', 'GPSLatitude' =>'GPSLatitude', 'GPSLongitudeRef' => 'GPSLongitudeRef', 'GPSLongitude' => 'GPSLongitude'),
+        'conversion' => 'unc_exif_convert_gps_combo',
+        'unit' => false,
+        'description' => 'GPS Coordinates',
     ),
     'gps_link' => array(
-        'hex' => false, // not sure how to use keys here, need to see some valid data using keys
-        'key' => array('GPSLatitudeRef', 'GPSLatitude', 'GPSLongitudeRef', 'GPSLongitude'),
+        'hex' => false,
+        'key' => array('GPSLatitudeRef' => 'GPSLatitudeRef', 'GPSLatitude' =>'GPSLatitude', 'GPSLongitudeRef' => 'GPSLongitudeRef', 'GPSLongitude' => 'GPSLongitude'),
         'conversion' => 'unc_exif_convert_gps_link',
         'unit' => false,
         'description' => 'Map',
@@ -322,6 +339,7 @@ function unc_image_info_write($file_path) {
         array(
             'file_time' => $file_date,
             'file_name' => $file_name,
+            'file_path' => $file_path,
         )
     );
 
@@ -556,11 +574,11 @@ function unc_exif_get($image_path) {
         $hex_tag =  'UndefinedTag:' . $C['hex'];
         if (is_array($C['key'])) { // gps for example is made out of multiple keys
             $val = array();
-            foreach ($C['key'] as $key_name) {
+            foreach ($C['key'] as $key_name => $key_value) {
                 if (!isset($exif[$key_name])) { // we only get this if all sub-tags exist
                     continue 2; // continue to the next file in the outer loop
                 }
-                $val[$key_name] = $exif[$key_name];
+                $val[$key_value] = $exif[$key_name];
             }
         } else if (isset($exif[$C['key']])) {
             $val = $exif[$C['key']];
@@ -593,10 +611,19 @@ function unc_exif_get($image_path) {
 function unc_exif_convert_gps_link($gps_arr) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    $coords = unc_exif_convert_gps($gps_arr);
-    $fixed_coords = str_replace(" ", ",", $coords);
-    $link = "<a href='http://www.google.com/maps/place/$fixed_coords' target='_blank'>Link</a>";
+    $str = unc_exif_convert_gps_combo($gps_arr);
+    $link = "<a href='http://www.google.com/maps/place/$str' target='_blank'>Link</a>";
     return $link;
+}
+
+
+function unc_exif_convert_gps_combo($gps_arr) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    // 'GPSLatitudeRef', 'GPSLatitude', 'GPSLongitudeRef', 'GPSLongitude'
+    $lat_coords = unc_exif_convert_gps(array('Hemisphere' => $gps_arr['GPSLatitudeRef'], 'Coordinates' => $gps_arr['GPSLatitude']));
+    $lon_coords = unc_exif_convert_gps(array('Hemisphere' => $gps_arr['GPSLongitudeRef'], 'Coordinates' => $gps_arr['GPSLongitude']));
+    return "$lat_coords,$lon_coords";
 }
 
 /**
@@ -609,24 +636,23 @@ function unc_exif_convert_gps_link($gps_arr) {
 function unc_exif_convert_gps($gps_arr) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    $D = array (
-        'lat' => array('GPSLatitudeRef', 'GPSLatitude'),
-        'lon' => array('GPSLongitudeRef', 'GPSLongitude'),
-    );
-    $lat = false;
-    $lon = false;
-    foreach ($D as $type => $T) {
-        $coord = $gps_arr[$T[1]];
-        $hemi = $gps_arr[$T[0]];
-
-        $degrees = count($coord) > 0 ? unc_exif_convert_gps_2_Num($coord[0]) : 0;
-        $minutes = count($coord) > 1 ? unc_exif_convert_gps_2_Num($coord[1]) : 0;
-        $seconds = count($coord) > 2 ? unc_exif_convert_gps_2_Num($coord[2]) : 0;
-
-        $flip = ($hemi == 'W' or $hemi == 'S') ? -1 : 1;
-        $$type = $flip * ($degrees + $minutes / 60 + $seconds / 3600);
+    // $gps array elelemt 1 is the reference, 0 is the coordinate
+    if (!isset($gps_arr['Coordinates'])) {
+        XMPP_ERROR_trigger("GPS Coord not set!");
     }
-    return "$lat $lon";
+    if (!isset($gps_arr['Hemisphere'])) {
+        XMPP_ERROR_trigger("GPS Hemisphere not set!");
+    }
+    $coord = $gps_arr['Coordinates'];
+    $hemi = $gps_arr['Hemisphere'];
+
+    $degrees = count($coord) > 0 ? unc_exif_convert_gps_2_Num($coord[0]) : 0;
+    $minutes = count($coord) > 1 ? unc_exif_convert_gps_2_Num($coord[1]) : 0;
+    $seconds = count($coord) > 2 ? unc_exif_convert_gps_2_Num($coord[2]) : 0;
+
+    $flip = ($hemi == 'W' or $hemi == 'S') ? -1 : 1;
+    $out = $flip * ($degrees + $minutes / 60 + $seconds / 3600);
+    return $out;
 }
 
 /**

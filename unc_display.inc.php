@@ -16,7 +16,7 @@ function unc_display_ajax_folder() {
     // we get the date from the GET value
     $date_str = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
     unc_gallery_display_var_init(array('date' => $date_str, 'echo' => true));
-    return unc_display_folder_images();
+    return unc_display_images();
 }
 
 /**
@@ -28,7 +28,7 @@ function unc_gallery_images_refresh() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     unc_gallery_display_var_init(array('echo' => true));
-    return unc_display_folder_images();
+    return unc_display_images();
 }
 
 /**
@@ -83,6 +83,7 @@ function unc_gallery_display_var_init($atts = array()) {
 
     // defaults
     $UNC_GALLERY['not_shown'] = false;
+    $UNC_GALLERY['errors'] = array();
 
     // check if all the attributes exist
     foreach ($atts as $key => $value) {
@@ -133,11 +134,14 @@ function unc_gallery_display_var_init($atts = array()) {
     $keywords = $UNC_GALLERY['keywords'];
 
     if ($type == 'day') {
-        unc_day_var_init($a);
-
+        $check = unc_day_var_init($a);
     } else if ($type == 'filter') {
-
+        $check = unc_filter_var_init($a);
     }
+    if (!$check) { // there was some critical error, let's return that
+        return false;
+    }
+
 
     // details
     $details_raw = $a['details'];
@@ -188,23 +192,6 @@ function unc_gallery_display_var_init($atts = array()) {
         $UNC_GALLERY['display']['slideshow'] = true;
     }
 
-    $UNC_GALLERY['display']['date_selector'] = false;
-    if (in_array('calendar', $options)) {
-        $UNC_GALLERY['display']['date_selector'] = 'calendar';
-    } else if (in_array('datelist', $options)) {
-        $UNC_GALLERY['display']['date_selector'] = 'datelist';
-    }
-
-    if (count($UNC_GALLERY['display']['files']) == 0 && !$UNC_GALLERY['display']['file']) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("No files found in date range!");}
-        if ($UNC_GALLERY['no_image_alert'] == 'error') {
-            $UNC_GALLERY['errors'][] = unc_display_errormsg("No images found for this date!");
-        } else if ($UNC_GALLERY['no_image_alert'] == 'not_found') {
-            $UNC_GALLERY['errors'][] = "No images available.";
-        }
-        return false;
-    }
-
     // this is needed to the JS function calls used for the displays
     $slug = '';
     if (isset($post->post_name)) {
@@ -239,11 +226,13 @@ function unc_gallery_display_page() {
     remove_filter('the_content', 'wpautop');
     $photo_folder =  $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'];
 
+    $out = '';
+    $selector_div = '';
+
     if ($D['type'] == 'day') {
         $date = $D['dates'][0];
 
         $datepicker_div = '';
-        $out = '';
         if ($D['date_description']) {
             $datepicker_div = "<span id=\"photodate\">Showing $date</span>";
         }
@@ -262,14 +251,14 @@ function unc_gallery_display_page() {
                     datepicker_ready('{$date}');
                 });
                 </script>";
-                $datepicker_div = "Pick a Date: <input type=\"text\" id=\"datepicker\" value=\"$date\" size=\"10\">";
+                $selector_div = "Pick a Date: <input type=\"text\" id=\"datepicker\" value=\"$date\" size=\"10\">";
             } else if ($D['date_selector'] == 'datelist') {
-                $datepicker_div = "<select id=\"datepicker\" onchange=\"datelist_change()\">\n";
+                $selector_div = "<select id=\"datepicker\" onchange=\"datelist_change()\">\n";
                 foreach ($fixed_dates as $folder_date => $folder_files) {
                     $counter = count($folder_files);
-                    $datepicker_div .= "<option value=\"$folder_date\">$folder_date ($counter)</option>\n";
+                    $selector_div .= "<option value=\"$folder_date\">$folder_date ($counter)</option>\n";
                 }
-                $datepicker_div .="</select>\n";
+                $selector_div .="</select>\n";
             }
         }
         $date_path = unc_tools_date_path($D['dates'][0]);
@@ -278,12 +267,17 @@ function unc_gallery_display_page() {
         if (!$date_path) {
             return;
         }
+    } else { // type = filter
+        $filter_arr = $D['filter_arr'];
 
+        if ($filter_arr[1] == 'map') {
+            $selector_div = unc_filter_map_data($filter_arr[0]);
+        } else {
+            $selector_div = "<div id=\"filter_selector\">\n"
+                . unc_filter_choice($filter_arr)
+                . "</div>\n";
+        }
     }
-
-
-
-
 
     if ($D['type'] == 'image' || $D['type'] == 'thumb') {
         $thumb = false;
@@ -303,9 +297,11 @@ function unc_gallery_display_page() {
         } else {
             $link_type = false;
         }
-        $out = unc_display_image_html($file_path, $thumb, false, $link_type);
+        $out .= unc_display_image_html($file_path, $thumb, false, $link_type);
     } else { // type = day
-        $images_html = unc_display_folder_images();
+        XMPP_ERROR_trace("print");
+        $images_html = unc_display_images();
+        XMPP_ERROR_trace("images");
         $delete_link = '';
         $limit_rows = '';
         if ($D['limit_rows']) {
@@ -313,14 +309,15 @@ function unc_gallery_display_page() {
         }
         $out .= "
             <div class=\"unc_gallery\">
-                $datepicker_div
+                $selector_div
                 $delete_link
-                <div class=\"photos $limit_rows\" id=\"datepicker_target\">
+                <div class=\"photos $limit_rows\" id=\"selector_target\">
         $images_html
             </div>
             </div>
             <span style=\"clear:both;\"></span>";
     }
+    XMPP_ERROR_trace("out");
     return $out;
 }
 
@@ -330,24 +327,25 @@ function unc_gallery_display_page() {
  * @global type $UNC_GALLERY
  * @return string
  */
-function unc_display_folder_images() {
+function unc_display_images() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
 
     $D = $UNC_GALLERY['display'];
 
-    $date_str = $D['dates'][0];
-
     $header = '';
-    if (current_user_can('manage_options') && is_admin()) {
-        $url = admin_url('admin.php?page=unc_gallery_admin_menu');
-        $header .= "
-        <span class=\"delete_folder_link\">
-            Sample shortcode for this day: <input id=\"short_code_sample\" onClick=\"SelectAll('short_code_sample');\" type=\"text\" value=\"[unc_gallery date=&quot;$date_str&quot;]\">
-            <a href=\"$url&amp;folder_del=$date_str\">
-                Delete Date: $date_str
-            </a>
-        </span>\n";
+    if (isset($D['dates'])) {
+        $date_str = $D['dates'][0];
+        if (current_user_can('manage_options') && is_admin()) {
+            $url = admin_url('admin.php?page=unc_gallery_admin_menu');
+            $header .= "
+            <span class=\"delete_folder_link\">
+                Sample shortcode for this day: <input id=\"short_code_sample\" onClick=\"SelectAll('short_code_sample');\" type=\"text\" value=\"[unc_gallery date=&quot;$date_str&quot;]\">
+                <a href=\"$url&amp;folder_del=$date_str\">
+                    Delete Date: $date_str
+                </a>
+            </span>\n";
+        }
     }
 
     // get all the files in the folder with attributes
