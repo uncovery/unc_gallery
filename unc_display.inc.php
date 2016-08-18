@@ -271,7 +271,8 @@ function unc_gallery_display_page() {
         $filter_arr = $D['filter_arr'];
 
         if ($filter_arr[1] == 'map') {
-            $selector_div = unc_filter_map_data($filter_arr[0]);
+            $selector_div = unc_filter_map_data($filter_arr[0])
+                . "<div id=\"filter_selector\">\n</div>\n";
         } else {
             $selector_div = "<div id=\"filter_selector\">\n"
                 . unc_filter_choice($filter_arr)

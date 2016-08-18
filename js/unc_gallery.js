@@ -87,9 +87,8 @@ function filter_change(filter_key, filter_group, filter_name, options, inst) {
     filter_select(filter_key, filter_value, filter_group, filter_name, options, inst);
 }
 
-function map_filter(latitude, longitude) {
-    confirm("Map event: " + latitude + ", " + longitude);
-    filter_select(filter_key, filter_value, filter_group, filter_name, options, inst)
+function map_filter(position, inst) {
+    filter_select('att_value', position, 'exif', 'gps', 'map', inst);
 }
 
 

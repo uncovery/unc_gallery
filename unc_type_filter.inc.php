@@ -193,10 +193,12 @@ function unc_filter_choice($filter_arr) {
             $out .= "</ul>\n</div>\n</div>\n";
         }
         $out .= $desc2;
+    }  else if (in_array('map', $options)) {
+        $out .= ''; //unc_filter_map_data();
     } else {
         $valid_options = $UNC_GALLERY['keywords']['type']['filter'];
         $val_opt_text = implode(", ", $valid_options);
-        $out .= unc_display_errormsg("You have an option set () that us not compatible with filters! Valid options are: $val_opt_text");
+        $out .= unc_display_errormsg("You have an option set that is not compatible with filters! Valid options are: $val_opt_text");
     }
 
     return $out;
@@ -204,7 +206,7 @@ function unc_filter_choice($filter_arr) {
 
 function unc_filter_map_data($type) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     if ($type == 'xmp') {
         $levels = array('country', 'state', 'city', 'location');
@@ -229,8 +231,8 @@ function unc_filter_map_data($type) {
     }
 
     $link_code = 'window.location.href = this.url;';
-    if (count($my_levels) == $i) {
-        $link_code = 'map_filter(point[1],point[2]);';
+    if (count($levels) == ($i + 1)) { // the last level is always the link to the data
+        $link_code = 'map_filter(this.gps_raw);';
     }
 
 
@@ -254,6 +256,10 @@ function unc_filter_map_data($type) {
 
     $all_long = 0;
     $all_lat = 0;
+    $max_lat = - 200;
+    $min_lat = 200;
+    $max_long = - 200;
+    $min_long = 200;
     foreach ($locations as $L) {
         foreach ($L as $loc_name => $gps) {
             $z_index++;
@@ -271,13 +277,18 @@ function unc_filter_map_data($type) {
             $long = $gps['long'];
             $all_long += $long;
             $markers_list .= "['$loc_name',$lat,$long,$z_index,'$link',''],\n";
+            $max_lat = max($max_lat, $lat);
+            $max_long = max($max_long, $long);
+            $min_lat = min($min_lat, $lat);
+            $min_long = min($min_long, $long);
         }
     }
 
     $avg_long = $all_long / count($locations);
     $avg_lat = $all_lat / count($locations);
 
-    $zoom = 4;
+    $zoom = unc_filter_map_zoom_level($max_lat, $max_long, $min_lat, $min_long);
+
     $markers_list .= "\n];\n";
 
     // mapwithmarker reference:
@@ -305,6 +316,7 @@ function unc_filter_map_data($type) {
             ' . $markers_list . '
             for (var i = 0; i < points.length; i++) {
                 var point = points[i];
+                var location = point[1] + "," + point[2];
                 marker = MarkerWithLabelAndHover(
                     new MarkerWithLabel({
                         pane: "overlayMouseTarget",
@@ -316,6 +328,7 @@ function unc_filter_map_data($type) {
                         labelClass: "labels",
                         hoverClass: "hoverlabels",
                         url: point[4],
+                        gps_raw: point[1] + "," + point[2],
                     })
                 );
                 google.maps.event.addListener(marker, \'click\', function() {
@@ -328,9 +341,58 @@ function unc_filter_map_data($type) {
     return $out;
 }
 
+function unc_filter_map_zoom_level($lat1, $lon1, $lat2, $lon2) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
+    $max = 40000000; // world is 40k KM large, Zoom 2
+    $distance = intval(unc_filter_map_gps_convert($lat1, $lon1, $lat2, $lon2));
+    $fraction = intval($max / $distance);
+    echo "Distance = $distance , Fraction = $fraction";
+    // we have zoom levels from 2 - 20, meaing 19 levels;
+
+    // $zoom_index =  2 + pow(10, (log10($fraction) * log10(20) / log10(10000000)));
+    $zoom_index = 3 + pow($fraction, log10(18) / 5);
+    echo ", Zoom Index = $zoom_index";
+
+    // x^(log(20) / 7)
+
+    // since 2 is the widest we need to invert
+    $zoom_level = intval($zoom_index);
+    return $zoom_level;
+}
+
+/**
+ * Calculates the great-circle distance between two points, with
+ * the Haversine formula.
+ * @param float $latitudeFrom Latitude of start point in [deg decimal]
+ * @param float $longitudeFrom Longitude of start point in [deg decimal]
+ * @param float $latitudeTo Latitude of target point in [deg decimal]
+ * @param float $longitudeTo Longitude of target point in [deg decimal]
+ * @param float $earthRadius Mean earth radius in [m]
+ * @return float Distance between points in [m] (same as earthRadius)
+ */
+function unc_filter_map_gps_convert($latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo, $earthRadius = 6371000) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
+    // convert from degrees to radians
+    $latFrom = deg2rad($latitudeFrom);
+    $lonFrom = deg2rad($longitudeFrom);
+    $latTo = deg2rad($latitudeTo);
+    $lonTo = deg2rad($longitudeTo);
+
+    $latDelta = $latTo - $latFrom;
+    $lonDelta = $lonTo - $lonFrom;
+
+    $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) +
+      cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
+    return $angle * $earthRadius;
+}
+
 function unc_filter_map_locations($levels, $type) {
     global $UNC_GALLERY, $wpdb;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $levels_sql = implode("','", array_keys($levels));
 
@@ -430,7 +492,7 @@ function unc_filter_update(){
     if ($filter_key == 'att_value' && $filter_value <> 'false') {
         $filter_str .= "|$filter_value";
     }
-    // the following line as ECHO = FALSE because we do the echo here
+    // the following line has ECHO = FALSE because we do the echo here
     unc_gallery_display_var_init(array('type' => 'filter', 'filter' => $filter_str, 'echo' => false, 'options' => $options));
     ob_clean();
     echo unc_gallery_display_page();
