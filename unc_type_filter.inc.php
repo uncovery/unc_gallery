@@ -208,6 +208,11 @@ function unc_filter_map_data($type) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
+    if (strlen($UNC_GALLERY['google_api_key']) < 1) {
+        return "You need to set a google API key in your Uncovery Gallery Configuration to use Google Maps!";
+    }
+
+
     if ($type == 'xmp') {
         $levels = array('country', 'state', 'city', 'location');
 
@@ -287,7 +292,11 @@ function unc_filter_map_data($type) {
     $avg_long = $all_long / count($locations);
     $avg_lat = $all_lat / count($locations);
 
-    $zoom = unc_filter_map_zoom_level($max_lat, $max_long, $min_lat, $min_long);
+    if (count($locations) == 1) {
+        $zoom = pow(count($my_levels), 2);
+    } else {
+        $zoom = unc_filter_map_zoom_level($max_lat, $max_long, $min_lat, $min_long);
+    }
 
     $markers_list .= "\n];\n";
 
@@ -348,14 +357,15 @@ function unc_filter_map_zoom_level($lat1, $lon1, $lat2, $lon2) {
     $max = 40000000; // world is 40k KM large, Zoom 2
     $distance = intval(unc_filter_map_gps_convert($lat1, $lon1, $lat2, $lon2));
     $fraction = intval($max / $distance);
-    echo "Distance = $distance , Fraction = $fraction";
-    // we have zoom levels from 2 - 20, meaing 19 levels;
 
-    // $zoom_index =  2 + pow(10, (log10($fraction) * log10(20) / log10(10000000)));
-    $zoom_index = 3 + pow($fraction, log10(18) / 5);
-    echo ", Zoom Index = $zoom_index";
-
-    // x^(log(20) / 7)
+    // the following variable are estimates
+    $min_zoom = 3;
+    $max_zoom = 18;
+    $steps = 5;
+    // this formula tries to create a scale between min_zoom and max_zoom that
+    // corresponds with the google maps zoom levels from the
+    // fraction of the distance between the available points and the circumference of the world.
+    $zoom_index = $min_zoom + pow($fraction, log10($max_zoom) / $steps);
 
     // since 2 is the widest we need to invert
     $zoom_level = intval($zoom_index);
