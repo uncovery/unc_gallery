@@ -8,76 +8,22 @@ if (!defined('WPINC')) {
  * Main form for uploads in the admin screen
  * @return string
  */
-function unc_gallery_admin_upload() {
+function unc_uploads_form() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
+    if (isset($_SESSION['uploads_iterate_files'])) {
+        unset($_SESSION['uploads_iterate_files']);
+    }
+
     ?>
     <h2>Upload Images</h2>
     <form id="uploadForm" method="POST" enctype="multipart/form-data">
         <script type="text/javascript">
             jQuery(document).ready(function() {
-                var options = {
-                    url: ajaxurl, // this is pre-filled by WP to the ajac-response url
-                    data: {action: 'unc_gallery_uploads'}, // this needs to match the add_action add_action('wp_ajax_unc_gallery_uploads', 'unc_uploads_iterate_files');
-                    success: success, // the function we run on success
-                    uploadProgress: uploadProgress, // the function tracking the upload progress
-                    beforeSubmit: beforeSubmit // what happens before we start submitting
-                };
-                jQuery('#uploadForm').submit(function() { // once the form us submitted
-                    // server limits:
-                    var max_files = <?php echo ini_get('max_file_uploads'); ?>;
-                    var max_size = <?php echo unc_tools_bytes_get(ini_get('post_max_size')); ?>;
-
-                    var fileInput = jQuery("input[type='file']").get(0);
-                    var actual_count = parseInt(fileInput.files.length);
-
-                    var actual_size = 0;
-                    for (var i = 0; i < fileInput.files.length; i++) {
-                        var file = fileInput.files[i];
-                        if ('size' in file) {
-                            actual_size = actual_size + +file.size;
-                        }
-                    }
-
-                    // check for max file number
-
-                    if (actual_count > max_files) {
-                        alert("Your webserver allows only a maximum of " + max_files + " files");
-                        return false;
-                    }
-
-                    if (actual_size > max_size){
-                        alert("Your webserver allows only a maximum of " + max_size + " Bytes, you tried " + actual_size);
-                        return false;
-                    }
-                    jQuery(this).ajaxSubmit(options);  // do ajaxSubmit with the obtions above
-                    return false; // needs to be false so that the HTML is not actually submitted & reloaded
-                });
-                function success(response){
-                    jQuery('#targetLayer').html(response); // fill the right element with a response
-                    // also refresh the image list
-                    jQuery.ajax({
-                        url: ajaxurl,
-                        method: 'GET',
-                        dataType: 'text',
-                        data: {action: 'unc_gallery_images_refresh'},
-                        complete: function (response2) {
-                            jQuery('#datepicker_target').html(response2.responseText);
-                        },
-                        error: function () {
-
-                        }
-                    });
-                }
-                function uploadProgress(event, position, total, percentComplete) {
-                    jQuery("#progress-bar").width(percentComplete + '%');
-                    jQuery("#progress-bar").html('<div id="progress-status">' + percentComplete +' %</div>');
-                }
-                function beforeSubmit(formData, jqForm, options) {
-                    jQuery("#progress-bar").width('0%');
-                    jQuery('#targetLayer').html(''); // empty the div from the last submit
-                    return true;
-                }
+                var max_files = <?php echo ini_get('max_file_uploads'); ?>;
+                var max_size = <?php echo unc_tools_bytes_get(ini_get('post_max_size')); ?>;
+                unc_uploadajax(max_files, max_size);
             });
         </script>
         <div class="image_upload_input">
@@ -101,8 +47,11 @@ function unc_gallery_admin_upload() {
 
             </table>
         </div>
-        <div id="progress-div">
-            <div id="progress-bar"></div>
+        <div class="progress-div">
+            <div id="upload-progress-bar">Upload Progress</div>
+        </div>
+        <div class="progress-div">
+            <div id="process-progress-bar">Import Progress</div>
         </div>
         <div id="targetLayer"></div>
         <div class="image_upload_submit">
@@ -146,17 +95,19 @@ function unc_gallery_admin_upload() {
 function unc_uploads_iterate_files() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
     // get the amount of files
     // do we have an upload or an import?
     $F = false;
     $import_path = filter_input(INPUT_POST, 'import_path');
+    $process_id = filter_input(INPUT_POST, 'process_id');
     if (!is_null($import_path)) {
         if (is_dir($import_path)) {
             // iterate files in the path
             unc_tools_import_enumerate($import_path);
             $F = $UNC_GALLERY['import'];
             $count = count($F["name"]);
-            echo "Found $count files $import_path<br>";
+            unc_tools_progress_update($process_id, "Found $count files $import_path", 0);
         } else {
             echo $import_path . " cannot be accessed or does not exist! Make sure its readable by the apache user!";
             wp_die();
@@ -184,7 +135,7 @@ function unc_uploads_iterate_files() {
     $valid_options = array('new' => ", only using new files", 'all' => ', using new, overwriting existing', 'existing' => ', ignoring new files only overwriting existing');
     // filte_input is null when the vaiable is not in POST
     if (isset($UNC_GALLERY['import'])) {
-        echo "Importing $count images ";
+        $status = "Importing $count images";
         $import_option_raw = $_POST['overwrite_import'];
         $imp_stats = $import_option_raw[0];
         $imp_vals = $import_option_raw[1];
@@ -195,7 +146,7 @@ function unc_uploads_iterate_files() {
             }
         }
     } else {
-        echo "Uploading $count images ";
+        $status = "Uploading $count images";
         $import_option = filter_input(INPUT_POST, 'overwrite');
     }
     if (is_null($import_option) || !isset($valid_options[$import_option])) {
@@ -203,30 +154,34 @@ function unc_uploads_iterate_files() {
         wp_die();
     }
     $overwrite = $import_option;
-    echo $valid_options[$import_option];
-    echo "<br>";
+    unc_tools_progress_update($process_id, $status . $valid_options[$import_option], 0);
 
     // count up
     $date_str_arr = array();
+
+    $one_file_percent = 100 / $count;
+
+    $percentage = 0;
     for ($i=0; $i < $count; $i++){
         // process one file
         $result_arr = unc_uploads_process_file($i, $overwrite);
         $date_str = $result_arr['date'];
         $date_str_arr[] = $date_str;
         $action = $result_arr['action'];
-        echo ($i + 1) . ": ";
         if (!$date_str) {
-            echo unc_display_errormsg($action);
+            $string = unc_display_errormsg($action);
         } else {
-            echo "$date_str: image $action<br>\n";
+            $string = "File $i, $date_str: image $action\n";
+
         }
+        $percentage += $one_file_percent;
+        unc_tools_progress_update($process_id, ($i + 1) . ": " . $string, $percentage);
     }
 
-    echo "<br>All images processed!";
-
-    echo '<br> Sample Shortcode for this upload: [unc_gallery start_time="' . min($date_str_arr) . '" end_time="' . max($date_str_arr) . '"]<br>';
-
-    // ob_clean();
+    $string = "All images processed!<br>"
+        . 'Sample Shortcode for this upload: [unc_gallery start_time="' . min($date_str_arr) . '" end_time="' . max($date_str_arr) . '"]';
+    unc_tools_progress_update($process_id, $string, 100);
+    unc_tools_progress_update($process_id, false);
     wp_die();
 }
 

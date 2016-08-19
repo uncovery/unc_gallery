@@ -205,7 +205,7 @@ function unc_gallery_admin_settings() {
     echo "</div>\n";
 
     echo "<div id='tab2'>\n";
-    echo unc_gallery_admin_upload();
+    echo unc_uploads_form();
     echo "</div>\n";
 
     echo "<div id='tab3'>\n";
@@ -255,15 +255,15 @@ function unc_gallery_admin_maintenance() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $out = '<h2>Maintenance</h2>
-        <button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_thumbnails_rebuild\', \'rebuild_thumbs_result\', \'Are you sure?\nThis can take a while for the whole database!\')">
+        <button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_thumbnails_rebuild\', \'rebuild_thumbs_result\', \'Are you sure?\nThis can take a while for the whole database!\', true)">
             Rebuild Thumbnails
         </button> This will re-generate all thumbnails. Use this if after you changed the size of the thumbnails in the settings.<br>
         <div id="rebuild_thumbs_result"></div><br>
-        <button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_admin_rebuild_data\', \'rebuild_data_result\', \'Are you sure?\nThis can take a while!\')">
+        <button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_admin_rebuild_data\', \'rebuild_data_result\', \'Are you sure?\nThis can take a while!\', true)">
             Re-load all data from image files
         </button> This will go through all files and read all EXIF, IPCT, XMP etc data!<br>
         <div id="rebuild_data_result"></div><br>
-        <button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_delete_everything\', \'delete_all_result\', \'Are you sure?\nThis will delete ALL photos!\')">
+        <button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_delete_everything\', \'delete_all_result\', \'Are you sure?\nThis will delete ALL photos!\', true)">
             Delete all pictures
         </button> This will delete ALL images and thumbnails. Use with caution!<br>
         <div id="delete_all_result"></div><br>';
@@ -308,7 +308,11 @@ function unc_gallery_admin_rebuild_thumbs() {
     // delete all thumbnails
     unc_tools_recurse_files($thumb_root, 'unlink', 'rmdir');
 
+    $process_id = filter_input(INPUT_POST, 'process_id');
+    unc_tools_progress_update($process_id, "Cleared existing thumbnails");
+
     $target_folders = unc_tools_recurse_folders($photo_folder);
+    unc_tools_progress_update($process_id, "Got a list of all folders");
 
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('target folders:', $target_folders);}
 
@@ -316,15 +320,13 @@ function unc_gallery_admin_rebuild_thumbs() {
     foreach ($target_folders as $date => $folder) {
         // construct the thumb folder where we put the thumbnails
         $thumb_folder = $thumb_root . "/" . $date;
-        echo "Processing $date: ";
+        $text = "Processing $date: ";
         unc_date_folder_create($date);
 
         // enumerate all the files in the source folder
         foreach (glob($folder . "/*") as $image_file) {
             if (!is_dir($image_file)) {
-                echo ".";
                 $filename = basename($image_file);
-
                 $thumb_filename = $thumb_folder . "/" . $filename;
                 unc_import_image_resize(
                     $image_file,
@@ -334,11 +336,12 @@ function unc_gallery_admin_rebuild_thumbs() {
                     $UNC_GALLERY['thumbnail_quality'],
                     $UNC_GALLERY['thumbnail_format']
                 );
+                $text .= ".";
             }
         }
-        echo "<br>";
+        unc_tools_progress_update($process_id, $text);
     }
-    echo "Done!";
+    unc_tools_progress_update($process_id, "Done!");
     wp_die();
 }
 
@@ -361,6 +364,8 @@ function unc_gallery_admin_rebuild_data() {
     $wpdb->get_results($sql1);
     $sql2 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_att";
     $wpdb->get_results($sql2);
+    $process_id = filter_input(INPUT_POST, 'process_id');
+    unc_tools_progress_update($process_id, "Cleared existing data");
 
     // delete all old data files
     // $data_folder = $dirPath . "/" . $UNC_GALLERY['file_data'];
@@ -376,24 +381,25 @@ function unc_gallery_admin_rebuild_data() {
     // create thumbnaisl
     foreach ($target_folders as $date => $folder) {
         // construct the thumb folder where we put the thumbnails
-        echo "Processing $date: ";
+        $text = "Processing $date: ";
+
 
         // enumerate all the files in the source folder
         foreach (glob($folder . "/*") as $image_file) {
             if (!is_dir($image_file)) {
                 $check = unc_image_info_write($image_file);
                 if ($check) {
-                    echo ".";
+                    $text .= ".";
                 } else {
-                    echo "x";
+                    $text .= "x";
                 }
             } else {
-                echo "/$image_file/\n";
+                $text .= "/$image_file/\n";
             }
         }
-        echo "<br>";
+        unc_tools_progress_update($process_id, $text);
     }
-    echo "Done!";
+    unc_tools_progress_update($process_id, "Done!");
     wp_die();
 }
 
@@ -402,7 +408,7 @@ function unc_gallery_admin_rebuild_data() {
  * @global type $UNC_GALLERY
  */
 function unc_gallery_admin_delete_everything() {
-    global $UNC_GALLERY;
+    global $UNC_GALLERY, $wpdb;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
     if (!current_user_can('manage_options')) {
@@ -410,7 +416,13 @@ function unc_gallery_admin_delete_everything() {
     } else {
         // delete all images
         unc_tools_recurse_files($UNC_GALLERY['upload_path'], 'unlink', 'rmdir');
-        // TODO Also delete databases
+
+
+        // delete all data
+        $sql1 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_img";
+        $wpdb->get_results($sql1);
+        $sql2 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_att";
+        $wpdb->get_results($sql2);
 
         echo "Done!";
     }

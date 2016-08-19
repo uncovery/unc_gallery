@@ -4,6 +4,62 @@ if (!defined('WPINC')) {
     die;
 }
 
+/**
+ * This is called by Javascript on a timer when we upload images
+ * this gets the current status from a session variable
+ *
+ * @global type $UNC_GALLERY
+ * @param type $process_name
+ */
+function unc_tools_progress_get($process_name = false) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
+    if (!$process_name) {
+        $process_name = filter_input(INPUT_POST, 'process_id', FILTER_SANITIZE_STRING);
+    }
+    ob_start();
+    session_start();
+    session_write_close();
+    XMPP_ERROR_trace("process_name", $process_name);
+    XMPP_ERROR_trace("session", $_SESSION);
+    XMPP_ERROR_trigger("test");
+    if (!isset($_SESSION[$process_name])) {
+        echo json_encode(false);
+        wp_die();
+    }
+
+    if (isset($_SESSION[$process_name . "_percentage"]) ){
+        $percentage = intval($_SESSION[$process_name . "_percentage"]);
+    } else {
+        $percentage = 0;
+    }
+
+    $result = array('text' => $_SESSION[$process_name], 'percent' => $percentage);
+    echo json_encode($result);
+    wp_die();
+}
+
+/**
+ * This is used by the system to store process status during background
+ * processes such as image upload processing.
+ *
+ * @global type $UNC_GALLERY
+ * @param type $process_name
+ * @param type $text
+ * @param type $percentage
+ */
+function unc_tools_progress_update($process_name, $text, $percentage = false) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
+    session_start();
+    $_SESSION[$process_name][] = $text;
+    if ($percentage) {
+        $_SESSION[$process_name . "_percentage"] = $percentage;
+    }
+    session_write_close();
+}
 
 /**
  * Take a date string (with time!) and create the respective folders

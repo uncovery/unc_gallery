@@ -1,3 +1,5 @@
+var unc_interval;
+
 /**
  * function that selects the content of an input field when the user clicks on it
  * used in the admin screen
@@ -7,6 +9,73 @@
 function SelectAll(id) {
     document.getElementById(id).focus();
     document.getElementById(id).select();
+}
+
+/**
+ * The file upload form AJAX script
+ *
+ * @param {type} max_files
+ * @param {type} max_size
+ * @returns {undefined}
+ */
+function unc_uploadajax(max_files, max_size) {
+    jQuery('#uploadForm').submit(function() { // once the form us submitted
+        var process_id = unc_gallery_timestamp();
+        var options = {
+            url: ajaxurl, // this is pre-filled by WP to the ajac-response url
+            // this needs to match the add_action add_action('wp_ajax_unc_gallery_uploads', 'unc_uploads_iterate_files');
+            data: {action: 'unc_gallery_uploads', process_id: process_id},
+            success: success, // the function we run on success
+            uploadProgress: uploadProgress, // the function tracking the upload progress
+            beforeSubmit: beforeSubmit, // what happens before we start submitting
+            complete: complete
+        };
+        var fileInput = jQuery("input[type='file']").get(0);
+        var actual_count = parseInt(fileInput.files.length);
+
+        var actual_size = 0;
+        for (var i = 0; i < fileInput.files.length; i++) {
+            var file = fileInput.files[i];
+            if ('size' in file) {
+                actual_size = actual_size + +file.size;
+            }
+        }
+
+        // check for max file number
+        if (actual_count > max_files) {
+            alert("Your webserver allows only a maximum of " + max_files + " files");
+            return false;
+        }
+
+        if (actual_size > max_size){
+            alert("Your webserver allows only a maximum of " + max_size + " Bytes, you tried " + actual_size);
+            return false;
+        }
+        // set a timer to retrieve updates of the progress
+        jQuery('#targetLayer').html("");
+        clearInterval(unc_interval);
+        unc_interval = setInterval(function() {unc_gallery_progress_get(process_id, 'targetLayer', 'process-progress-bar', 'Import');}, 1000);
+        jQuery(this).ajaxSubmit(options);  // do ajaxSubmit with the obtions above
+        return false; // needs to be false so that the HTML is not actually submitted & reloaded
+    });
+    function success(response){
+        // refresh the imagelist via AJAX after upload was successful
+        unc_gallery_generic_ajax('unc_gallery_images_refresh', 'datepicker_target', false);
+    }
+    function uploadProgress(event, position, total, percentComplete) {
+        jQuery("#upload-progress-bar").width(percentComplete + '%');
+        jQuery("#upload-progress-bar").html('<div id="progress-status">Upload ' + percentComplete +' %</div>');
+    }
+    function beforeSubmit(formData, jqForm, options) {
+        jQuery("#progress-bar").width('0%');
+        jQuery('#targetLayer').html(''); // empty the div from the last submit
+        jQuery('#progress_targetLayer').html('');
+        jQuery('#process-progress-bar').width('0%');
+        return true;
+    }
+    function complete(jqXHR, status) {
+        clearInterval(unc_interval); // finish the status update timer
+    }
 }
 
 
@@ -118,26 +187,38 @@ function delete_image(file_name, rel_date) {
 }
 
 /**
- * do-all can-all generic ajax
+ * generic AJAX to return results provided that not more data is needed
+ *
+ * This will return any ECHO from the function in progress
+ * as well as get a status report from the process ID that was passed
  *
  * @param {type} action
  * @param {type} target_div
  * @param {type} confirmation_message
+ * @param {type} post
  * @returns {undefined}
  */
-function unc_gallery_generic_ajax(action, target_div, confirmation_message) {
+function unc_gallery_generic_ajax(action, target_div, confirmation_message, post) {
     jQuery('#' + target_div).html('');
     if (confirmation_message) {
         var c = confirm(confirmation_message);
     }
+    if (post) {
+        method = 'POST';
+    } else {
+        method = 'GET';
+    };
+    var process_id = unc_gallery_timestamp();
+    unc_interval = setInterval(function() {unc_gallery_progress_get(process_id, 'target_div');}, 1000);
     if (c) {
         jQuery.ajax({
             url: ajaxurl,
-            method: 'GET',
+            method: method,
             dataType: 'text',
-            data: {action: action},
+            data: {action: action, process_id: process_id},
             complete: function (response) {
                 jQuery('#' + target_div).html(response.responseText);
+                clearInterval(unc_interval);
             },
             error: function () {
 
@@ -180,14 +261,17 @@ function unc_gallery_import_images() {
         jQuery('#overwrite_import2').val(),
         jQuery('#overwrite_import3').val()
     ];
+    var process_id = unc_gallery_timestamp();
+    unc_interval = setInterval(function() {unc_gallery_progress_get(process_id, 'import_targetLayer');}, 1000);
     jQuery('#import_targetLayer').html('');
     jQuery.ajax({
         url: ajaxurl,
         method: 'POST',
         dataType: 'text',
-        data: {action: 'unc_gallery_import_images', import_path: path, overwrite_import: [overwrite_import_stats, overwrite_import_vals]},
+        data: {action: 'unc_gallery_import_images', import_path: path, overwrite_import: [overwrite_import_stats, overwrite_import_vals], process_id: process_id},
         complete: function (response) {
             jQuery('#import_targetLayer').html(response.responseText);
+            clearInterval(unc_interval); // finish the status update timer
         },
         error: function () {
 
@@ -195,26 +279,85 @@ function unc_gallery_import_images() {
     });
 }
 
+/**
+ * generic function to get the progress of a background process via AJAX
+ * This should be called via a timer script
+ * See: http://stackoverflow.com/questions/32890420/jquery-php-returning-processing-status-with-ajax-post
+ *
+ * @param {type} process_id
+ * @param {type} targetlayer
+ * @param {type} progressbar
+ * @param {type} progressbar_text
+ * @returns {undefined}
+ */
+function unc_gallery_progress_get(process_id, targetlayer, progressbar, progressbar_text) {
+    jQuery.ajax({
+        url: ajaxurl,
+        method: 'POST',
+        dataType: 'text',
+        data: {action: 'unc_tools_progress_get', process_id: process_id},
+        complete: function (response) {
+            var return_data = JSON.parse(response.responseText);
+
+            if (return_data === false) {
+                return;
+            }
+            var arrayLength = return_data.text.length;
+            var outputText = '';
+            for (var i = 0; i < arrayLength; i++) {
+                outputText = outputText + "<br>" + return_data.text[i];
+                if (return_data.text[i] === false) {
+                    clearInterval(unc_interval);
+                }
+            }
+            jQuery('#' + targetlayer).html(outputText);
+            jQuery("#" + progressbar).width(return_data.percent + '%');
+            jQuery("#" + progressbar).html('<div id="progress-status">' + progressbar_text + ": " + return_data.percent +' %</div>');
+        },
+        error: function () {
+
+        }
+    });
+}
+
+/**
+ * Get a UNIX timestamp
+ *
+ * @returns {String}
+ */
+function unc_gallery_timestamp() {
+    // IE does not know the Date.now function, so we create one
+    if (!Date.now) {
+        Date.now = function() {
+            return new Date().getTime();
+        };
+    }
+    var timestamp = Date.now();
+    // we need to add a string here because $_SESSION variables in PHP cannot
+    // have a pure numeric index.
+    return "ts_" + timestamp;
+}
+
 /*
  * source: http://stackoverflow.com/questions/25981512/markerwithlabel-mouseover-issue
  */
 function MarkerWithLabelAndHover(marker){
     if (marker.get('hoverContent')){
-        marker.set('defaultContent',marker.get('labelContent'))
+        marker.set('defaultContent',marker.get('labelContent'));
         var fx=function(e,m){
             var r=e.relatedTarget;
             if(!r){
                 return true;
             }
             while(r.parentNode){
-                if(r.className==m.labelClass){
+                if(r.className === m.labelClass){
                     return false;
                 }
                 r=r.parentNode;
             }
             return true;
-        }
-        marker.set('defaultContent',marker.get('labelContent'))
+        };
+        marker.set('defaultContent',marker.get('labelContent'));
         google.maps.event.addListener(marker,'mouseout',function(e){
             var that=this;
             if(fx(e,this)){

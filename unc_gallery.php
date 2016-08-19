@@ -66,6 +66,8 @@ if (is_admin() === true) {
     add_action('wp_ajax_nopriv_unc_gallery_datepicker', 'unc_display_ajax_folder');
     add_action('wp_ajax_unc_gallery_datepicker', 'unc_display_ajax_folder');
     add_action('wp_ajax_nopriv_unc_filter_update', 'unc_filter_update');
+    add_action('wp_ajax_unc_tools_progress_get', 'unc_tools_progress_get');
+    add_action('wp_ajax_nopriv_unc_tools_progress_get', 'unc_tools_progress_get');
     add_action('wp_ajax_unc_filter_update', 'unc_filter_update');
     add_action('wp_ajax_unc_gallery_image_delete', 'unc_tools_image_delete');
     add_action('wp_ajax_unc_gallery_images_refresh', 'unc_gallery_images_refresh');

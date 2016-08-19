@@ -66,6 +66,7 @@ function unc_filter_image_list($filter_arr) {
     $sql = "SELECT `file_path`, `file_time` FROM $att_table_name
         LEFT JOIN $img_table_name ON id=file_id
         WHERE `group`='$group_filter' $sql_str_filter
+        ORDER BY $img_table_name.file_time DESC
         LIMIT 50";
 
     $files = $wpdb->get_results($sql, 'ARRAY_A');
@@ -267,10 +268,11 @@ function unc_filter_map_data($type) {
     $min_long = 200;
     foreach ($locations as $L) {
         foreach ($L as $loc_name => $gps) {
+            $loc_name_encoded = addslashes($loc_name);
             $z_index++;
 
             $this_queries = $queries;
-            $this_queries[] = "$level=$loc_name";
+            $this_queries[] = "$level=$loc_name_encoded";
             if (count($queries) == count($levels)) {
                 $link = "https://uncovery.net/";
             } else {
@@ -281,7 +283,8 @@ function unc_filter_map_data($type) {
             $all_lat += $lat;
             $long = $gps['long'];
             $all_long += $long;
-            $markers_list .= "['$loc_name',$lat,$long,$z_index,'$link',''],\n";
+
+            $markers_list .= "['$loc_name_encoded',$lat,$long,$z_index,'$link',''],\n";
             $max_lat = max($max_lat, $lat);
             $max_long = max($max_long, $long);
             $min_lat = min($min_lat, $lat);
