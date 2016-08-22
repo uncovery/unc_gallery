@@ -139,13 +139,16 @@ function unc_mysql_db_create() {
     $sql_att = "CREATE TABLE $table_name_att (
         `att_id` mediumint(9) NOT NULL AUTO_INCREMENT,
         `file_id` mediumint(9) NOT NULL,
-        `group` tinytext,
-        `att_name` tinytext NOT NULL,
+        `att_group` ENUM('default','ipct','exit','xmp') NOT NULL,
+        `att_name` VARCHAR(25) NOT NULL,
         `att_value` tinytext NOT NULL,
-        UNIQUE KEY id (att_id)
+        UNIQUE KEY `id` (`att_id`),
+        KEY `att_name` (`att_name`),
+        KEY `file_id` (`file_id`);
     ) $charset_collate;";
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('SQL2', $sql_att);}
     dbDelta($sql_att);
+
     add_option( "unc_gallery_db_version", "1.0" );
 }
 

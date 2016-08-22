@@ -31,7 +31,7 @@
     border:#F0F0F0 1px solid;
     border-radius:4px;
 }
-#upload-progress-bar, #process-progress-bar {
+#upload-progress-bar, #process-progress-bar, #import-process-progress-bar {
     background-color: #12CC1A;
     height:20px;
     color: #000000;
@@ -40,9 +40,11 @@
     -moz-transition: width .3s;
     transition: width .3s;
     white-space: nowrap;
-    margin-left: 5px;
-    margin-right: 5px;
 }
+#upload-progress-bar {
+    margin-bottom:5px;
+}
+
 .progress-div {
     border:#444444 2px solid;
     padding: 5px 0px;
@@ -208,6 +210,7 @@
     padding: 0px;
     font-size: medium;
     border: 0px;
+    font-size: small;
 }
 
 .filter_row {

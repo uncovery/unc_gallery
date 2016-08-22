@@ -65,7 +65,7 @@ function unc_filter_image_list($filter_arr) {
 
     $sql = "SELECT `file_path`, `file_time` FROM $att_table_name
         LEFT JOIN $img_table_name ON id=file_id
-        WHERE `group`='$group_filter' $sql_str_filter
+        WHERE `att_group`='$group_filter' $sql_str_filter
         ORDER BY $img_table_name.file_time DESC
         LIMIT 50";
 
@@ -97,15 +97,15 @@ function unc_filter_choice($filter_arr) {
     $desc2 = '';
     $desc1 = '';
     if (!$filter_arr || count($filter_arr) == 0) {
-        $names_sql = "SELECT `group` as `term` FROM $att_table_name
+        $names_sql = "SELECT `att_group` as `term` FROM $att_table_name
             LEFT JOIN $img_table_name ON id=file_id
-            GROUP BY `group`";
-        $filter_key = 'group';
+            GROUP BY `att_group`";
+        $filter_key = 'att_group';
         $desc1 = "Please select filter group:&nbsp;";
     } else if (count($filter_arr) == 1) {
         $names_sql = "SELECT `att_name` as `term` FROM $att_table_name
             LEFT JOIN $img_table_name ON id=file_id
-            WHERE `group`='$group_filter'
+            WHERE `att_group`='$group_filter'
             GROUP BY att_name
             ORDER By att_name";
         $filter_key = 'att_name';
@@ -115,7 +115,7 @@ function unc_filter_choice($filter_arr) {
         $att_name_filter = esc_sql($filter_arr[1]);
         $names_sql = "SELECT `att_value` as `term` FROM $att_table_name
             LEFT JOIN $img_table_name ON id=file_id
-            WHERE `group`='$group_filter' AND `att_name`='$att_name_filter'
+            WHERE `att_group`='$group_filter' AND `att_name`='$att_name_filter'
             GROUP BY att_value
             ORDER BY att_value";
         $filter_key = 'att_value';
@@ -129,7 +129,7 @@ function unc_filter_choice($filter_arr) {
         $att_value_filter = esc_sql($filter_arr[2]);
         $count_sql = "SELECT count(`file_id`) as `counter` FROM $att_table_name
             LEFT JOIN $img_table_name ON id=file_id
-            WHERE `group`='$group_filter' AND `att_name`='$att_name_filter' AND `att_value`='$att_value_filter'";
+            WHERE `att_group`='$group_filter' AND `att_name`='$att_name_filter' AND `att_value`='$att_value_filter'";
         $counter = $wpdb->get_results($count_sql, 'ARRAY_A');
         $row_count = $counter[0]['counter'];
         $desc2 = "Filtering for $att_name_filter: $att_value_filter";
@@ -216,7 +216,6 @@ function unc_filter_map_data($type) {
 
     if ($type == 'xmp') {
         $levels = array('country', 'state', 'city', 'location');
-
     } else { //ipct
         $levels = array('country', 'province_state', 'city');
     }
@@ -248,7 +247,7 @@ function unc_filter_map_data($type) {
     $my_levels[$add_level] = false;
 
     // let's get all the locations from the DB:
-    $locations_details = unc_filter_map_locations($my_levels, $type);
+    $locations_details = unc_filter_map_locations($my_levels, $type, $add_level);
     // var_dump($locations);
     if (count($locations_details) == 0) {
         return "Could not find any results on this location;";
@@ -313,6 +312,8 @@ function unc_filter_map_data($type) {
     // https://developers.google.com/maps/documentation/javascript/examples/event-simple
 
 
+    $map_type = $UNC_GALLERY['google_maps_type'];
+
     $out = '
     <div id="map" style="height:600px"></div>
 
@@ -323,7 +324,7 @@ function unc_filter_map_data($type) {
             map = new google.maps.Map(document.getElementById(\'map\'), {
                 center: {lat: '.$avg_lat.', lng: '.$avg_long.'},
                 zoom: '.$zoom.',
-                mapTypeId: google.maps.MapTypeId.HYBRID
+                mapTypeId: google.maps.MapTypeId.'.$map_type.'
             });
             ' . $markers_list . '
             for (var i = 0; i < points.length; i++) {
@@ -362,8 +363,8 @@ function unc_filter_map_zoom_level($lat1, $lon1, $lat2, $lon2) {
     $fraction = intval($max / $distance);
 
     // the following variable are estimates
-    $min_zoom = 3;
-    $max_zoom = 18;
+    $min_zoom = 1;
+    $max_zoom = 17;
     $steps = 5;
     // this formula tries to create a scale between min_zoom and max_zoom that
     // corresponds with the google maps zoom levels from the
@@ -403,52 +404,45 @@ function unc_filter_map_gps_convert($latitudeFrom, $longitudeFrom, $latitudeTo, 
     return $angle * $earthRadius;
 }
 
-function unc_filter_map_locations($levels, $type) {
+function unc_filter_map_locations($levels, $type, $next_level) {
     global $UNC_GALLERY, $wpdb;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
-    $levels_sql = implode("','", array_keys($levels));
+
+    // var_dump($levels);
 
     $att_table_name = $wpdb->prefix . "unc_gallery_att";
-    $sql = "SELECT * FROM `$att_table_name`
-        WHERE
-            (`group`='$type' AND att_name IN ('$levels_sql')) OR
-            (`group`='exif' AND att_name IN ('gps_lon','gps_lat'))";
+
+    if (count($levels) == 1) { // we have no input, look for countries
+        $sql = "SELECT loc_list.att_value as country, gps_list.att_value as gps FROM `$att_table_name` as loc_list
+            LEFT JOIN `$att_table_name` as gps_list ON loc_list.file_id=gps_list.file_id
+            WHERE loc_list.`att_group`='$type' AND loc_list.att_name = '$next_level' AND gps_list.att_name='gps'
+            GROUP BY gps_list.att_value;";
+    } else {
+        $levels_sql = implode("|", $levels) . '%';
+        $sql = "SELECT loc_list.att_value as loc_str, gps_list.att_value as gps, item_list.att_value as item
+            FROM `$att_table_name` as loc_list
+            LEFT JOIN `$att_table_name` as gps_list ON loc_list.file_id=gps_list.file_id
+            LEFT JOIN `$att_table_name` as item_list on loc_list.file_id=item_list.file_id
+            WHERE loc_list.`att_group`='xmp' AND loc_list.att_name = 'loc_str' AND loc_list.att_value LIKE '$levels_sql' AND item_list.att_name='$next_level' AND gps_list.att_name='gps'
+            GROUP BY item_list.att_value";
+    }
 
     $locations = $wpdb->get_results($sql, 'ARRAY_A');
 
-    $files = array();
-    foreach ($locations as $L) {
-        $file_id = $L['file_id'];
-        $loc_type = $L['att_name'];
-        $files[$file_id][$loc_type] = $L['att_value'];
-    }
-    $must_have = array('gps_lon','gps_lat');
-    $my_levels_reverse = array_reverse($levels);
     $final = array();
-    foreach ($files as $F) {
-        foreach ($must_have as $must) {
-            if (!isset($F[$must])) {
-                continue 2;
-            }
+    foreach ($locations as $L) {
+        $gps_arr = explode(",", $L['gps']);
+        if (count($levels) == 1) {
+            $country = $L['country'];
+            $final[$country]['gps']['lat'][] = floatval($gps_arr[0]);
+            $final[$country]['gps']['long'][] = floatval($gps_arr[1]);
+        } else {
+            $item = $L['item'];
+            $final[$item]['gps']['lat'][] = floatval($gps_arr[0]);
+            $final[$item]['gps']['long'][] = floatval($gps_arr[1]);
         }
-        foreach ($levels as $loc_type => $loc_name) {
-            if (!isset($F[$loc_type])) {
-                $F[$loc_type] = '';
-            }
-        }
-
-        $cur_array = array('gps' => array('long'=> floatval($F['gps_lon']), 'lat'=>floatval($F['gps_lat'])));
-        foreach ($my_levels_reverse as $level => $level_name){
-            if (!$level_name || ($level_name && $F[$level] == $level_name)) {
-                $cur_array = array($level => array($F[$level] => $cur_array));
-            } else {
-                continue 2; // invalid term, bail
-            }
-        }
-        $final = array_merge_recursive($final, $cur_array);
     }
-    // now we have the full data array, but we need only the last level above the GPS data
 
     return $final;
 }
@@ -458,6 +452,8 @@ function unc_filter_map_locations($levels, $type) {
  * iterate an array and
  */
 function unc_filter_gps_avg($array) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     foreach ($array as $name => $lower) {
         if (isset($lower['gps'])) {
             $lat = array_sum($lower['gps']['lat']) / count($lower['gps']['lat']);

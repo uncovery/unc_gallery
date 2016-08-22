@@ -21,9 +21,6 @@ function unc_tools_progress_get($process_name = false) {
     ob_start();
     session_start();
     session_write_close();
-    XMPP_ERROR_trace("process_name", $process_name);
-    XMPP_ERROR_trace("session", $_SESSION);
-    XMPP_ERROR_trigger("test");
     if (!isset($_SESSION[$process_name])) {
         echo json_encode(false);
         wp_die();
@@ -316,7 +313,7 @@ function unc_tools_recurse_files($base_folder, $file_function, $dir_function) {
  */
 function unc_tools_recurse_folders($base_folder) {
     global $TMP_FOLDERS, $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    // if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
     if (strpos($base_folder, './')) {
         die("Error, recursive path! $base_folder");
     }
@@ -338,7 +335,6 @@ function unc_tools_recurse_folders($base_folder) {
         $date_string = implode("/", $date_elements);
         $TMP_FOLDERS[$date_string] = $base_folder;
     }
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('folders', $TMP_FOLDERS);}
     return $TMP_FOLDERS;
 }
 
@@ -539,6 +535,14 @@ function unc_tools_image_delete() {
             // we cannot stop at an error so there are no leftover files
             echo "File name $full_path could not be found!";
         }
+    }
+
+    // delete file data
+    $check = unc_image_info_delete($file_name, $date_str);
+    if (!$check) {
+        ob_clean();
+        echo "File data could not be deleted: $file_name $date_str";
+        wp_die();
     }
 
     unc_tools_folder_delete_empty($UNC_GALLERY['upload_path']);

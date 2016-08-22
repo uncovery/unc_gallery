@@ -261,7 +261,7 @@ function unc_gallery_admin_maintenance() {
         <div id="rebuild_thumbs_result"></div><br>
         <button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_admin_rebuild_data\', \'rebuild_data_result\', \'Are you sure?\nThis can take a while!\', true)">
             Re-load all data from image files
-        </button> This will go through all files and read all EXIF, IPCT, XMP etc data!<br>
+        </button> This will go through all files and read all EXIF, IPCT, XMP etc data. This can take a while!<br>
         <div id="rebuild_data_result"></div><br>
         <button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_delete_everything\', \'delete_all_result\', \'Are you sure?\nThis will delete ALL photos!\', true)">
             Delete all pictures
@@ -354,6 +354,9 @@ function unc_gallery_admin_rebuild_data() {
     global $UNC_GALLERY, $wpdb;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
+
+    XMPP_ERROR_trigger("test");
+
     if (!current_user_can('manage_options')) {
         echo "Cannot rebuild data, you are not admin!";
         wp_die();

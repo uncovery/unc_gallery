@@ -181,6 +181,7 @@ $UNC_GALLERY['codes']['xmp'] = array(
 );
 
 $UNC_GALLERY['codes']['ipct'] = array(
+    // full spec of codes: http://www.iptc.org/std/IIM/4.1/specification/IIMV4.1.pdf
     'object_name' => array('code' => '005', 'description' => 'Object Name'),
     'edit_status' => array('code' => '007', 'description' => 'Edit Ststus'),
     'priority' => array('code' => '010', 'description' => 'Priority'),
@@ -202,6 +203,7 @@ $UNC_GALLERY['codes']['ipct'] = array(
     'byline' => array('code' => '080', 'description' => 'Byline'),
     'byline_title' => array('code' => '085', 'description' => 'Byline Title'),
     'city' => array('code' => '090', 'description' => 'City'),
+    'sublocation' => array('code' => '092', 'description' => 'Location'),
     'province_state' => array('code' => '095', 'description' => 'State'),
     'country_code' => array('code' => '100', 'description' => 'Country Code'),
     'country' => array('code' => '101', 'description' => 'Country'),
@@ -230,10 +232,12 @@ function unc_image_info_read($file_path) {
 
     $img_table_name = $wpdb->prefix . "unc_gallery_img";
     $att_table_name = $wpdb->prefix . "unc_gallery_att";
-    $sql = "SELECT `group`, `att_name`, `att_value` FROM $img_table_name
+    $sql = "SELECT `att_group`, `att_name`, `att_value` FROM $img_table_name
         LEFT JOIN $att_table_name ON id=file_id
         WHERE file_name = '$file_name' AND file_time LIKE '$date_str%';";
     $file_data = $wpdb->get_results($sql);
+
+    // TODO: check if the file exists 2x for sanity check, here or somewhere else
 
     if (count($file_data) == 0) {
         if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "File not found in DB, reading from file");}
@@ -248,7 +252,7 @@ function unc_image_info_read($file_path) {
     $F = array();
     foreach ($file_data as $D) {
         $field = $D->att_name;
-        $group = $D->group;
+        $group = $D->att_group;
         $value = $D->att_value;
         if ($group == 'default') {
             if (isset($F[$field])) {
@@ -319,15 +323,7 @@ function unc_image_info_write($file_path) {
     }
 
     // remove existing file info
-    $sql = "SELECT id FROM " . $wpdb->prefix . "unc_gallery_img WHERE file_time=%s AND file_name=%s;";
-    $check_data = $wpdb->get_results($wpdb->prepare($sql, $file_date, $file_name), 'ARRAY_A');
-    if (count($check_data) > 0) {
-        foreach ($check_data as $row) {
-            $id = $row['id'];
-            $wpdb->delete($wpdb->prefix . "unc_gallery_img", array('id' => $id));
-            $wpdb->delete($wpdb->prefix . "unc_gallery_att", array('file_id' => $id));
-        }
-    }
+    unc_image_info_delete($file_name, $file_date);
 
     $photo_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
     $thumb_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
@@ -376,7 +372,7 @@ function unc_image_info_write($file_path) {
                         $wpdb->prefix . "unc_gallery_att",
                         array(
                             'file_id' => $insert_id,
-                            'group' => $set_name,
+                            'att_group' => $set_name,
                             'att_name' => $name,
                             'att_value' => $arr_value,
                         )
@@ -392,7 +388,7 @@ function unc_image_info_write($file_path) {
                     $wpdb->prefix . "unc_gallery_att",
                     array(
                         'file_id' => $insert_id,
-                        'group' => $set_name,
+                        'att_group' => $set_name,
                         'att_name' => $name,
                         'att_value' => $value,
                     )
@@ -413,6 +409,23 @@ function unc_image_info_write($file_path) {
         }
     }
     return true;
+}
+
+function unc_image_info_delete($file_name, $file_date) {
+    global $wpdb, $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    // remove existing file info
+    $sql = "SELECT id FROM " . $wpdb->prefix . "unc_gallery_img WHERE file_time=%s AND file_name=%s;";
+    $check_data = $wpdb->get_results($wpdb->prepare($sql, $file_date, $file_name), 'ARRAY_A');
+    if (count($check_data) > 0) {
+        foreach ($check_data as $row) {
+            $id = $row['id'];
+            $wpdb->delete($wpdb->prefix . "unc_gallery_img", array('id' => $id));
+            $wpdb->delete($wpdb->prefix . "unc_gallery_att", array('file_id' => $id));
+        }
+    } else {
+        return false;
+    }
 }
 
 
@@ -520,6 +533,19 @@ function unc_xmp_get_array($xmp_raw) {
             unset($li, $val);
         }
     }
+    // also generate aan array for location datea search
+    $val_array = array('country', 'state', 'city', 'location');
+    $loc_arr = array();
+    foreach ($val_array as $loc_type) {
+        $loc_arr[$loc_type]= $xmp_arr[$loc_type];
+        if (isset($xmp_arr[$loc_type])) {
+            $loc_arr[$loc_type] = $xmp_arr[$loc_type];
+        } else {
+            $loc_arr[$loc_type] = '';
+        }
+    }
+    $loc_str = implode("|", $loc_arr);
+    $xmp_arr['loc_str'] = $loc_str;
     return $xmp_arr;
 }
 
@@ -864,6 +890,18 @@ class iptc {
                 $out[$code] = $this->meta["2#$id"][0];
             }
         }
+        // location info
+        $val_array = array('country', 'province_state', 'city', 'sublocation');
+        $loc_arr = array();
+        foreach ($val_array as $loc_type) {
+            if (isset($out[$loc_type])) {
+                $loc_arr[$loc_type] = $out[$loc_type];
+            } else {
+                $loc_arr[$loc_type] = '';
+            }
+        }
+        $loc_str = implode("|", $loc_arr);
+        $out['loc_str'] = $loc_str;
         return $out;
     }
 

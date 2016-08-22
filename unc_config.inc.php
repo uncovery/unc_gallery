@@ -175,6 +175,18 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'text',
         'title' => 'Google API key',
     ),
+    'google_maps_type' => array(
+        'help' => 'What type of map do you want to display?',
+        'default' => 'ROADMAP',
+        'type' => 'dropdown',
+        'options' => array(
+            'HYBRID' => 'Hybrid: Photographic map + roads and city names',
+            'ROADMAP' => 'Roadmap: Normal, default 2D map',
+            'SATELLITE' => 'Satellite: Photographic map',
+            'TERRAIN' => 'Terrain: Map with mountains, rivers, etc.',
+        ),
+        'title' => 'Google Map type',
+    ),
     'settings_location' => array(
         'help' => 'Do you want the admin screen of this plugin to be shown as a menu entry in the sidebar or a sub-menu of the settings menu?',
         'default' => 'sidebar',

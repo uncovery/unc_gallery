@@ -48,10 +48,8 @@ function unc_uploads_form() {
             </table>
         </div>
         <div class="progress-div">
-            <div id="upload-progress-bar">Upload Progress</div>
-        </div>
-        <div class="progress-div">
-            <div id="process-progress-bar">Import Progress</div>
+            <div id="upload-progress-bar">Upload 0%</div>
+            <div id="process-progress-bar">Import 0%</div>
         </div>
         <div id="targetLayer"></div>
         <div class="image_upload_submit">
@@ -82,6 +80,9 @@ function unc_uploads_form() {
         <button class="button button-primary" onclick="unc_gallery_import_images(); return false;">
             Import
         </button>
+        <div class="progress-div">
+            <div id="import-process-progress-bar">Import 0%</div>
+        </div>
         <div id="import_targetLayer"></div>
     </form>
     <?php
@@ -171,16 +172,24 @@ function unc_uploads_iterate_files() {
         if (!$date_str) {
             $string = unc_display_errormsg($action);
         } else {
-            $string = "File $i, $date_str: image $action\n";
+            $string = "$date_str: image $action\n";
 
         }
         $percentage += $one_file_percent;
-        unc_tools_progress_update($process_id, ($i + 1) . ": " . $string, $percentage);
+        unc_tools_progress_update($process_id, "File " . ($i + 1) . ": " . $string, $percentage);
     }
 
-    $string = "All images processed!<br>"
-        . 'Sample Shortcode for this upload: [unc_gallery start_time="' . min($date_str_arr) . '" end_time="' . max($date_str_arr) . '"]';
+    $string = 'All images processed!<br><br>
+        Sample Shortcode for this upload:<br>
+        <input
+            style="width:100%;"
+            id="upload_short_code_sample"
+            onClick="SelectAll(\'upload_short_code_sample\');"
+            type="text"
+            value="[unc_gallery start_time=&quot;' . min($date_str_arr) . '&quot; end_time=&quot;' . max($date_str_arr) . '&quot;]"
+        ><br>';
     unc_tools_progress_update($process_id, $string, 100);
+    // this signals to the JS function that we can terminate the process_get loop
     unc_tools_progress_update($process_id, false);
     wp_die();
 }
