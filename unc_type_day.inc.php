@@ -19,6 +19,8 @@ function unc_day_var_init($a) {
     $UNC_GALLERY['display']['range'] = array('start_time' => false, 'end_time' => false);
     foreach ($UNC_GALLERY['display']['range'] as $key => $value) {
         if ($a[$key]) {
+            //re-name the variable
+            $UNC_GALLERY['display']['date_range'][$key] = $a[$key];
             // convert to UNIX timestamp
             $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $a[$key]);
             // TODO: catch here if the date is invalid
@@ -54,8 +56,14 @@ function unc_day_var_init($a) {
         } else if ($a['date'] == 'latest') {
             $date_str = unc_day_date_latest();
         }
-        $UNC_GALLERY['display']['date_description'] = true;
-        $UNC_GALLERY['display']['dates'] = array($date_str);
+        if (!$date_str) { // we have no images in the database
+            $UNC_GALLERY['display']['files'] = array();
+            $UNC_GALLERY['display']['file'] = false;
+            $UNC_GALLERY['display']['dates'] = array();
+        } else {
+            $UNC_GALLERY['display']['date_description'] = true;
+            $UNC_GALLERY['display']['dates'] = array($date_str);
+        }
     } else if ($a['date'] && strstr($a['date'], ",")) { // we have several dates in the string
         $dates = explode(",", $a['date']);
         if (count($dates) > 2) {
@@ -129,52 +137,64 @@ function unc_day_images_list($D = false) {
     }
 
     $dates = $D['dates'];
+    if (count($dates) == 0) {
+        return false;
+    }
 
     $files = array();
     $featured_list = array();
 
-    $att_table_name = $wpdb->prefix . "unc_gallery_att";
-
+    // SQL construction
+    $sql_filter = '';
+    // both end_time and start_time are set
+    if ($D['range']['end_time'] && $D['range']['start_time']) {
+        $start_time = $D['date_range']['start_time'];
+        $end_time = $D['date_range']['end_time'];
+        $date = $D['dates'][0];
+        if ($D['range']['start_time'] < $D['range']['end_time']) {
+            $sql_filter = " (file_time >= '$start_time' AND file_time <= '$end_time')";
+        } else if ($D['range']['start_time'] > $D['range']['end_time']){
+            $sql_filter = " ((file_time >= '$date 00:00:00' AND file_time <= '$end_time') OR (file_time >= '$start_time' AND file_time <= '$date 23:59:59'))";
+        }
+    } else if ($D['range']['end_time']) { // get everything from day start until end time
+        $end_time = $D['date_range']['end_time'];
+        $date = $D['dates'][0];
+        $sql_filter = " (file_time >= '$date 00:00:00' AND file_time <= '$end_time')";
+    } else if ($D['range']['start_time']) { // get everything from start till day end
+        $start_time = $D['date_range']['start_time'];
+        $date = $D['dates'][0];
+        $sql_filter = " (file_time >= '$start_time' AND file_time <= '$date 23:59:59')";
+    } else {
+        $dates = $D['dates'];
+        $date_sql = implode($dates, "','");
+        $sql_filter = " (att_value IN('$date_sql'))";
+    }
 
     // get all images for the selected dates
-    $date_sql = implode($dates, "','");
-    $sql = "SELECT path_table.file_id, path_table.att_value  FROM `$att_table_name`
-        LEFT JOIN `$att_table_name` as path_table ON $att_table_name.file_id=path_table.file_id
-        WHERE $att_table_name.att_name='date_str' AND $att_table_name.att_value IN('$date_sql') AND path_table.att_name='file_path';";
+    $img_table_name = $wpdb->prefix . "unc_gallery_img";
+    $att_table_name = $wpdb->prefix . "unc_gallery_att";
+    $sql = "SELECT * FROM `$img_table_name`
+        LEFT JOIN $att_table_name ON $img_table_name.id=$att_table_name.file_id
+        WHERE ($att_table_name.att_name='date_str') AND $sql_filter
+        ORDER BY file_time ASC;";
     $file_data = $wpdb->get_results($sql, 'ARRAY_A');
     XMPP_ERROR_trace("sql", $sql);
-    XMPP_ERROR_trace("sql_dates", $file_data);
-    // XMPP_ERROR_trigger("test");
+    //XMPP_ERROR_trace("sql_dates", $file_data);
+    //XMPP_ERROR_trace("Date settings", $D);
+    //XMPP_ERROR_trigger("test");
 
-    foreach ($dates as $date_str) {
-        // translate date string to folder
-        $date_path = str_replace("-", "/", $date_str);
-        $photo_folder =  $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'];
-        $folder = $photo_folder . "/" . $date_path;
-        foreach (glob($folder . "/*") as $file_path) {
-            $F = unc_image_info_read($file_path);
-            if (($D['range']['end_time'] && $D['range']['start_time']) && // only if both are set
-                    ($D['range']['end_time'] < $D['range']['start_time'])) { // AND the end is before the start
-                if (($D['range']['end_time'] < $F['time_stamp'])
-                        && ($F['time_stamp'] < $D['range']['start_time'])) {  // then skip over the files inbetween end and start
-                    continue;
-                }
-            } else if (($D['range']['start_time'] && ($F['time_stamp'] < $D['range']['start_time'])) || // if there is a start and the file is earlier
-                ($D['range']['end_time'] && ($D['range']['end_time'] < $F['time_stamp']))) { // or if there is an end and the file is later then skip
-                continue;
-            }
-            if (in_array($F['file_name'], $D['featured_image'])) {
-                $F['featured'] = true;
-                $featured_list[] = $F;
-            } else {
-                $F['featured'] = false;
-                if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('file_date', $F['file_date']);}
-                $files[$F['file_date']] = $F;
-            }
+    foreach ($file_data as $F) {
+        $I = unc_image_info_read($F['file_path']);
+        if (in_array($F['file_name'], $D['featured_image'])) {
+            $I['featured'] = true;
+            $featured_list[] = $I;
+        } else {
+            $I['featured'] = false;
+            $files[] = $I;
         }
     }
-    ksort($files);
 
+    // TODO: Move this to the SQL string
     // random featured file
     if (in_array('random', $D['featured_image'])) {
         $new_featured_key = array_rand($files);
@@ -184,6 +204,7 @@ function unc_day_images_list($D = false) {
         unset($files[$new_featured_key]);
     }
 
+    // TODO: Move this to the SQL string
     if (in_array('latest', $D['featured_image'])) {
         reset($files);
         $first_key = key($files);
@@ -273,6 +294,9 @@ function unc_day_date_latest() {
 
     $sql ="SELECT SUBSTR(file_time, 1, 10) as date_str FROM `$img_table_name` ORDER BY file_time DESC LIMIT 1;";
     $file_data = $wpdb->get_results($sql, 'ARRAY_A');
+    if (count($file_data) == 0) {
+        return false;
+    }
     $date_str = $file_data[0]['date_str'];
 
     return $date_str;

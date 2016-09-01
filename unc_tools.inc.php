@@ -18,9 +18,12 @@ function unc_tools_progress_get($process_name = false) {
     if (!$process_name) {
         $process_name = filter_input(INPUT_POST, 'process_id', FILTER_SANITIZE_STRING);
     }
+
+
     ob_start();
     session_start();
     session_write_close();
+
     if (!isset($_SESSION[$process_name])) {
         echo json_encode(false);
         wp_die();
@@ -46,16 +49,24 @@ function unc_tools_progress_get($process_name = false) {
  * @param type $text
  * @param type $percentage
  */
-function unc_tools_progress_update($process_name, $text, $percentage = false) {
+function unc_tools_progress_update($process_name, $text, $percentage = false, $line_id = false) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     session_start();
-    $_SESSION[$process_name][] = $text;
+    if ($line_id) { // replace previous text
+        $_SESSION[$process_name][$line_id] = $text;
+    } else {
+        $_SESSION[$process_name][] = $text;
+    }
+
     if ($percentage) {
         $_SESSION[$process_name . "_percentage"] = $percentage;
     }
     session_write_close();
+    // we send back the line number of the last added text so that it can be replaced instead
+    // of a new one added if need be.
+    return count($_SESSION[$process_name]) - 1;
 }
 
 /**
@@ -217,6 +228,8 @@ function unc_tools_import_enumerate($path) {
 
 /**
  * this converts an array of dates to UTC
+ * TODO need to check if this is obsolete. This was used in unc_gallery_display_page
+ * to fix the dates from unc_tools_folder_list, but they never had times with them
  *
  * @param type $dates
  * @return type
@@ -457,33 +470,21 @@ function unc_tools_image_path($date_path, $file_name) {
  * @param type $base_folder
  * @return type
  */
-function unc_tools_folder_list($base_folder) {
-    global $UNC_GALLERY;
+function unc_tools_folder_list() {
+    global $UNC_GALLERY, $wpdb;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    $photo_folder =  $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'];
-    $base_length = strlen($photo_folder) + 1;
 
+    $att_table_name = $wpdb->prefix . "unc_gallery_att";
+    $sql = "SELECT att_value as date_str, count(att_id) as counter
+        FROM `$att_table_name`
+        WHERE att_name='date_str'
+        GROUP BY att_value
+        ORDER BY `att_value`  ASC";
+    $date_search = $wpdb->get_results($sql, 'ARRAY_A');
     $dates = array();
-    foreach (glob($base_folder . "/*") as $current_path) {
-        $file = basename($current_path);
-        // get current date from subfolder
-        if (is_dir($current_path)) { // we have a directory
-            $cur_date = str_replace("/", "-", substr($current_path, $base_length));
-            if (strlen($cur_date) == 10) { // we have a full date, add to array
-                $dates[$cur_date] = 0;
-            }
-            // go one deeper
-            $new_dates = unc_tools_folder_list($current_path);
-            if (count($new_dates) > 0) {
-                $dates = array_merge($dates, $new_dates);
-            }
-        } else { // we have a file
-            $cur_date = str_replace("/", "-", substr($base_folder, $base_length));
-            $dates[$cur_date][] = $file;
-        }
+    foreach ($date_search as $D) {
+        $dates[$D['date_str']] = $D['counter'];
     }
-    krsort($dates);
-    // the above dates are local timezone, we need the same date in UTC
     return $dates;
 }
 
@@ -514,13 +515,14 @@ function unc_tools_image_delete() {
 
 
     $paths = array(
-        $UNC_GALLERY['thumbnails'] => $file_name,
         $UNC_GALLERY['photos'] => $file_name,
-        $UNC_GALLERY['file_data'] => $file_name . ".php",
+        $UNC_GALLERY['thumbnails'] => $file_name,
     );
 
     foreach ($paths as $path => $del_file_name) {
         $full_path = $UNC_GALLERY['upload_path'] . "/" . $path . "/" . $date_str . "/" . $del_file_name;
+        unc_image_info_exiftool($full_path);
+        wp_die();
         if (file_exists($full_path)) {
             $check = unlink($full_path);
             if ($check) {

@@ -224,7 +224,6 @@ function unc_gallery_display_page() {
     $D = $UNC_GALLERY['display'];
     // do not let wp manipulate linebreaks
     remove_filter('the_content', 'wpautop');
-    $photo_folder =  $UNC_GALLERY['upload_path'] . "/" . $UNC_GALLERY['photos'];
 
     $out = '';
     $selector_div = '';
@@ -238,14 +237,13 @@ function unc_gallery_display_page() {
         }
 
         if ($D['date_selector'] == 'calendar' || $D['date_selector'] == 'datelist') {
-            $avail_dates = unc_tools_folder_list($photo_folder);
-            $fixed_dates = unc_display_fix_timezones($avail_dates);
-            if (!$fixed_dates) {
+            $avail_dates = unc_tools_folder_list();
+            if (count($avail_dates) == 0) {
                 return "There are no images in the libray yet. Please upload some first.";
             }
             if ($D['date_selector'] == 'calendar') {
                 $out .= "\n     <script type=\"text/javascript\">
-                var availableDates = [\"" . implode("\",\"", array_keys($fixed_dates)) . "\"];
+                var availableDates = [\"" . implode("\",\"", array_keys($avail_dates)) . "\"];
                 var ajaxurl = \"" . admin_url('admin-ajax.php') . "\";
                 jQuery(document).ready(function($) {
                     datepicker_ready('{$date}');
@@ -254,8 +252,7 @@ function unc_gallery_display_page() {
                 $selector_div = "Pick a Date: <input type=\"text\" id=\"datepicker\" value=\"$date\" size=\"10\">";
             } else if ($D['date_selector'] == 'datelist') {
                 $selector_div = "<select id=\"datepicker\" onchange=\"datelist_change()\">\n";
-                foreach ($fixed_dates as $folder_date => $folder_files) {
-                    $counter = count($folder_files);
+                foreach ($avail_dates as $folder_date => $counter) {
                     $selector_div .= "<option value=\"$folder_date\">$folder_date ($counter)</option>\n";
                 }
                 $selector_div .="</select>\n";
@@ -369,6 +366,7 @@ function unc_display_images() {
 
     // limit images
     $max_images = intval($D['limit_images']);
+    $counter = 0;
 
     foreach ($files as $F) {
         // stop looping once we have the max number of images
@@ -396,6 +394,7 @@ function unc_display_images() {
             }
 
             $height_css = 'rows_' . $feat_size;
+            $counter ++;
             $featured .= "<div class=\"featured_photo $height_css\">\n"
                 . unc_display_image_html($F['file_path'], false, $F)
                 . "</div>\n";
@@ -405,6 +404,7 @@ function unc_display_images() {
                 . '<p>' . unc_tools_file_desc($F) . '</p>'
                 . "</li>\n";*/
         } else {
+            $counter++;
             $images .= "<div class=\"one_photo\">\n"
                 . unc_display_image_html($F['file_path'], true, $F)
                 . "</div>\n";
@@ -450,7 +450,8 @@ function unc_display_images() {
         </script>'; */
     }
 
-    $out = $header . $featured . $images . $photoswipe;
+    $summary = "<div class=\"images_summary\">$counter images found.</div>";
+    $out = $header . $featured . $images . $photoswipe . $summary;
 
     if ($D['echo']) {
         ob_clean();

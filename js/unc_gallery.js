@@ -56,7 +56,7 @@ function unc_uploadajax(max_files, max_size) {
         jQuery('#targetLayer').html("");
         jQuery('#process-progress-bar').html("Import 0%");
         clearInterval(unc_interval);
-        unc_interval = setInterval(function() {unc_gallery_progress_get(process_id, 'targetLayer', 'process-progress-bar', 'Import');}, 1000);
+        unc_interval = setInterval(function() {unc_gallery_progress_get(process_id, 'targetLayer', 'process-progress-bar', 'Import', unc_interval);}, 1000);
         jQuery(this).ajaxSubmit(options);  // do ajaxSubmit with the obtions above
         return false; // needs to be false so that the HTML is not actually submitted & reloaded
     });
@@ -76,8 +76,7 @@ function unc_uploadajax(max_files, max_size) {
         return true;
     }
     function complete(jqXHR, status) {
-        clearInterval(unc_interval); // finish the status update timer
-        unc_gallery_progress_get(process_id, 'targetLayer', 'process-progress-bar', 'Import');
+        unc_gallery_progress_get(process_id, 'targetLayer', 'process-progress-bar', 'Import', unc_interval);
     }
 }
 
@@ -199,9 +198,11 @@ function delete_image(file_name, rel_date) {
  * @param {type} target_div
  * @param {type} confirmation_message
  * @param {type} post
+ * @param {type} progress_div
+ * @param {type} progress_text
  * @returns {undefined}
  */
-function unc_gallery_generic_ajax(action, target_div, confirmation_message, post) {
+function unc_gallery_generic_ajax(action, target_div, confirmation_message, post, progress_div, progress_text) {
     jQuery('#' + target_div).html('');
     if (confirmation_message) {
         var c = confirm(confirmation_message);
@@ -215,15 +216,14 @@ function unc_gallery_generic_ajax(action, target_div, confirmation_message, post
     var process_id = unc_gallery_timestamp();
     if (c) {
         clearInterval(generic_unc_interval);
-        generic_unc_interval = setInterval(function() {unc_gallery_progress_get(process_id, 'target_div', 'maintenance-process-progress-bar', 'Import');}, 1000);
+        generic_unc_interval = setInterval(function() {unc_gallery_progress_get(process_id, target_div, progress_div, progress_text, generic_unc_interval);}, 1000);
         jQuery.ajax({
             url: ajaxurl,
             method: method,
             dataType: 'text',
-            data: {action: action, process_id: generic_unc_interval},
+            data: {action: action, process_id: process_id},
             complete: function (response) {
-                unc_gallery_progress_get(process_id, 'target_div', 'maintenance-process-progress-bar', 'Import');
-                clearInterval(generic_unc_interval);
+                unc_gallery_progress_get(process_id, target_div, progress_div, progress_text, generic_unc_interval);
             },
             error: function () {
 
@@ -268,7 +268,7 @@ function unc_gallery_import_images() {
     ];
     var process_id = unc_gallery_timestamp();
     clearInterval(unc_interval);
-    unc_interval = setInterval(function() {unc_gallery_progress_get(process_id, 'import_targetLayer', 'import-process-progress-bar', 'Import');}, 1000);
+    unc_interval = setInterval(function() {unc_gallery_progress_get(process_id, 'import_targetLayer', 'import-process-progress-bar', 'Import', unc_interval);}, 1000);
     jQuery('#import_targetLayer').html('');
     jQuery.ajax({
         url: ajaxurl,
@@ -276,9 +276,7 @@ function unc_gallery_import_images() {
         dataType: 'text',
         data: {action: 'unc_gallery_import_images', import_path: path, overwrite_import: [overwrite_import_stats, overwrite_import_vals], process_id: process_id},
         complete: function (response) {
-            clearInterval(unc_interval); // finish the status update timer
-            unc_interval = null;
-            unc_gallery_progress_get(process_id, 'import_targetLayer', 'import-process-progress-bar', 'Import');
+            unc_gallery_progress_get(process_id, 'import_targetLayer', 'import-process-progress-bar', 'Import', unc_interval);
         },
         error: function () {
 
@@ -295,9 +293,10 @@ function unc_gallery_import_images() {
  * @param {type} targetlayer
  * @param {type} progressbar
  * @param {type} progressbar_text
+ * @param {type} interval_id
  * @returns {undefined}
  */
-function unc_gallery_progress_get(process_id, targetlayer, progressbar, progressbar_text) {
+function unc_gallery_progress_get(process_id, targetlayer, progressbar, progressbar_text, interval_id) {
     jQuery.ajax({
         url: ajaxurl,
         method: 'POST',
@@ -313,7 +312,7 @@ function unc_gallery_progress_get(process_id, targetlayer, progressbar, progress
             var outputText = '';
             for (var i = 0; i < arrayLength; i++) {
                 if (return_data.text[i] === false) {
-                    clearInterval(unc_interval);
+                    clearInterval(interval_id);
                 } else {
                     outputText = outputText + "<br>" + return_data.text[i];
                 }

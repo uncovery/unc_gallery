@@ -194,6 +194,11 @@
   display: none;
 }
 
+.images_summary {
+    font-size: smaller;
+    clear:both;
+}
+
 .unc_gallery_error {
     color: #CE272D;
     background-color: #FFFFFF;

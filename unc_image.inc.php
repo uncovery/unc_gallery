@@ -240,10 +240,10 @@ function unc_image_info_read($file_path) {
     // TODO: check if the file exists 2x for sanity check, here or somewhere else
 
     if (count($file_data) == 0) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "File not found in DB, reading from file");}
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("File not found in DB, reading from file");}
         $check = unc_image_info_write($file_path);
-        if ($check) {
-            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger(__FUNCTION__, "could not write file data to database!");}
+        if (!$check) {
+            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("could not write file data to database!");}
         }
         $file_code = md5($date_path . "/" . $file_name . ".php");
         return $UNC_FILE_DATA[$file_code];
@@ -302,6 +302,8 @@ function unc_image_info_write($file_path) {
         return false;
     }
 
+
+
     $exif = unc_exif_get($file_path);
     $xmp = unc_xmp_get($file_path);
     $ipct = unc_ipct_get($file_path);
@@ -323,7 +325,10 @@ function unc_image_info_write($file_path) {
     }
 
     // remove existing file info
-    unc_image_info_delete($file_name, $file_date);
+    $check = unc_image_info_delete($file_name, $file_date);
+    if (!$check) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("Data did not exist in DB, nothing to delete", $file_path);}
+    }
 
     $photo_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
     $thumb_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
@@ -363,10 +368,13 @@ function unc_image_info_write($file_path) {
         'ipct' => $ipct
     );
 
+
     foreach ($data_sets as $set_name => $set) {
         foreach ($set as $name => $value) {
             // insert into DB
             if (is_array($value)) {
+                // TODO: Create a single SQL line instead of entering every line by itself
+                // should make the process much faster
                 foreach ($value as $arr_value) {
                     $wpdb->insert(
                         $wpdb->prefix . "unc_gallery_att",
@@ -411,6 +419,39 @@ function unc_image_info_write($file_path) {
     return true;
 }
 
+/**
+ * User EXIFTOOL (Perl) to get information from the file
+ *
+ * @global array $UNC_GALLERY
+ * @param type $file_path
+ * @return type
+ */
+function unc_image_info_exiftool($file_path) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
+    $output = '';
+    $command = 'exiftool -g -a -json -struct -xmp:all -iptc:all -exif:all "'.$file_path.'"';
+    exec($command, $output);
+    $metadata_json = implode('', $output);
+    $metadata_array = json_decode($metadata_json, true);
+
+    var_dump($metadata_array[0]);
+
+    XMPP_ERROR_trigger("INFO");
+    return;
+}
+
+/**
+ * Delete the information of one file from the database
+ * returns false if the data did not exist
+ *
+ * @global type $wpdb
+ * @global array $UNC_GALLERY
+ * @param type $file_name
+ * @param type $file_date
+ * @return boolean
+ */
 function unc_image_info_delete($file_name, $file_date) {
     global $wpdb, $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
@@ -478,16 +519,21 @@ function unc_xmp_get($filepath) {
 
     $file_fh = fopen($filepath, 'rb');
 
-    if ($file_fh) { // let's get the data
+    // check if we can get the file data
+    if ($file_fh) {
         $chunk = '';
+        // get the file size
         $file_size = filesize( $filepath );
+        // as long as we are not exceeding the max size or the file size, operate
         while (($file_pos = ftell( $file_fh ) ) < $file_size  && $file_pos < $max_size ) {
+            // read a chunk of the file
             $chunk .= fread( $file_fh, $chunk_size );
+            // check if we can find the end_tag
             if (($end_pos = strpos($chunk, $end_tag)) !== false) {
                 if (($start_pos = strpos( $chunk, $start_tag)) !== false) {
                     $xmp_raw = substr($chunk, $start_pos, $end_pos - $start_pos + strlen($end_tag));
                 }
-                break;  // stop reading after finding the xmp data
+                break;  // stop reading after finding the end tag of the xmp data
             }
         }
         fclose($file_fh);
@@ -537,11 +583,11 @@ function unc_xmp_get_array($xmp_raw) {
     $val_array = array('country', 'state', 'city', 'location');
     $loc_arr = array();
     foreach ($val_array as $loc_type) {
-        $loc_arr[$loc_type]= $xmp_arr[$loc_type];
         if (isset($xmp_arr[$loc_type])) {
             $loc_arr[$loc_type] = $xmp_arr[$loc_type];
         } else {
-            $loc_arr[$loc_type] = '';
+            $loc_arr[$loc_type] = 'n/a';
+            $xmp_arr[$loc_type] = 'n/a';
         }
     }
     $loc_str = implode("|", $loc_arr);
@@ -897,7 +943,8 @@ class iptc {
             if (isset($out[$loc_type])) {
                 $loc_arr[$loc_type] = $out[$loc_type];
             } else {
-                $loc_arr[$loc_type] = '';
+                $loc_arr[$loc_type] = 'n/a';
+                $out[$loc_type] = 'n/a';
             }
         }
         $loc_str = implode("|", $loc_arr);

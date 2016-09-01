@@ -73,6 +73,7 @@ if (is_admin() === true) {
     add_action('wp_ajax_unc_gallery_images_refresh', 'unc_gallery_images_refresh');
     add_action('wp_ajax_unc_gallery_thumbnails_rebuild', 'unc_gallery_admin_rebuild_thumbs');
     add_action('wp_ajax_unc_gallery_admin_rebuild_data', 'unc_gallery_admin_rebuild_data');
+    add_action('wp_ajax_unc_gallery_admin_remove_data',  'unc_gallery_admin_remove_data');
     add_action('wp_ajax_unc_gallery_delete_everything', 'unc_gallery_admin_delete_everything');
 }
 

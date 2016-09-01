@@ -254,19 +254,41 @@ function unc_gallery_admin_display_images() {
 function unc_gallery_admin_maintenance() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    // unc_gallery_generic_ajax(action, target_div, confirmation_message, post, progress_div, progress_text)
     $out = '<h2>Maintenance</h2>
-        <button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_thumbnails_rebuild\', \'rebuild_thumbs_result\', \'Are you sure?\nThis can take a while for the whole database!\', true)">
-            Rebuild Thumbnails
-        </button> This will re-generate all thumbnails. Use this if after you changed the size of the thumbnails in the settings.<br>
-        <div id="rebuild_thumbs_result"></div><br>
-        <button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_admin_rebuild_data\', \'rebuild_data_result\', \'Are you sure?\nThis can take a while!\', true)">
-            Re-load all data from image files
-        </button> This will go through all files and read all EXIF, IPCT, XMP etc data. This can take a while!<br>
-        <div id="rebuild_data_result"></div><br>
-        <button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_delete_everything\', \'delete_all_result\', \'Are you sure?\nThis will delete ALL photos!\', true)">
+        <div class="admin_section"><button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_thumbnails_rebuild\', \'maintenance_target_div\', \'Are you sure?\nThis can take a while for the whole database!\', true)">
+            Rebuild Thumbnails</div>
+        <div class="admin_section"><button class="button button-primary" onclick="
+            unc_gallery_generic_ajax(
+                \'unc_gallery_admin_remove_data\',
+                \'maintenance_target_div\',
+                \'Are you sure?\nYou will have to rebuild the data with the next button!\',
+                true,
+                \'maintenance-process-progress-bar\',
+                \'Remove\'
+            )
+            ">
+            Erase all image data
+        </button> This will only remove the image data from the database so it can be re-built with the next button.</div>
+        <div class="admin_section"><button class="button button-primary" onclick="
+            unc_gallery_generic_ajax(
+                \'unc_gallery_admin_rebuild_data\',
+                \'maintenance_target_div\',
+                \'Are you sure?\nThis can take a while!\',
+                true,
+                \'maintenance-process-progress-bar\',
+                \'Rebuild\'
+            )
+            ">
+            Re-build missing image data from files.
+        </button> This will go through all files and read all EXIF, IPCT, XMP etc data. Since re-loading all of the data can take a long time (depending on how many images you have), this process might not finish 100%.</div>
+        <div class="admin_section"><button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_delete_everything\', \'maintenance_target_div\', \'Are you sure?\nThis will delete ALL photos!\', true)">
             Delete all pictures
-        </button> This will delete ALL images and thumbnails. Use with caution!<br>
-        <div id="delete_all_result"></div><br>';
+        </button> This will delete ALL images and thumbnails. Use with caution!</div>
+        <div class="progress-div">
+            <div id="maintenance-process-progress-bar">0%</div>
+        </div>
+        <div id="maintenance_target_div"></div>';
     return $out;
 }
 
@@ -345,8 +367,31 @@ function unc_gallery_admin_rebuild_thumbs() {
     wp_die();
 }
 
+function unc_gallery_admin_remove_data() {
+    global $UNC_GALLERY, $wpdb;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    ob_clean();
+
+    if (!current_user_can('manage_options')) {
+        echo "Cannot remove data, you are not admin!";
+        wp_die();
+    }
+    // delete all existing data to make sure
+    $sql1 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_img";
+    $wpdb->get_results($sql1);
+    $sql2 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_att";
+    $wpdb->get_results($sql2);
+
+    // get the Process ID for the Ajax live update
+    $process_id = filter_input(INPUT_POST, 'process_id');
+    unc_tools_progress_update($process_id, "Cleared existing data!", 100);
+    unc_tools_progress_update($process_id, false);
+    wp_die();
+}
+
+
 /**
- * re-load all image data and store to data files
+ * build the missing data
  *
  * @global type $UNC_GALLERY
  */
@@ -355,7 +400,8 @@ function unc_gallery_admin_rebuild_data() {
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
 
-    XMPP_ERROR_trigger("test");
+    $max_time = ini_get('max_execution_time');
+    
 
     if (!current_user_can('manage_options')) {
         echo "Cannot rebuild data, you are not admin!";
@@ -363,46 +409,55 @@ function unc_gallery_admin_rebuild_data() {
     }
     $dirPath = $UNC_GALLERY['upload_path'];
 
-    $sql1 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_img";
-    $wpdb->get_results($sql1);
-    $sql2 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_att";
-    $wpdb->get_results($sql2);
+    // let's count the number of files in the database so
+    // we get an image how much work is to do
+    $count_files_sql = "SELECT count(id) AS counter FROM " . $wpdb->prefix . "unc_gallery_img;";
+    $file_counter = $wpdb->get_results($count_files_sql, 'ARRAY_A');
+    $count = $file_counter[0]['counter'];
+
+    // get the Process ID for the Ajax live update
     $process_id = filter_input(INPUT_POST, 'process_id');
-    unc_tools_progress_update($process_id, "Cleared existing data");
+    // send the first update
+    $process_step_id = unc_tools_progress_update($process_id, "Cleared existing data");
 
-    // delete all old data files
-    // $data_folder = $dirPath . "/" . $UNC_GALLERY['file_data'];
-
-    // TODO: Fix folder delete
-    // unc_tools_recurse_files($data_folder, 'unlink', 'rmdir');
-
+    // TODO Check where do we delete empty folders?
     // unc_tools_folder_delete_empty($data_folder);
 
     // iterate all image folders
     $photo_folder = $dirPath . "/" . $UNC_GALLERY['photos'];
     $target_folders = unc_tools_recurse_folders($photo_folder);
-    // create thumbnaisl
+
+    // calculate progress update percentages
+    $overall_one_percent = 100 / $count;
+    $overall_percentage = 0;
+
+    $text = '';
     foreach ($target_folders as $date => $folder) {
-        // construct the thumb folder where we put the thumbnails
-        $text = "Processing $date: ";
-
-
-        // enumerate all the files in the source folder
-        foreach (glob($folder . "/*") as $image_file) {
+        $process_step_id++;
+        $text = "Processing $date: <span class=\"file_progress\" style=\"width:0%\">0 %</span>";
+        $process_step_id = unc_tools_progress_update($process_id, $text, $overall_percentage);
+        // iterate all files in a folder, write file info to DB
+        $folder_files = glob($folder . "/*");
+        $folder_file_count = count($folder_files);
+        $file_one_percent = 100 / $folder_file_count;
+        $folder_percentage = 0;
+        foreach ($folder_files as $image_file) {
             if (!is_dir($image_file)) {
-                $check = unc_image_info_write($image_file);
-                if ($check) {
-                    $text .= ".";
-                } else {
-                    $text .= "x";
-                }
-            } else {
-                $text .= "/$image_file/\n";
+                // TODO: ERror in case the info cannot be written
+                unc_image_info_write($image_file);
+                $folder_percentage += $file_one_percent;
+                $overall_percentage += $overall_one_percent;
             }
+            $folder_percentage_text = intval($folder_percentage);
+            $text = "Processing $date: <span class=\"file_progress\" style=\"width:$folder_percentage_text%\">$folder_percentage_text %</span>";
+            unc_tools_progress_update($process_id, $text, $overall_percentage, $process_step_id);
         }
-        unc_tools_progress_update($process_id, $text);
+        $text = "Processing $date: <span class=\"file_progress\" style=\"width:100%\">100 %</span>";
+        unc_tools_progress_update($process_id, $text, $overall_percentage, $process_step_id);
     }
-    unc_tools_progress_update($process_id, "Done!");
+    unc_tools_progress_update($process_id, "Done!", 100);
+    // this signals to the JS function that we can terminate the process_get loop
+    unc_tools_progress_update($process_id, false);
     wp_die();
 }
 
