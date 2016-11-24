@@ -205,6 +205,13 @@ function unc_filter_choice($filter_arr) {
     return $out;
 }
 
+/**
+ * Displays the actual map
+ *
+ * @global type $UNC_GALLERY
+ * @param type $type
+ * @return string
+ */
 function unc_filter_map_data($type) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
@@ -216,7 +223,7 @@ function unc_filter_map_data($type) {
 
     if ($type == 'xmp') {
         $levels = array('country', 'state', 'city', 'location');
-    } else { //ipct
+    } else { //iptc
         $levels = array('country', 'province_state', 'city');
     }
 
@@ -295,9 +302,20 @@ function unc_filter_map_data($type) {
     $avg_lat = $all_lat / count($locations);
 
     if (count($locations) == 1) {
-        $zoom = pow(count($my_levels), 2);
+        $zoom = 'zoom: ' . pow(count($my_levels), 2) . ',';
+        $bounds = '';
     } else {
-        $zoom = unc_filter_map_zoom_level($max_lat, $max_long, $min_lat, $min_long);
+        $zoom = '';
+        // this will automatically create the right zoom for the map by fitting the two
+        // opposite extremes on the map. Ideally. those should be the max SW and the max NE points.
+        // from http://stackoverflow.com/questions/10268033/google-maps-api-v3-method-fitbounds
+        // and http://jsfiddle.net/gaby/22qte/
+        $bounds = "
+                var bounds = new google.maps.LatLngBounds();
+                bounds.extend(new google.maps.LatLng ($max_lat,$max_long));
+                bounds.extend(new google.maps.LatLng ($min_lat,$min_long));
+                map.fitBounds(bounds);
+        ";
     }
 
     $markers_list .= "\n];\n";
@@ -323,7 +341,7 @@ function unc_filter_map_data($type) {
         function initMap() {
             map = new google.maps.Map(document.getElementById(\'map\'), {
                 center: {lat: '.$avg_lat.', lng: '.$avg_long.'},
-                zoom: '.$zoom.',
+                '.$zoom.'
                 mapTypeId: google.maps.MapTypeId.'.$map_type.'
             });
             ' . $markers_list . '
@@ -348,6 +366,7 @@ function unc_filter_map_data($type) {
                     '.$link_code.'
                 });
             }
+            '. $bounds .'
         }
         google.maps.event.addDomListener(window, \'load\', initMap);
     </script>';
@@ -365,7 +384,7 @@ function unc_filter_map_zoom_level($lat1, $lon1, $lat2, $lon2) {
     // the following variable are estimates
     $min_zoom = 1;
     $max_zoom = 17;
-    $steps = 5;
+    $steps = 4.5;
     // this formula tries to create a scale between min_zoom and max_zoom that
     // corresponds with the google maps zoom levels from the
     // fraction of the distance between the available points and the circumference of the world.
@@ -407,9 +426,6 @@ function unc_filter_map_gps_convert($latitudeFrom, $longitudeFrom, $latitudeTo, 
 function unc_filter_map_locations($levels, $type, $next_level) {
     global $UNC_GALLERY, $wpdb;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-
-
-    // var_dump($levels);
 
     $att_table_name = $wpdb->prefix . "unc_gallery_att";
 
