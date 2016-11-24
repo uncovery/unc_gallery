@@ -17,7 +17,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 // If this file is called directly, abort.
 if (!defined('WPINC')) {
-    die;
+    die();
 }
 
 global $UNC_FILE_DATA, $UNC_GALLERY;
@@ -140,7 +140,7 @@ function unc_mysql_db_create() {
     $sql_att = "CREATE TABLE $table_name_att (
         `att_id` mediumint(9) NOT NULL AUTO_INCREMENT,
         `file_id` mediumint(9) NOT NULL,
-        `att_group` ENUM('default','ipct','exit','xmp') NOT NULL,
+        `att_group` ENUM('default','iptc','exif','xmp') NOT NULL,
         `att_name` VARCHAR(25) NOT NULL,
         `att_value` tinytext NOT NULL,
         UNIQUE KEY `id` (`att_id`),
