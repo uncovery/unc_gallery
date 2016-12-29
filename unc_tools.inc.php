@@ -513,7 +513,6 @@ function unc_tools_folder_list() {
 function unc_tools_image_delete() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    XMPP_ERROR_trigger("test delete");
 
     if (!is_admin() === true) {
         ob_clean();
@@ -559,7 +558,6 @@ function unc_tools_image_delete() {
     if (!$check) {
         ob_clean();
         echo "File data could not be deleted: $file_name $date_wrong";
-        XMPP_ERROR_trigger("test");
         wp_die();
     }
 
