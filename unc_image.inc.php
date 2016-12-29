@@ -1,6 +1,6 @@
 <?php
 /**
- * This file hosts all the runctions that deal with the EXIF/XMP/IPCT data of images
+ * This file hosts all the runctions that deal with the EXIF/XMP/IPTC data of images
  */
 
 if (!defined('WPINC')) {
@@ -17,6 +17,20 @@ $UNC_GALLERY['codes']['exif'] = array(
         'conversion' => false,
         'unit' => false,
         'description' => 'File Name',
+    ),
+    'file_height' => array(
+        'hex' => false,
+        'key' => 'file_height',
+        'conversion' => false,
+        'unit' => false,
+        'description' => 'File Height',
+    ),
+    'file_width' => array(
+        'hex' => false,
+        'key' => 'file_width',
+        'conversion' => false,
+        'unit' => false,
+        'description' => 'File Width',
     ),
     'camera_manuf' => array(
         'hex' => '0x010F',
@@ -109,6 +123,7 @@ $UNC_GALLERY['codes']['xmp'] = array(
     'email' => array(
         'description' => 'Creator Email',
         'regex' => '<Iptc4xmpCore:CreatorContactInfo[^>]+?CiEmailWork="([^"]*)"',
+        'key' => array("CreatorContactInfo" => "CiEmailWork"),
     ),
     'name' => array(
         'description' => 'Owner Name',
@@ -117,103 +132,119 @@ $UNC_GALLERY['codes']['xmp'] = array(
     'creation_date' => array(
         'description' => 'Creation Date',
         'regex' => '<rdf:Description[^>]+?xmp:CreateDate="([^"]*)"',
+        'key' => 'CreateDate',
     ),
     'modification_date' => array(
         'description' => 'Modification Date',
         'regex' => '<rdf:Description[^>]+?xmp:ModifyDate="([^"]*)"',
+        'key' => 'ModifyDate',
     ),
     'label' => array(
         'description' => 'Label',
         'regex' => '<rdf:Description[^>]+?xmp:Label="([^"]*)"',
+        'key' => 'Label',
     ),
     'credit' => array(
         'description' => 'Credit',
         'regex' => '<rdf:Description[^>]+?photoshop:Credit="([^"]*)"',
+        'key' => 'Credit',
     ),
     'source' => array(
         'description' => 'Source',
         'regex' => '<rdf:Description[^>]+?photoshop:Source="([^"]*)"',
+        'key' => 'Source',
     ),
     'headline' => array(
         'description' => 'Headline',
         'regex' => '<rdf:Description[^>]+?photoshop:Headline="([^"]*)"',
+        'key' => 'Headline',
     ),
     'city' => array(
         'description' => 'City',
         'regex' => '<rdf:Description[^>]+?photoshop:City="([^"]*)"',
+        'key' => 'City',
     ),
     'state' => array(
         'description' => 'State',
         'regex' => '<rdf:Description[^>]+?photoshop:State="([^"]*)"',
+        'key' => 'State',
     ),
     'country' => array(
         'description' => 'Country',
         'regex' => '<rdf:Description[^>]+?photoshop:Country="([^"]*)"',
+        'key' => 'Country',
     ),
     'country_code' => array(
         'description' => 'Country Code',
         'regex' => '<rdf:Description[^>]+?Iptc4xmpCore:CountryCode="([^"]*)"',
+        'key' => 'CountryCode',
     ),
     'location' => array(
         'description' => 'Location',
         'regex' => '<rdf:Description[^>]+?Iptc4xmpCore:Location="([^"]*)"',
+        'key' => 'Location',
     ),
     'title' => array(
         'description' => 'Title',
         'regex' => '<dc:title>\s*<rdf:Alt>\s*(.*?)\s*<\/rdf:Alt>\s*<\/dc:title>',
+        'key' => 'Title',
     ),
     'description' => array(
         'description' => 'Description',
         'regex' => '<dc:description>\s*<rdf:Alt>\s*(.*?)\s*<\/rdf:Alt>\s*<\/dc:description>',
+        'key' => 'Description',
     ),
     'creator' => array(
         'description' => 'Creator',
         'regex' => '<dc:creator>\s*<rdf:Seq>\s*(.*?)\s*<\/rdf:Seq>\s*<\/dc:creator>',
+        'key' => 'Creator',
     ),
     'keywords' => array(
         'description' => 'Keywords',
         'regex' => '<dc:subject>\s*<rdf:Bag>\s*(.*?)\s*<\/rdf:Bag>\s*<\/dc:subject>',
+        'key' => 'Subject',
     ),
     'hierarchicalh_keywords' => array(
         'description' => 'Hierarchical Keywords',
         'regex' => '<lr:hierarchicalSubject>\s*<rdf:Bag>\s*(.*?)\s*<\/rdf:Bag>\s*<\/lr:hierarchicalSubject>',
+        'key' => 'HierarchicalSubject',
     ),
 );
 
-$UNC_GALLERY['codes']['ipct'] = array(
+$UNC_GALLERY['codes']['iptc'] = array(
     // full spec of codes: http://www.iptc.org/std/IIM/4.1/specification/IIMV4.1.pdf
-    'object_name' => array('code' => '005', 'description' => 'Object Name'),
-    'edit_status' => array('code' => '007', 'description' => 'Edit Ststus'),
-    'priority' => array('code' => '010', 'description' => 'Priority'),
-    'category' => array('code' => '015', 'description' => 'Category'),
-    'supplemental_category' => array('code' => '020', 'description' => 'Supplemental Category'),
-    'fixture_identifier' => array('code' => '022', 'description' => 'Fixture Identifier'),
-    'keywords' => array('code' => '025', 'description' => 'Keywords'),
-    'release_date' => array('code' => '030', 'description' => 'Release Date'),
-    'release_time' => array('code' => '035', 'description' => 'Release Time'),
-    'special_instructions' => array('code' => '040', 'description' => 'Special Instructions'),
-    'reference_service' => array('code' => '045', 'description' => 'Reference Service'),
-    'reference_date' => array('code' => '047', 'description' => 'Reference Date'),
-    'reference_number' => array('code' => '050', 'description' => 'Reference Number'),
-    'created_date' => array('code' => '055', 'description' => 'Created Date'),
-    'created_time' => array('code' => '060', 'description' => 'Created Time'),
-    'originating_program' => array('code' => '065', 'description' => 'Originating Program'),
-    'program_version' => array('code' => '070', 'description' => 'Program Version'),
-    'object_cycle' => array('code' => '075', 'description' => 'Object Cycle'),
-    'byline' => array('code' => '080', 'description' => 'Byline'),
-    'byline_title' => array('code' => '085', 'description' => 'Byline Title'),
-    'city' => array('code' => '090', 'description' => 'City'),
-    'sublocation' => array('code' => '092', 'description' => 'Location'),
-    'province_state' => array('code' => '095', 'description' => 'State'),
-    'country_code' => array('code' => '100', 'description' => 'Country Code'),
-    'country' => array('code' => '101', 'description' => 'Country'),
-    'original_transmission_reference' => array('code' => '103', 'description' => 'Original Transmission Reference'),
-    'headline' => array('code' => '105', 'description' => 'Headline'),
-    'credit' => array('code' => '110', 'description' => 'Credit'),
-    'source' => array('code' => '115', 'description' => 'Source'),
-    'copyright_string' => array('code' => '116', 'description' => 'Copyright String'),
-    'caption' => array('code' => '120', 'description' => 'Caption'),
-    'local_caption' => array('code' => '100', 'description' => 'Local Caption'),
+    'object_name' => array('code' => '005', 'description' => 'Object Name', 'key' => false),
+    'edit_status' => array('code' => '007', 'description' => 'Edit Ststus', 'key' => false),
+    'priority' => array('code' => '010', 'description' => 'Priority', 'key' => false),
+    'category' => array('code' => '015', 'description' => 'Category', 'key' => false),
+    'supplemental_category' => array('code' => '020', 'description' => 'Supplemental Category', 'key' => false),
+    'fixture_identifier' => array('code' => '022', 'description' => 'Fixture Identifier', 'key' => false),
+    'keywords' => array('code' => '025', 'description' => 'Keywords', 'key' => 'Keywords'),
+    'release_date' => array('code' => '030', 'description' => 'Release Date', 'key' => false),
+    'release_time' => array('code' => '035', 'description' => 'Release Time', 'key' => false),
+    'special_instructions' => array('code' => '040', 'description' => 'Special Instructions', 'key' => false),
+    'reference_service' => array('code' => '045', 'description' => 'Reference Service', 'key' => false),
+    'reference_date' => array('code' => '047', 'description' => 'Reference Date', 'key' => false),
+    'reference_number' => array('code' => '050', 'description' => 'Reference Number', 'key' => false),
+    'created_date' => array('code' => '055', 'description' => 'Created Date', 'key' => 'DateCreated'),
+    'created_time' => array('code' => '060', 'description' => 'Created Time', 'key' => 'TimeCreated'),
+    'originating_program' => array('code' => '065', 'description' => 'Originating Program', 'key' => false),
+    'program_version' => array('code' => '070', 'description' => 'Program Version', 'key' => false),
+    'object_cycle' => array('code' => '075', 'description' => 'Object Cycle', 'key' => false),
+    'byline' => array('code' => '080', 'description' => 'Byline', 'key' => 'By-line'),
+    'byline_title' => array('code' => '085', 'description' => 'Byline Title', 'key' => false),
+    'city' => array('code' => '090', 'description' => 'City', 'key' => 'City'),
+    'sublocation' => array('code' => '092', 'description' => 'Location', 'key' => 'Sub-location'),
+    'province_state' => array('code' => '095', 'description' => 'State', 'key' => 'Province-State'),
+    'country_code' => array('code' => '100', 'description' => 'Country Code', 'key' => false),
+    'country' => array('code' => '101', 'description' => 'Country', 'key' => 'Country-PrimaryLocationName'),
+    'original_transmission_reference' => array('code' => '103', 'description' => 'Original Transmission Reference', 'key' => false),
+    'headline' => array('code' => '105', 'description' => 'Headline', 'key' => false),
+    'credit' => array('code' => '110', 'description' => 'Credit', 'key' => false),
+    'source' => array('code' => '115', 'description' => 'Source', 'key' => false),
+    'copyright_string' => array('code' => '116', 'description' => 'Copyright String', 'key' => false),
+    'caption' => array('code' => '120', 'description' => 'Caption', 'key' => false),
+    'local_caption' => array('code' => '100', 'description' => 'Local Caption', 'key' => false),
 );
 
 function unc_image_info_read($file_path) {
@@ -302,17 +333,42 @@ function unc_image_info_write($file_path) {
         return false;
     }
 
+    if ($UNC_GALLERY['image_data_method'] == 'exiftool') {
+        $all_data = unc_image_info_exiftool($file_path);
+        if (!$all_data) {
+            return false;
+        }
+        $exif_raw = $all_data['exif'];
+        $xmp_raw = $all_data['xmp'];
+        $iptc_raw = $all_data['iptc'];
+    } else {
+        $exif_raw = unc_exif_get($file_path);
+        $xmp_raw = unc_xmp_get($file_path);
+        $iptc_raw = unc_iptc_get($file_path);
+    }
 
+    XMPP_ERROR_trigger("test exiftool");
 
-    $exif = unc_exif_get($file_path);
-    $xmp = unc_xmp_get($file_path);
-    $ipct = unc_ipct_get($file_path);
+    // fix all the data sets
+    $exif = unc_exif_fix($exif_raw);
+    $xmp = unc_xmp_fix($xmp_raw);
+    $iptc = unc_iptc_fix($iptc_raw);
+
+    XMPP_ERROR_trace("exif final", $exif);
+
     if (!isset($exif['created'])) {
-        $file_date = unc_ipct_convert_date($ipct['created_date'], $ipct['created_time']);
+        $file_date = unc_iptc_convert_date($iptc['created_date'], $iptc['created_time']);
     } else {
         $file_date = $exif['created'];
     }
+
+    XMPP_ERROR_trace("next step, file date: ", $file_date);
+
     $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
+    if (!$dtime) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("Daet could not be converted", $file_date);}
+    }
+
     $time_stamp = $dtime->getTimestamp(); // time stamp is easier to compare
     $folder_info = pathinfo($file_path);
     $date_str = unc_tools_folder_date($folder_info['dirname']);
@@ -333,6 +389,7 @@ function unc_image_info_write($file_path) {
     $photo_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
     $thumb_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
 
+    XMPP_ERROR_trace("Inserting file into DB", "$file_date, $file_name, $file_path");
     $file_code = md5($date_path . "/" . $file_name . ".php");
     // insert file into DB
     $wpdb->insert(
@@ -365,10 +422,10 @@ function unc_image_info_write($file_path) {
         'default' => $default,
         'exif' => $exif,
         'xmp' => $xmp,
-        'ipct' => $ipct
+        'iptc' => $iptc,
     );
 
-
+    XMPP_ERROR_trace("Writing file data to DB", $data_sets);
     foreach ($data_sets as $set_name => $set) {
         foreach ($set as $name => $value) {
             // insert into DB
@@ -416,6 +473,7 @@ function unc_image_info_write($file_path) {
             }
         }
     }
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("finished image info write");}
     return true;
 }
 
@@ -431,15 +489,55 @@ function unc_image_info_exiftool($file_path) {
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $output = '';
-    $command = 'exiftool -g -a -json -struct -xmp:all -iptc:all -exif:all "'.$file_path.'"';
+    $command = 'exiftool -s -g -a -json -struct -xmp:all -iptc:all -exif:all -file:all "'.$file_path.'"'; //  -composite:all
     exec($command, $output);
     $metadata_json = implode('', $output);
     $metadata_array = json_decode($metadata_json, true);
+    if (is_null($metadata_array)) { // json error, exiftool does not exist etc.
+        return false;
+    }
+    XMPP_ERROR_trace("JSON", $metadata_array);
 
-    var_dump($metadata_array[0]);
+    $D = $metadata_array[0];
 
-    XMPP_ERROR_trigger("INFO");
-    return;
+    $data_sets = array('exif' => 'EXIF', 'xmp' => 'XMP', 'iptc' => 'IPTC');
+
+    // iterate data types
+    $file_data = array();
+    foreach ($data_sets as $our_set => $json_set) {
+        // let's iterate our codes and see if they exist in the JSON
+        foreach ($UNC_GALLERY['codes'][$our_set] as $code_key => $code_setting) {
+            //XMPP_ERROR_trace("$json_set", $code_key);
+            // we check our code contains a key and if it is 'true'
+            if (isset($code_setting['key']) && $code_setting['key']) {
+                // then check if it's in the JSON
+                $key = $code_setting['key'];
+                if (is_array($key)) { // for key arrays we just get the individual elements and assemble the stuff in the _fix function
+                    foreach ($key as $key_name => $key_value) {
+                        if (!isset($D[$json_set][$key_name])) { // we only get this if all sub-tags exist
+                            continue 2; // continue to the next file in the outer loop
+                        }
+                        $file_data[$our_set][$key_name] = $D[$json_set][$key_name];
+                    }
+                } else if (isset($D[$json_set][$key])) {
+                    $file_data[$our_set][$code_key] = $D[$json_set][$key];
+                }
+            }
+        }
+    }
+
+    // those two are special and manually converted
+    $file_data['exif']['file_width'] = $D['File']['ImageWidth'];
+    $file_data['exif']['file_height'] = $D['File']['ImageHeight'];
+
+    // convert date from 2016:10:01 to 2016-10:01
+    $pattern = '/(\d\d\d\d):(\d\d):(\d\d \d\d:\d\d:\d\d)/';
+    $replace_pattern = '$1-$2-$3';
+    $correct_date = preg_replace($pattern, $replace_pattern, $D['EXIF']['CreateDate']);
+    $file_data['exif']['created'] = $correct_date;
+
+    // XMPP_ERROR_trace("EXIFTOOL", $file_data);
+    return $file_data;
 }
 
 /**
@@ -456,8 +554,15 @@ function unc_image_info_delete($file_name, $file_date) {
     global $wpdb, $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // remove existing file info
-    $sql = "SELECT id FROM " . $wpdb->prefix . "unc_gallery_img WHERE file_time=%s AND file_name=%s;";
-    $check_data = $wpdb->get_results($wpdb->prepare($sql, $file_date, $file_name), 'ARRAY_A');
+
+    $sql = "SELECT id FROM " . $wpdb->prefix . "unc_gallery_img WHERE file_time LIKE %s AND file_name=%s;";
+
+    $file_date_sql = esc_sql($file_date);
+    $file_name_sql = esc_sql($file_name);
+    $sql = "SELECT id FROM " . $wpdb->prefix . "unc_gallery_img WHERE file_time LIKE '$file_date_sql%' AND file_name='$file_name_sql';";
+    XMPP_ERROR_trace("File data delete sql", $sql);
+    $check_data =  $wpdb->get_results($sql, 'ARRAY_A');
+    //$check_data = $wpdb->get_results($wpdb->prepare($sql, "$file_date%", $file_name), 'ARRAY_A');
     if (count($check_data) > 0) {
         foreach ($check_data as $row) {
             $id = $row['id'];
@@ -471,7 +576,7 @@ function unc_image_info_delete($file_name, $file_date) {
 
 
 /**
- * Get the date of an image, first EXIF, then IPCT
+ * Get the date of an image, first EXIF, then IPTC
  * This function is only used when uploading images.
  *
  * @global type $UNC_GALLERY
@@ -483,12 +588,12 @@ function unc_image_date($file_path) {
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $exif = unc_exif_date($file_path);
     if (is_null($exif)) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "exif empty, getting ipct");}
-        $ipct = unc_ipct_date($file_path);
-        if ($ipct) {
-            return $ipct;
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "exif empty, getting iptc");}
+        $iptc = unc_iptc_date($file_path);
+        if ($iptc) {
+            return $iptc;
         } else {
-            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "ipct & EXIF failed, bail!");}
+            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "iptc & EXIF failed, bail!");}
             return false;
         }
     } else if (!$exif) {
@@ -523,9 +628,9 @@ function unc_xmp_get($filepath) {
     if ($file_fh) {
         $chunk = '';
         // get the file size
-        $file_size = filesize( $filepath );
+        $file_size = filesize($filepath);
         // as long as we are not exceeding the max size or the file size, operate
-        while (($file_pos = ftell( $file_fh ) ) < $file_size  && $file_pos < $max_size ) {
+        while (($file_pos = ftell($file_fh)) < $file_size  && $file_pos < $max_size ) {
             // read a chunk of the file
             $chunk .= fread( $file_fh, $chunk_size );
             // check if we can find the end_tag
@@ -569,30 +674,42 @@ function unc_xmp_get_array($xmp_raw) {
 
         // if string contains a list, then re-assign the variable as an array with the list elements
         $xmp_arr[$key] = preg_match_all( "/<rdf:li[^>]*>([^>]*)<\/rdf:li>/is", $xmp_arr[$key], $match ) ? $match[1] : $xmp_arr[$key];
-
-        // hierarchical keywords need to be split into a third dimension
-        if (!empty($xmp_arr[$key]) && $key == 'Hierarchical Keywords') {
-            foreach ($xmp_arr[$key] as $li => $val) {
-                $final_val = explode( '|', $val );
-                $xmp_arr[$key][$li] = $final_val;
-            }
-            unset($li, $val);
-        }
     }
-    // also generate aan array for location datea search
+    return $xmp_arr;
+}
+
+/**
+ * perform our proprietary XMP fixes
+ *
+ * @param type $xmp_raw
+ * @return type
+ */
+function unc_xmp_fix($xmp_raw) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    // custom location string
     $val_array = array('country', 'state', 'city', 'location');
     $loc_arr = array();
     foreach ($val_array as $loc_type) {
-        if (isset($xmp_arr[$loc_type])) {
-            $loc_arr[$loc_type] = $xmp_arr[$loc_type];
+        if (isset($xmp_raw[$loc_type])) {
+            $loc_arr[$loc_type] = $xmp_raw[$loc_type];
         } else {
             $loc_arr[$loc_type] = 'n/a';
-            $xmp_arr[$loc_type] = 'n/a';
+            $xmp_raw[$loc_type] = 'n/a';
         }
     }
     $loc_str = implode("|", $loc_arr);
-    $xmp_arr['loc_str'] = $loc_str;
-    return $xmp_arr;
+    $xmp_raw['loc_str'] = $loc_str;
+
+    // custom flat keyword, hierarchical keywords need to be split into a third dimension
+    if (isset($xmp_raw['Hierarchical Keywords'])) {
+        foreach ($xmp_raw['Hierarchical Keywords'] as $li => $val) {
+            $final_val = explode( '|', $val );
+            $xmp_raw['Hierarchical Keywords'][$li] = $final_val;
+        }
+        unset($li, $val);
+    }
+    return $xmp_raw;
 }
 
 /**
@@ -625,24 +742,31 @@ function unc_exif_get($image_path) {
     // we need to apply a custom error handler to catch 'illegal IFD size' errors
     set_error_handler('unc_exif_catch_errors', E_WARNING);
     // we are setting this ariable to have a bridge into the error handling function
-    $UNC_GALLERY['exif_get_file'] = $image_path;
     $exif = exif_read_data($image_path);
+
     restore_error_handler();
 
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('EXIF Data full', $exif);}
+    $exif['file_width'] = $exif['COMPUTED']['Width'];
+    $exif['file_height'] = $exif['COMPUTED']['Height'];
 
-    $data = array(
-        'file_width' => $exif['COMPUTED']['Width'],
-        'file_height' => $exif['COMPUTED']['Height'],
-    );
+    return $exif;
+}
 
+/**
+ * Perform our proprietary changes to the EXIF Data
+ *
+ * @global array $UNC_GALLERY
+ * @param type $exif
+ * @return type
+ */
+function unc_exif_fix($exif) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
+    $data = array();
+    // we only take the EXIF data we need
     foreach ($UNC_GALLERY['codes']['exif'] as $code => $C) {
         // we artificially added the filename as an EXIF info to make the admin menu easier
-        if ($code == 'file_name') {
-            $data[$code] = basename($image_path);
-            continue;
-        }
-
         $hex_tag =  'UndefinedTag:' . $C['hex'];
         if (is_array($C['key'])) { // gps for example is made out of multiple keys
             $val = array();
@@ -657,6 +781,7 @@ function unc_exif_get($image_path) {
         } else if (isset($exif[$hex_tag])) { // lens model for example is stored as an undefined key
             $val = $exif[$hex_tag];
         } else {
+            // value is not set
             continue;
         }
         if ($C['conversion']) {
@@ -722,7 +847,7 @@ function unc_exif_convert_gps($gps_arr) {
     $minutes = count($coord) > 1 ? unc_exif_convert_gps_2_Num($coord[1]) : 0;
     $seconds = count($coord) > 2 ? unc_exif_convert_gps_2_Num($coord[2]) : 0;
 
-    $flip = ($hemi == 'W' or $hemi == 'S') ? -1 : 1;
+    $flip = (in_array($hemi, array('W', 'West')) || in_array($hemi, array('S', 'South'))) ? -1 : 1;
     $out = $flip * ($degrees + $minutes / 60 + $seconds / 3600);
     return $out;
 }
@@ -762,7 +887,6 @@ function unc_exif_date($file_path) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
-    $UNC_GALLERY['exif_get_file'] = $file_path;
     set_error_handler('unc_exif_catch_errors', E_WARNING);
     $exif_data = exif_read_data($file_path);
     restore_error_handler();
@@ -807,47 +931,71 @@ function unc_exif_convert_date($date) {
  */
 function unc_exif_catch_errors($errno, $errstr, $errfile, $errline) {
     global $UNC_GALLERY;
-    $filename = $UNC_GALLERY['exif_get_file'];
-    $UNC_GALLERY['errors'][$filename][] = $errstr;
+    $UNC_GALLERY['errors'][] = array('error' => $errstr, 'filename' => $errfile);
 }
 
 
 /**
- * Get all IPCT tags
+ * Get all IPTC tags
  *
  * @param type $file_path
  * @return type
  */
-function unc_ipct_get($file_path) {
+function unc_iptc_get($file_path) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
-    $ipct_obj = new IPTC($file_path);
-    return $ipct_obj->dump();
+    $iptc_obj = new IPTC($file_path);
+    return $iptc_obj->dump();
 }
 
 /**
- * Get the IPCT date of an image
+ * Fix IPTC data with our proprietary data types
+ *
+ * @param type $iptc_raw
+ * @return type
+ */
+function unc_iptc_fix($iptc_raw) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    // location info
+    $val_array = array('country', 'province_state', 'city', 'sublocation');
+    $loc_arr = array();
+    foreach ($val_array as $loc_type) {
+        if (isset($iptc_raw[$loc_type])) {
+            $loc_arr[$loc_type] = $iptc_raw[$loc_type];
+        } else {
+            $loc_arr[$loc_type] = 'n/a';
+            $iptc_raw[$loc_type] = 'n/a';
+        }
+    }
+    $loc_str = implode("|", $loc_arr);
+    $iptc_raw['loc_str'] = $loc_str;
+    return $iptc_raw;
+}
+
+/**
+ * Get the IPTC date of an image
  *
  * @global type $UNC_GALLERY
  * @param type $file_path
  * @return boolean
  */
-function unc_ipct_date($file_path) {
+function unc_iptc_date($file_path) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
-    $ipct_obj = new IPTC($file_path);
+    $iptc_obj = new IPTC($file_path);
 
-    $ipct_date = $ipct_obj->get('created_date'); //  '20160220',
-    $ipct_time = $ipct_obj->get('created_time'); //  '235834',
-    if (strlen($ipct_date . $ipct_time) != 14) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "ipct length wrong: $ipct_date / $ipct_time");}
+    $iptc_date = $iptc_obj->get('created_date'); //  '20160220',
+    $iptc_time = $iptc_obj->get('created_time'); //  '235834',
+    if (strlen($iptc_date . $iptc_time) != 14) {
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "iptc length wrong: $iptc_date / $iptc_time");}
         return false;
     }
     $search_pattern = '/(\d\d\d\d)(\d\d)(\d\d) (\d\d)(\d\d)(\d\d)/';
     $replace_pattern = '$1-$2-$3 $4:$5:$6';
-    $fixed_date = preg_replace($search_pattern, $replace_pattern, "$ipct_date $ipct_time");
+    $fixed_date = preg_replace($search_pattern, $replace_pattern, "$iptc_date $iptc_time");
     return $fixed_date;
 }
 
@@ -857,7 +1005,10 @@ function unc_ipct_date($file_path) {
  * @param type $date
  * @return type
  */
-function unc_ipct_convert_date($date, $time) {
+function unc_iptc_convert_date($date, $time) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
     $fulldate = $date . " " . $time;
     $search_pattern = '/(\d\d\d\d)(\d\d)(\d\d) (\d\d)(\d\d)(\d\d)/';
     $replace_pattern = '$1-$2-$3 $4:$5:$6';
@@ -867,28 +1018,28 @@ function unc_ipct_convert_date($date, $time) {
 
 
 /**
- * Write the IPCT date to an image
+ * Write the IPTC date to an image
  *
  * @global type $UNC_GALLERY
  * @param type $file_path
  * @param type $date_str
  */
-function unc_ipct_date_write($file_path, $date_str) {
+function unc_iptc_date_write($file_path, $date_str) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    // convert date_str to IPCT
+    // convert date_str to IPTC
     $search_pattern = '/(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)/';
     $date_pattern = '$1$2$3';
-    $ipct_date = preg_replace($search_pattern, $date_pattern, $date_str);
+    $iptc_date = preg_replace($search_pattern, $date_pattern, $date_str);
     $time_pattern = '$4$5$6';
-    $ipct_time = preg_replace($search_pattern, $time_pattern, $date_str);
+    $iptc_time = preg_replace($search_pattern, $time_pattern, $date_str);
 
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('will write IPCT date in format', "$ipct_date / $ipct_time");}
-    // write IPICT Date / time
-    $taget_ipct_obj = new iptc($file_path);
-    $taget_ipct_obj->set('created_date', $ipct_date);
-    $taget_ipct_obj->set('created_time', $ipct_time);
-    $taget_ipct_obj->write();
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('will write IPTC date in format', "$iptc_date / $iptc_time");}
+    // write IPTC Date / time
+    $taget_iptc_obj = new iptc($file_path);
+    $taget_iptc_obj->set('created_date', $iptc_date);
+    $taget_iptc_obj->set('created_time', $iptc_time);
+    $taget_iptc_obj->write();
 }
 
 
@@ -912,14 +1063,14 @@ class iptc {
 
     function set($tag, $data) {
         global $UNC_GALLERY;
-        $id = $UNC_GALLERY['codes']['ipct'][$tag]['code'];
+        $id = $UNC_GALLERY['codes']['iptc'][$tag]['code'];
         $this->meta ["2#$id"]= Array( $data );
         $this->hasmeta=true;
     }
 
     function get($tag) {
         global $UNC_GALLERY;
-        $id = $UNC_GALLERY['codes']['ipct'][$tag]['code'];
+        $id = $UNC_GALLERY['codes']['iptc'][$tag]['code'];
         if (isset($this->meta["2#$id"])) {
             return $this->meta["2#$id"][0];
         } else {
@@ -930,25 +1081,12 @@ class iptc {
     function dump() {
         global $UNC_GALLERY;
         $out = array();
-        foreach ($UNC_GALLERY['codes']['ipct'] as $code => $D) {
+        foreach ($UNC_GALLERY['codes']['iptc'] as $code => $D) {
             $id = $D['code'];
             if (isset($this->meta["2#$id"])) {
                 $out[$code] = $this->meta["2#$id"][0];
             }
         }
-        // location info
-        $val_array = array('country', 'province_state', 'city', 'sublocation');
-        $loc_arr = array();
-        foreach ($val_array as $loc_type) {
-            if (isset($out[$loc_type])) {
-                $loc_arr[$loc_type] = $out[$loc_type];
-            } else {
-                $loc_arr[$loc_type] = 'n/a';
-                $out[$loc_type] = 'n/a';
-            }
-        }
-        $loc_str = implode("|", $loc_arr);
-        $out['loc_str'] = $loc_str;
         return $out;
     }
 

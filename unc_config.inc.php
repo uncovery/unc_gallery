@@ -35,11 +35,11 @@ $UNC_GALLERY['keywords'] = array(
 );
 
 // file & mime-types
-$UNC_GALLERY['thumbnail_ext'] = 'jpeg'; // do not change this, PNG has issues with IPCT
+$UNC_GALLERY['thumbnail_ext'] = 'jpeg'; // do not change this, PNG has issues with IPTC
 $UNC_GALLERY['valid_filetypes'] = array(
     "image/jpeg" => 'jpeg',
-    // "image/png" => 'png', // cannot use png since it does not support IPCT/EXIF
-    // "image/gif" => 'gif', // cannot use gif since it does not support IPCT/EXIF
+    // "image/png" => 'png', // cannot use png since it does not support IPTC/EXIF
+    // "image/gif" => 'gif', // cannot use gif since it does not support IPTC/EXIF
 );
 
 // This is used to automatically / dynamically create the settings menu
@@ -137,12 +137,22 @@ $UNC_GALLERY['user_settings'] = array(
         'options' => unc_image_options_array('xmp'), // this function just returns an array
         'title' => 'Description XMP Data choices',
     ),
-    'show_ipct_data' => array(
-        'help' => 'Which IPCT data do you want to show in image descriptions?',
+    'show_iptc_data' => array(
+        'help' => 'Which IPTC data do you want to show in image descriptions?',
         'default' => array('byline'),
         'type' => 'multiple',
-        'options' => unc_image_options_array('ipct'), // this function just returns an array
-        'title' => 'Description IPCT Data choices',
+        'options' => unc_image_options_array('iptc'), // this function just returns an array
+        'title' => 'Description IPTC Data choices',
+    ),
+    'image_data_method' => array(
+        'help' => 'What method do you want to use to retrieve image data? ExifTool requires PHP\'s exec() and the <a href="http://www.sno.phy.queensu.ca/~phil/exiftool/install.html">Exiftool</a>.',
+        'default' => 'internal',
+        'type' => 'dropdown',
+        'options' => array(
+            'internal' => 'Internal code (slow)',
+            'exiftool' => 'ExifTool (faster)',
+        ),
+        'title' => 'Image data access method',
     ),
     'post_keywords' => array(
         'help' => 'Do you want to automatically add missing keywords from photos to posts? This will not remove any tags from posts, only create & add new ones.',
@@ -152,8 +162,8 @@ $UNC_GALLERY['user_settings'] = array(
             'none' => 'Do not auto-tag',
             'xmp' => 'XMP Keywords',
             'xmp_force' => 'XMP Keywords, remove other tags',
-            'ipct' => 'IPCT Keywords',
-            'ipct_force' => 'IPCT Keywords, remove other tags'
+            'iptc' => 'IPTC Keywords',
+            'iptc_force' => 'IPTC Keywords, remove other tags'
         ),
         'title' => 'Auto-Tag posts with Keywords',
     ),
@@ -165,7 +175,7 @@ $UNC_GALLERY['user_settings'] = array(
             'none' => 'Do not auto-categorize',
             'xmp_country_state_city_location' => 'XMP: Country - State - City - Location',
             'xmp_city_location' => 'XMP: City - Location',
-            'ipct_country_state_city' => 'IPCT: Country - State - City',
+            'iptc_country_state_city' => 'IPtc: Country - State - City',
         ),
         'title' => 'Auto-Categorize posts by Location',
     ),

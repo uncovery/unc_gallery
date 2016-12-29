@@ -18,12 +18,15 @@ function unc_day_var_init($a) {
         // comparison
     $UNC_GALLERY['display']['range'] = array('start_time' => false, 'end_time' => false);
     foreach ($UNC_GALLERY['display']['range'] as $key => $value) {
+
         if ($a[$key]) {
             //re-name the variable
-            $UNC_GALLERY['display']['date_range'][$key] = $a[$key];
+            $UNC_GALLERY['display']['date_range'][$key] = trim($a[$key]);
             // convert to UNIX timestamp
-            $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $a[$key]);
-            // TODO: catch here if the date is invalid
+            $dtime = DateTime::createFromFormat("Y-m-d G:i:s", trim($a[$key]));
+            if (!$dtime) { // time format was invalid
+                return false;
+            }
             $UNC_GALLERY['display']['range'][$key] = $dtime->getTimestamp();
             // get the date for the same
             $var_name = 'date_' . $key;

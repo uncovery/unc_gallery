@@ -4,7 +4,7 @@ Contributors: uncovery
 Author URI: https://uncovery.net
 Plugin Name: Uncovery Gallery
 Plugin URI: https://github.com/uncovery/unc_gallery
-Tags: gallery, photos, photo, gallery, photoblog, date, photographer, photography, EXIF, IPCT, XMP
+Tags: gallery, photos, photo, gallery, photoblog, date, photographer, photography, EXIF, IPTC, XMP
 Requires at least: 4.5.2
 Tested up to: 4.5.2
 Version: 4.1.3
@@ -37,8 +37,8 @@ Additional features include:
 * date picker: let the user pick the date themselves
 * seamless re-uploading: any photo can be re-uploaded anytime with a better/different version
 * EXIF data: The photo description can show automatically generated photo data such as ISO, F-stop etc.
-* automatic post assignments of tags based on EXIF/IPCT keywords.
-* automatic post assignments of hierarchical categories based on EXIF/IPCT location info
+* automatic post assignments of tags based on EXIF/IPTC keywords.
+* automatic post assignments of hierarchical categories based on EXIF/IPTC location info
 * optional square or rectangular thumbnails
 
 == Installation ==
@@ -63,7 +63,7 @@ uploaded photos from the server if you don't set the proper admin option!
 1. The system cannot handle 2 files of the same filename taken on the same date
 1. The system can only handle files in JPG/JPEG format.
 1. The system cannot handle 2 files that are taken exactly at the same time (date, minute & second).
-1. The system works only on images which have valid EXIF or IPCT creation dates
+1. The system works only on images which have valid EXIF or IPTC creation dates
 
 == Changelog ==
 
@@ -88,9 +88,9 @@ uploaded photos from the server if you don't set the proper admin option!
 1. better formatting for the admin settings help text
 1. made deletion of images on uninstall optional
 1. auto-select sample shortcode in admin screen
-1. EXIF/IPCT/XMP data can be chosen individually
-1. automatic post assignments of tags based on EXIF/IPCT keywords
-1. automatic post assignments of hierarchical categories based on EXIF/IPCT location info
+1. EXIF/IPTC/XMP data can be chosen individually
+1. automatic post assignments of tags based on EXIF/IPTC keywords
+1. automatic post assignments of hierarchical categories based on EXIF/IPTC location info
 1. featured images can now be latest and random images of the given set
 1. optional square or rectangular thumbnails
 

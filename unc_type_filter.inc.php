@@ -138,6 +138,7 @@ function unc_filter_choice($filter_arr) {
         }
     }
 
+    //XMPP_ERROR_trigger($names_sql);
 
     $names = $wpdb->get_results($names_sql, 'ARRAY_A');
 
@@ -173,7 +174,7 @@ function unc_filter_choice($filter_arr) {
             foreach ($names as $N) {
                 $nice_term = ucwords(str_replace("_", " ", $N['term']));
                 $first_letter = mb_substr($nice_term, 0, 1);
-                if ($first_letter <> $last_letter) {
+                if ($first_letter !== $last_letter) {
                     if (!$start) {
                         $this_column++;
                         $out .= "</ul>\n</div>\n";
@@ -194,7 +195,7 @@ function unc_filter_choice($filter_arr) {
             $out .= "</ul>\n</div>\n</div>\n";
         }
         $out .= $desc2;
-    }  else if (in_array('map', $options)) {
+    } else if (in_array('map', $options)) {
         $out .= ''; //unc_filter_map_data();
     } else {
         $valid_options = $UNC_GALLERY['keywords']['type']['filter'];
@@ -373,6 +374,18 @@ function unc_filter_map_data($type) {
     return $out;
 }
 
+/**
+ * Attempt to calculate a good zoom level depending on the max distance between
+ * markers on the map. This is not very good and also not used anymore.
+ * We replaced this by using the map.fitBounds() function instead
+ *
+ * @global type $UNC_GALLERY
+ * @param type $lat1
+ * @param type $lon1
+ * @param type $lat2
+ * @param type $lon2
+ * @return type
+ */
 function unc_filter_map_zoom_level($lat1, $lon1, $lat2, $lon2) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}

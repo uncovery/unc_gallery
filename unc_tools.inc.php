@@ -48,6 +48,7 @@ function unc_tools_progress_get($process_name = false) {
  * @param type $process_name
  * @param type $text
  * @param type $percentage
+ * @param type $line_id
  */
 function unc_tools_progress_update($process_name, $text, $percentage = false, $line_id = false) {
     global $UNC_GALLERY;
@@ -125,6 +126,8 @@ function unc_date_folder_create($date_str) {
  * @param type $date_str
  */
 function unc_date_folder_delete($date_str) {
+    global $wpdb;
+
     if (!is_admin() === true) {
         return false;
     }
@@ -140,8 +143,22 @@ function unc_date_folder_delete($date_str) {
     $out = "";
     $date_folder = date_format($date_obj, "Y{$fstr}m{$fstr}d");
 
-    // we have 2 paths, images adn thumbs
-    $path_arr = array($UNC_GALLERY['photos'], $UNC_GALLERY['thumbnails'], $UNC_GALLERY['file_data']);
+    // delete images from DB
+    $table_name = $wpdb->prefix . "unc_gallery_img";
+    $sql = "DELETE * FROM $table_name WHERE file_time LIKE '$date_str%';";
+    echo $sql;
+    XMPP_ERROR_trigger($sql);
+    $wpdb->get_results($sql);
+    // now clean up all image info
+    $sql_cleanup = 'SELECT * FROM `wp_unc_gallery_att`
+        LEFT JOIN wp_unc_gallery_img ON file_id=id WHERE id = NULL';
+    return;
+
+
+
+    // we have 2 paths, images and thumbs
+    $path_arr = array($UNC_GALLERY['photos'], $UNC_GALLERY['thumbnails']);
+
     // iterate both
     foreach ($path_arr as $img_folder) {
         // now let's get the path of that date
@@ -259,7 +276,7 @@ function unc_tools_file_desc($F) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
     $out = '';
-    $code_sets = array('exif', 'xmp', 'ipct');
+    $code_sets = array('exif', 'xmp', 'iptc');
     // we iterate the 3 information sets
     foreach ($code_sets as $set_name) {
         // we get the configured settings to know which parts we take
@@ -412,8 +429,8 @@ function unc_tools_file_random($date_path) {
  * @return type
  */
 function unc_tools_folder_date($folder) {
-    // global $UNC_GALLERY;
-    // if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $path_arr = explode("/", $folder);
     // get last 3 elements
     $new_date_arr = array_slice($path_arr, -3, 3);
@@ -540,10 +557,11 @@ function unc_tools_image_delete() {
     }
 
     // delete file data
-    $check = unc_image_info_delete($file_name, $date_str);
+    $check = unc_image_info_delete($file_name, $date_wrong);
     if (!$check) {
         ob_clean();
-        echo "File data could not be deleted: $file_name $date_str";
+        echo "File data could not be deleted: $file_name $date_wrong";
+        XMPP_ERROR_trigger("test");
         wp_die();
     }
 

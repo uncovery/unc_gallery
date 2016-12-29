@@ -281,7 +281,7 @@ function unc_gallery_admin_maintenance() {
             )
             ">
             Re-build missing image data from files.
-        </button> This will go through all files and read all EXIF, IPCT, XMP etc data. Since re-loading all of the data can take a long time (depending on how many images you have), this process might not finish 100%.</div>
+        </button> This will go through all files and read all EXIF, IPTC, XMP etc data. Since re-loading all of the data can take a long time (depending on how many images you have), this process might not finish 100%.</div>
         <div class="admin_section"><button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_delete_everything\', \'maintenance_target_div\', \'Are you sure?\nThis will delete ALL photos!\', true)">
             Delete all pictures
         </button> This will delete ALL images and thumbnails. Use with caution!</div>
@@ -400,8 +400,8 @@ function unc_gallery_admin_rebuild_data() {
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
 
-    $max_time = ini_get('max_execution_time');
-    
+    // $max_time = ini_get('max_execution_time');
+
 
     if (!current_user_can('manage_options')) {
         echo "Cannot rebuild data, you are not admin!";

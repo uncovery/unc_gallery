@@ -177,6 +177,7 @@ function unc_uploads_iterate_files() {
         }
         $percentage += $one_file_percent;
         unc_tools_progress_update($process_id, "File " . ($i + 1) . ": " . $string, $percentage);
+        XMPP_ERROR_trace("File done processing:", $i);
     }
 
     $string = 'All images processed!<br><br>
@@ -293,13 +294,13 @@ function unc_uploads_process_file($i, $overwrite) {
     // we need the exif date to know when the image was taken
     $date_str = unc_image_date($sourcePath);
     if (!$date_str) {
-        return array('date'=> false, 'action' => "Cannot read EXIF or IPCT of file $sourcePath");
+        return array('date'=> false, 'action' => "Cannot read EXIF or IPTC of file $sourcePath");
     }
     $UNC_GALLERY['upload_file_info']['date_str'] = $date_str;
 
     $date_check = date_create($date_str);
     if (!$date_check) {
-        return array('date'=> false, 'action' => "'$date_str' is invalid date in EXIF or IPCT");
+        return array('date'=> false, 'action' => "'$date_str' is invalid date in EXIF or IPTC");
     }
     // echo "File date is $date_str";
 
@@ -385,7 +386,7 @@ function unc_uploads_process_file($i, $overwrite) {
 
     $check_xmp = unc_image_info_write($new_path);
     if (!$check_xmp) {
-        return array('date' => false, 'action' => "Could not write XMP/IPCT/EXIF data to file");
+        return array('date' => false, 'action' => "Could not write XMP/IPTC/EXIF data to file");
     }
 
     return array('date'=> $date_str, 'action' => $target_filename . ": " . $action);
@@ -496,10 +497,10 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ex
         wp_die();
     }
 
-    // write ipct date to new thumbnail file
-    unc_ipct_date_write($target_file_path, $file_date);
+    // write iptc date to new thumbnail file
+    unc_iptc_date_write($target_file_path, $file_date);
     $new_file_date = unc_image_date($target_file_path);
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("check IPCT result", $new_file_date);}
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("check IPTC result", $new_file_date);}
     //XMPP_ERROR_trigger("test");
     imagedestroy($new_image); // free up the memory
     return true;

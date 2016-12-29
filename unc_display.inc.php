@@ -456,6 +456,7 @@ function unc_display_images() {
     if ($D['echo']) {
         ob_clean();
         echo $out;
+        XMPP_ERROR_trigger("test");
         wp_die();
     } else {
         return $out;

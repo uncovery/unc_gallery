@@ -14,7 +14,7 @@ such as posts or pages in the basic format `[unc_gallery date="2006-03-30"]`.
 The main target of this plugin is to reduce duplication of work. You can now manage
 all the information about your photos in lightroom or similar software and Uncovery Gallery
 will take all this information and display it on your images. You can auto-tag your posts
-with keywords, auto-categorize with the location info, show all EXIF/IPCT/XMP information
+with keywords, auto-categorize with the location info, show all EXIF/IPTC/XMP information
 on each image etc.
 
 One key advantage of this system is that you can remove individual photos and
@@ -36,9 +36,9 @@ the whole day, several whole days or any photo between any two points in time
 * One Photo only: Show only one photo of one day. Either a specific photo, random,
 the or the latest
 * Dynamic date: Instead of showing a specific date, show random or latest
-* EXIF / XMP / IPCT data: Chose which information will be shown on your images
-* Auto-tagging of posts with XMP/IPCT keywords
-* Auto-categorizing posts with XMP/IPCT location info (hierarchically, eg. Country -> City -> Location)
+* EXIF / XMP / IPTC data: Chose which information will be shown on your images
+* Auto-tagging of posts with XMP/IPTC keywords
+* Auto-categorizing posts with XMP/IPTC location info (hierarchically, eg. Country -> City -> Location)
 * Descriptions: Whole days and individual photos can have additional description
 set in the short code
 * Re-Uploads: If you want to update a picture with a new version, simply re-upload it and it will be updated
@@ -224,7 +224,7 @@ keywords will not be removed, no matter what setting.
 ### Auto-Categorize posts with Location info
 
 You can have the Gallery automatically categorize posts hierarchically with the location
-found in the image XMP/IPCT information. There are several patterns available.
+found in the image XMP/IPTC information. There are several patterns available.
 New categories will be created as needed. If there is no location info in an image
 nothing will happen, no matter what setting. If you need different patterns, let us know
 we can add them very quickly.
@@ -265,7 +265,7 @@ for touch devices such as mobile phones and tablets.
 * The system cannot handle 2 files of the same filename taken on the same date
 * The system can only handle files in JPG/JPEG format.
 * The system cannot handle 2 files that are taken exactly at the same time (date/minute/second).
-* The system works only on images which have valid EXIF or IPCT creation dates
+* The system works only on images which have valid EXIF or IPTC creation dates
 
 ## Known Bugs, upcoming features
 
