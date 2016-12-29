@@ -555,12 +555,11 @@ function unc_image_info_delete($file_name, $file_date) {
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // remove existing file info
 
-    $sql = "SELECT id FROM " . $wpdb->prefix . "unc_gallery_img WHERE file_time LIKE %s AND file_name=%s;";
+    // $sql = "SELECT id FROM " . $wpdb->prefix . "unc_gallery_img WHERE file_time LIKE %s AND file_name=%s;";
 
     $file_date_sql = esc_sql($file_date);
     $file_name_sql = esc_sql($file_name);
     $sql = "SELECT id FROM " . $wpdb->prefix . "unc_gallery_img WHERE file_time LIKE '$file_date_sql%' AND file_name='$file_name_sql';";
-    XMPP_ERROR_trace("File data delete sql", $sql);
     $check_data =  $wpdb->get_results($sql, 'ARRAY_A');
     //$check_data = $wpdb->get_results($wpdb->prepare($sql, "$file_date%", $file_name), 'ARRAY_A');
     if (count($check_data) > 0) {
@@ -569,6 +568,7 @@ function unc_image_info_delete($file_name, $file_date) {
             $wpdb->delete($wpdb->prefix . "unc_gallery_img", array('id' => $id));
             $wpdb->delete($wpdb->prefix . "unc_gallery_att", array('file_id' => $id));
         }
+        return true;
     } else {
         return false;
     }

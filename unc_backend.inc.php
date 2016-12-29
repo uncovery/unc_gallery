@@ -442,7 +442,7 @@ function unc_gallery_admin_rebuild_data() {
  * @global type $UNC_GALLERY
  */
 function unc_gallery_admin_delete_everything() {
-    global $UNC_GALLERY, $wpdb;
+    global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
     if (!current_user_can('manage_options')) {

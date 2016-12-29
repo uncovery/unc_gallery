@@ -513,6 +513,7 @@ function unc_tools_folder_list() {
 function unc_tools_image_delete() {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    XMPP_ERROR_trigger("test delete");
 
     if (!is_admin() === true) {
         ob_clean();
@@ -530,7 +531,6 @@ function unc_tools_image_delete() {
     $date_wrong = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
     $date_str = str_replace("-", "/", $date_wrong);
 
-
     $paths = array(
         $UNC_GALLERY['photos'] => $file_name,
         $UNC_GALLERY['thumbnails'] => $file_name,
@@ -538,8 +538,6 @@ function unc_tools_image_delete() {
 
     foreach ($paths as $path => $del_file_name) {
         $full_path = $UNC_GALLERY['upload_path'] . "/" . $path . "/" . $date_str . "/" . $del_file_name;
-        unc_image_info_exiftool($full_path);
-        wp_die();
         if (file_exists($full_path)) {
             $check = unlink($full_path);
             if ($check) {
