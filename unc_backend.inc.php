@@ -224,7 +224,7 @@ function unc_gallery_admin_settings() {
 }
 
 /**
- * displayes the complete image catalogue for the admin
+ * displays the complete image catalog for the admin
  * and then provide buttons for AJAX-loading of older content
  *
  * @global type $UNC_GALLERY
@@ -248,7 +248,7 @@ function unc_gallery_admin_display_images() {
 
 
 /**
- * Displays a dilogue to perform maintenance operations
+ * Displays a dialogue to perform maintenance operations
  * @return string
  */
 function unc_gallery_admin_maintenance() {
@@ -367,29 +367,6 @@ function unc_gallery_admin_rebuild_thumbs() {
     wp_die();
 }
 
-function unc_gallery_admin_remove_data() {
-    global $UNC_GALLERY, $wpdb;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    ob_clean();
-
-    if (!current_user_can('manage_options')) {
-        echo "Cannot remove data, you are not admin!";
-        wp_die();
-    }
-    // delete all existing data to make sure
-    $sql1 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_img";
-    $wpdb->get_results($sql1);
-    $sql2 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_att";
-    $wpdb->get_results($sql2);
-
-    // get the Process ID for the Ajax live update
-    $process_id = filter_input(INPUT_POST, 'process_id');
-    unc_tools_progress_update($process_id, "Cleared existing data!", 100);
-    unc_tools_progress_update($process_id, false);
-    wp_die();
-}
-
-
 /**
  * build the missing data
  *
@@ -401,7 +378,6 @@ function unc_gallery_admin_rebuild_data() {
     ob_clean();
 
     // $max_time = ini_get('max_execution_time');
-
 
     if (!current_user_can('manage_options')) {
         echo "Cannot rebuild data, you are not admin!";
@@ -462,7 +438,7 @@ function unc_gallery_admin_rebuild_data() {
 }
 
 /**
- * Function to delte all contents
+ * Function to delete all contents, including files
  * @global type $UNC_GALLERY
  */
 function unc_gallery_admin_delete_everything() {
@@ -475,14 +451,38 @@ function unc_gallery_admin_delete_everything() {
         // delete all images
         unc_tools_recurse_files($UNC_GALLERY['upload_path'], 'unlink', 'rmdir');
 
-
-        // delete all data
-        $sql1 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_img";
-        $wpdb->get_results($sql1);
-        $sql2 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_att";
-        $wpdb->get_results($sql2);
+        // delete all the data
+        unc_gallery_admin_remove_data();
 
         echo "Done!";
     }
+    wp_die();
+}
+
+/**
+ * Wipes all data from the system databases
+ * 
+ * @global type $UNC_GALLERY
+ * @global type $wpdb
+ */
+function unc_gallery_admin_remove_data() {
+    global $UNC_GALLERY, $wpdb;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    ob_clean();
+
+    if (!current_user_can('manage_options')) {
+        echo "Cannot remove data, you are not admin!";
+        wp_die();
+    }
+    // delete all existing data to make sure
+    $sql1 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_img";
+    $wpdb->get_results($sql1);
+    $sql2 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_att";
+    $wpdb->get_results($sql2);
+
+    // get the Process ID for the Ajax live update
+    $process_id = filter_input(INPUT_POST, 'process_id');
+    unc_tools_progress_update($process_id, "Cleared existing data!", 100);
+    unc_tools_progress_update($process_id, false);
     wp_die();
 }
