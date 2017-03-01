@@ -58,7 +58,7 @@ function unc_filter_image_list($filter_arr) {
     $sql_str_arr = array('', 'att_name', 'att_value');
     for ($i=1; $i<= count($filter_arr); $i++) {
         if (isset($filter_arr[$i])) {
-            $filter_arr_str = esc_sql($filter_arr[$i]);
+            $filter_arr_str = esc_sql(urldecode($filter_arr[$i]));
             $sql_str_filter .= "AND {$sql_str_arr[$i]}='$filter_arr_str' ";
         }
     }
@@ -126,19 +126,17 @@ function unc_filter_choice($filter_arr) {
         }
     }
     if (count($filter_arr) == 3 ) { // we have enough info for the image list, count result
-        $att_value_filter = esc_sql($filter_arr[2]);
+        $att_value_filter = esc_sql(urldecode($filter_arr[2]));
         $count_sql = "SELECT count(`file_id`) as `counter` FROM $att_table_name
             LEFT JOIN $img_table_name ON id=file_id
             WHERE `att_group`='$group_filter' AND `att_name`='$att_name_filter' AND `att_value`='$att_value_filter'";
         $counter = $wpdb->get_results($count_sql, 'ARRAY_A');
         $row_count = $counter[0]['counter'];
-        $desc2 = "Filtering for $att_name_filter: $att_value_filter";
+        $desc2 = "Filtering for $att_name_filter: " . urldecode($filter_arr[2]);
         if ($row_count > 49) {
-            $desc2  .= "<br>More than 50 images found! ($row_count results)";
+            $desc2  .= "<br>More than 50 images. ($row_count results)";
         }
     }
-
-    //XMPP_ERROR_trigger($names_sql);
 
     $names = $wpdb->get_results($names_sql, 'ARRAY_A');
 
@@ -162,7 +160,8 @@ function unc_filter_choice($filter_arr) {
             $out .= "<ul>\n";
             foreach ($names as $N) {
                 $nice_term = ucwords(str_replace("_", " ", $N['term']));
-                $out .= "<li onclick=\"filter_select('$filter_key', '{$N['term']}', '$filter_group', '$filter_name', 'list')\">$nice_term</li>\n";
+                $fixed_term = urlencode($N['term']);
+                $out .= "<li onclick=\"filter_select('$filter_key', '$fixed_term', '$filter_group', '$filter_name', 'list')\">$nice_term</li>\n";
             }
             $out .= "</ul>\n";
         } else { // make columns
@@ -173,6 +172,7 @@ function unc_filter_choice($filter_arr) {
             $out .= "<div class=\"filter_row\">\n";
             foreach ($names as $N) {
                 $nice_term = ucwords(str_replace("_", " ", $N['term']));
+                $fixed_term = urlencode($N['term']);
                 $first_letter = mb_substr($nice_term, 0, 1);
                 if ($first_letter !== $last_letter) {
                     if (!$start) {
@@ -188,7 +188,8 @@ function unc_filter_choice($filter_arr) {
                     $out .= "<div class=\"filter_column\">\n<h3>$first_letter</h3>\n"
                         . "<ul>\n";
                 }
-                $out .= "<li onclick=\"filter_select('$filter_key', '{$N['term']}', '$filter_group', '$filter_name', 'list')\">$nice_term</li>\n";
+                
+                $out .= "<li onclick=\"filter_select('$filter_key', '$fixed_term', '$filter_group', '$filter_name', 'list')\">$nice_term</li>\n";
                 $last_letter = $first_letter;
                 $start = false;
             }
@@ -661,6 +662,9 @@ function unc_tags_apply($F) {
 /**
  * Compare existing post categories with the image and fixing the missing
  *
+ * TODO: We need to check that a category has the proper upper level so that we
+ * can have the same sub-category name in 2 different upper categories.
+ *
  * @global type $UNC_GALLERY
  * @param type $file_data
  * @return type
@@ -681,6 +685,7 @@ function unc_categories_apply($file_data) {
     $curr_cats = array();
     // re-format the currnet categories so we can compare them
 
+    // get the categories applied for this post
     foreach (get_the_category($post_id) as $c_cat) {
         $cat_name_id = strtolower($c_cat->name);
         $curr_cats[$cat_name_id]['name'] = $c_cat->name;
@@ -688,7 +693,7 @@ function unc_categories_apply($file_data) {
     }
     //XMPP_ERROR_trace("got existing post categories:", $curr_cats);
 
-    // get all cats in nthe system
+    // get all cats in the system
     $wp_all_cats = get_categories();
     $all_cat_index = array();
     // reformat them so we can search easier
@@ -702,10 +707,11 @@ function unc_categories_apply($file_data) {
     // find out what the current setting is
     $setting = $UNC_GALLERY['post_categories'];
     // split into array:
-    $setting_array = explode("_", $setting);
+    $setting_array = explode("_", $setting); // this will be filled with strings such as 'city' etc
     $data_type = array_shift($setting_array); // remove the XPM/EXIF from the front of the array
     // iterate all files and get all the different levels of categories
     $cat_sets = array();
+
 
     $has_cats = false;
     // we go through all files in the post and get all categories for this post uniquely
@@ -744,7 +750,7 @@ function unc_categories_apply($file_data) {
             continue;
         }
         foreach ($cat_set as $cat) {
-            //XMPP_ERROR_trace("Checking cat:", $cat);
+            // XMPP_ERROR_trace("Checking cat:", $cat);
             // check if the post has a category of that name already
             $cat_id = strtolower($cat);
             if ($cat == '%%none%%') {
@@ -758,13 +764,13 @@ function unc_categories_apply($file_data) {
                 continue;
             }
             // check if the current cat already exists in wordpress
-            if (!isset($all_cat_index[$cat_id])) {
-                $this_id = wp_create_category($cat, $next_parent);
-                //XMPP_ERROR_trace("Creating category $cat, ID: $this_id, Parent $next_parent");
-            } else {
+            // XMPP_ERROR_send_msg("checking if $cat_id with parent $next_parent exists");
+            if (isset($all_cat_index[$cat_id]) && $all_cat_index[$cat_id]['parent'] == $next_parent) {
                 //XMPP_ERROR_trace("Cat exists already, get parent for next level", $all_cat_index[$cat_id]['parent']);
                 $this_id = $all_cat_index[$cat_id]['id'];
-
+            } else {
+                $this_id = wp_create_category($cat, $next_parent);
+                //XMPP_ERROR_trace("Creating category $cat, ID: $this_id, Parent $next_parent");
             }
             $post_categories[] = $this_id; // collect the categories to add them to the post
             $next_parent = $this_id;
