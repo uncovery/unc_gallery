@@ -317,8 +317,7 @@ function unc_image_info_read($file_path) {
 }
 
 /**
- * On upload, get all information from a file and write it to a PHP file
- * TODO: Move this to MySQL / SQLite
+ * On upload, get all information from a file and write it an array
  *
  * @global type $UNC_GALLERY
  * @param type $file_path
@@ -688,12 +687,15 @@ function unc_xmp_fix($xmp_raw) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // custom location string
-    $val_array = array('country', 'state', 'city', 'location');
+    $val_array = array(
+        'country', 'state', 'city', 'location',
+    );
     $loc_arr = array();
     foreach ($val_array as $loc_type) {
         if (isset($xmp_raw[$loc_type])) {
             $loc_arr[$loc_type] = $xmp_raw[$loc_type];
         } else {
+            XMPP_ERROR_trigger("Loc string for $loc_type is not set!");
             $loc_arr[$loc_type] = 'n/a';
             $xmp_raw[$loc_type] = 'n/a';
         }
@@ -959,14 +961,14 @@ function unc_iptc_fix($iptc_raw) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // location info
-    $val_array = array('country', 'province_state', 'city', 'sublocation');
+    $val_array = array('country','province_state','city','sublocation');
     $loc_arr = array();
-    foreach ($val_array as $loc_type) {
-        if (isset($iptc_raw[$loc_type])) {
-            $loc_arr[$loc_type] = $iptc_raw[$loc_type];
+    foreach ($val_array as $loc_id) {
+        if (isset($iptc_raw[$loc_id])) {
+            $loc_arr[$loc_id] = $iptc_raw[$loc_id];
         } else {
-            $loc_arr[$loc_type] = 'n/a';
-            $iptc_raw[$loc_type] = 'n/a';
+            $loc_arr[$loc_id] = 'n/a';
+            $iptc_raw[$loc_id] = 'n/a';
         }
     }
     $loc_str = implode("|", $loc_arr);
@@ -1046,6 +1048,8 @@ function unc_iptc_date_write($file_path, $date_str) {
 /**
  * Class to write IPTC data to a file
  * Source: http://php.net/manual/en/function.iptcembed.php
+ *
+ * TODO: Upgrade to PHP7 (PHP 4 constructors are now deprecated)
  */
 class iptc {
     var $meta=Array();
