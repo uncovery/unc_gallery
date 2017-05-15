@@ -188,7 +188,7 @@ function unc_filter_choice($filter_arr) {
                     $out .= "<div class=\"filter_column\">\n<h3>$first_letter</h3>\n"
                         . "<ul>\n";
                 }
-                
+
                 $out .= "<li onclick=\"filter_select('$filter_key', '$fixed_term', '$filter_group', '$filter_name', 'list')\">$nice_term</li>\n";
                 $last_letter = $first_letter;
                 $start = false;
@@ -437,6 +437,17 @@ function unc_filter_map_gps_convert($latitudeFrom, $longitudeFrom, $latitudeTo, 
     return $angle * $earthRadius;
 }
 
+
+/**
+ * Get all the map locations for the current level
+ * 
+ * @global type $UNC_GALLERY
+ * @global type $wpdb
+ * @param type $levels
+ * @param type $type
+ * @param type $next_level
+ * @return type
+ */
 function unc_filter_map_locations($levels, $type, $next_level) {
     global $UNC_GALLERY, $wpdb;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
@@ -455,7 +466,7 @@ function unc_filter_map_locations($levels, $type, $next_level) {
             LEFT JOIN `$att_table_name` as gps_list ON loc_list.file_id=gps_list.file_id
             LEFT JOIN `$att_table_name` as item_list on loc_list.file_id=item_list.file_id
             WHERE loc_list.`att_group`='xmp' AND loc_list.att_name = 'loc_str' AND loc_list.att_value LIKE '$levels_sql' AND item_list.att_name='$next_level' AND gps_list.att_name='gps'
-            GROUP BY item_list.att_value";
+            GROUP BY gps_list.att_value"; // 
     }
 
     $locations = $wpdb->get_results($sql, 'ARRAY_A');
@@ -479,7 +490,8 @@ function unc_filter_map_locations($levels, $type, $next_level) {
 
 
 /**
- * iterate an array and
+ * get the average of all locations in the list to center the GPS
+ * 
  */
 function unc_filter_gps_avg($array) {
     global $UNC_GALLERY;
