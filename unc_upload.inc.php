@@ -110,12 +110,14 @@ function unc_uploads_iterate_files() {
             $count = count($F["name"]);
             unc_tools_progress_update($process_id, "Found $count files $import_path", 0);
         } else {
-            echo $import_path . " cannot be accessed or does not exist! Make sure its readable by the apache user!";
+            $msg = '<p style=\"color: #F00;\">' . $import_path . " cannot be accessed or does not exist! Make sure its readable by the apache user!</p>";
+            unc_tools_progress_update($process_id, $msg, 0);
             wp_die();
         }
     } else if (empty($_FILES) && empty($_POST) && isset($_SERVER['REQUEST_METHOD']) && strtolower($_SERVER['REQUEST_METHOD']) == 'post'){ //catch file overload error...
             $postMax = ini_get('post_max_size'); //grab the size limits...
-            echo "<p style=\"color: #F00;\">\nPlease note files larger than {$postMax} will result in this error!<br>Please be advised this is not a limitation in the CMS, This is a limitation of the hosting server.<br>For various reasons they limit the max size of uploaded files, if you have access to the php ini file you can fix this by changing the post_max_size setting.<br> If you can't then please ask your host to increase the size limits, or use the FTP uploaded form</p>"; // echo out error and solutions...
+            $msg = "<p style=\"color: #F00;\">\nPlease note files larger than {$postMax} will result in this error!<br>Please be advised this is not a limitation in the CMS, This is a limitation of the hosting server.<br>For various reasons they limit the max size of uploaded files, if you have access to the php ini file you can fix this by changing the post_max_size setting.<br> If you can't then please ask your host to increase the size limits, or use the FTP uploaded form</p>"; // echo out error and solutions...
+            unc_tools_progress_update($process_id, $msg, 0);
             wp_die(); //bounce back to the just filled out form.
     } else {
         $UNC_GALLERY['upload_files'] = $_FILES["userImage"];
@@ -166,6 +168,7 @@ function unc_uploads_iterate_files() {
     for ($i=0; $i < $count; $i++){
         // process one file
         $result_arr = unc_uploads_process_file($i, $overwrite);
+        XMPP_ERROR_trace("File done uploading:", $i);
         $date_str = $result_arr['date'];
         $date_str_arr[] = $date_str;
         $action = $result_arr['action'];
@@ -294,7 +297,7 @@ function unc_uploads_process_file($i, $overwrite) {
     // we need the exif date to know when the image was taken
     $date_str = unc_image_date($sourcePath);
     if (!$date_str) {
-        return array('date'=> false, 'action' => "Cannot read EXIF or IPTC of file $sourcePath");
+        return array('date'=> false, 'action' => "Cannot read EXIF or IPTC date of file $sourcePath");
     }
     $UNC_GALLERY['upload_file_info']['date_str'] = $date_str;
 
@@ -303,7 +306,17 @@ function unc_uploads_process_file($i, $overwrite) {
         return array('date'=> false, 'action' => "'$date_str' is invalid date in EXIF or IPTC");
     }
     // echo "File date is $date_str";
-
+    
+    // check if there is another image with the same date and same filename
+    global $wpdb;
+    $day_string = substr($date_str, 0, 8);
+    $check_sql = "SELECT * FROM `wp_unc_gallery_img` 
+        WHERE (file_time >= '$day_string 00:00:00' AND file_time <= '$day_string 23:59:59') AND file_name='$target_filename' AND file_time <> '$date_str'";
+    $check_files = $wpdb->get_results($check_sql);   
+    if (count($check_files) > 0) {
+        return array('date'=> false, 'action' => "File $target_filename cannot be uploaded since there is already a file with the sane name but a different time on that date");
+    }
+    
     // create all the by-day folders
     $date_obj = unc_date_folder_create($date_str);
     // if it failed return back
