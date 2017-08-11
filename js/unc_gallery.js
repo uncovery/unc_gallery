@@ -137,12 +137,12 @@ function datelist_change(inst) {
 }
 
 
-function filter_select(filter_key, filter_value, filter_group, filter_name, options, inst) {
+function filter_select(filter_key, filter_value, filter_group, filter_name, options, page, inst) {
     jQuery.ajax({
         url: ajaxurl,
         method: 'GET',
         dataType: 'text',
-        data: {action: 'unc_filter_update', filter_key: filter_key, filter_value: filter_value, filter_group: filter_group, filter_name: filter_name, options: options},
+        data: {action: 'unc_filter_update', filter_key: filter_key, filter_value: filter_value, filter_group: filter_group, filter_name: filter_name, page: page, options: options},
         complete: function (response) {
             jQuery('#filter_selector').html(response.responseText);
             window.scrollTo(0,document.body.scrollHeight);
@@ -153,9 +153,9 @@ function filter_select(filter_key, filter_value, filter_group, filter_name, opti
     });
 }
 
-function filter_change(filter_key, filter_group, filter_name, options, inst) {
+function filter_change(filter_key, filter_group, filter_name, options, page, inst) {
     var filter_value = jQuery('#filter').val();
-    filter_select(filter_key, filter_value, filter_group, filter_name, options, inst);
+    filter_select(filter_key, filter_value, filter_group, filter_name, options, page, inst);
 }
 
 function map_filter(position, inst) {
@@ -278,8 +278,8 @@ function unc_gallery_import_images() {
         complete: function (response) {
             unc_gallery_progress_get(process_id, 'import_targetLayer', 'import-process-progress-bar', 'Import', unc_interval);
         },
-        error: function () {
-
+        error: function (request, status, error) {
+            alert(request.responseText);
         }
     });
 }
