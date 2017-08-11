@@ -133,10 +133,13 @@ function unc_gallery_display_var_init($atts = array()) {
     // date
     $keywords = $UNC_GALLERY['keywords'];
 
+    $check = false;
     if ($type == 'day') {
         $check = unc_day_var_init($a);
     } else if ($type == 'filter') {
         $check = unc_filter_var_init($a);
+    } else if ($type == 'image') {
+        // $check = unc_image_var_init($a);
     }
     if (!$check) { // there was some critical error, let's return that
         return false;
@@ -450,7 +453,7 @@ function unc_display_images() {
         </script>'; */
     }
 
-    $summary = "<div class=\"images_summary\">$counter images found.</div>";
+    $summary = "<div class=\"images_summary\">$counter images</div>";
     $out = $header . $featured . $images . $photoswipe . $summary;
 
     if ($D['echo']) {
