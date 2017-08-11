@@ -66,6 +66,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'conversion' => false,
         'unit' => false,
         'description' => 'ISO',
+        'alternates' => array('ISO'),
     ),
     'focal_length' => array(
         'hex' => '0x920A',
@@ -90,28 +91,28 @@ $UNC_GALLERY['codes']['exif'] = array(
     ),
     'gps_lat' => array(
         'hex' => false,
-        'key' => array('GPSLatitudeRef' => 'Hemisphere', 'GPSLatitude' => 'Coordinates'),
+        'key' => array('GPSLatitudeRef' => 'Hemisphere', 'GPSLatitude' => 'Coordinates', 'GPSVersion' => 'Version'),
         'conversion' => 'unc_exif_convert_gps',
         'unit' => false,
         'description' => 'GPS Latitude',
     ),
     'gps_lon' => array(
         'hex' => false,
-        'key' => array('GPSLongitudeRef' => 'Hemisphere', 'GPSLongitude' => 'Coordinates'),
+        'key' => array('GPSLongitudeRef' => 'Hemisphere', 'GPSLongitude' => 'Coordinates', 'GPSVersion' => 'Version'),
         'conversion' => 'unc_exif_convert_gps',
         'unit' => false,
         'description' => 'GPS Longitude',
     ),
     'gps' => array(
         'hex' => false,
-        'key' => array('GPSLatitudeRef' => 'GPSLatitudeRef', 'GPSLatitude' =>'GPSLatitude', 'GPSLongitudeRef' => 'GPSLongitudeRef', 'GPSLongitude' => 'GPSLongitude'),
+        'key' => array('GPSLatitudeRef' => 'GPSLatitudeRef', 'GPSLatitude' =>'GPSLatitude', 'GPSLongitudeRef' => 'GPSLongitudeRef', 'GPSLongitude' => 'GPSLongitude', 'GPSVersion' => 'Version'),
         'conversion' => 'unc_exif_convert_gps_combo',
         'unit' => false,
         'description' => 'GPS Coordinates',
     ),
     'gps_link' => array(
         'hex' => false,
-        'key' => array('GPSLatitudeRef' => 'GPSLatitudeRef', 'GPSLatitude' =>'GPSLatitude', 'GPSLongitudeRef' => 'GPSLongitudeRef', 'GPSLongitude' => 'GPSLongitude'),
+        'key' => array('GPSLatitudeRef' => 'GPSLatitudeRef', 'GPSLatitude' =>'GPSLatitude', 'GPSLongitudeRef' => 'GPSLongitudeRef', 'GPSLongitude' => 'GPSLongitude', 'GPSVersion' => 'Version'),
         'conversion' => 'unc_exif_convert_gps_link',
         'unit' => false,
         'description' => 'Map',
@@ -333,6 +334,7 @@ function unc_image_info_write($file_path) {
     }
 
     if ($UNC_GALLERY['image_data_method'] == 'exiftool') {
+        XMPP_ERROR_trigger("using exiftool");
         $all_data = unc_image_info_exiftool($file_path);
         if (!$all_data) {
             return false;
@@ -345,8 +347,6 @@ function unc_image_info_write($file_path) {
         $xmp_raw = unc_xmp_get($file_path);
         $iptc_raw = unc_iptc_get($file_path);
     }
-
-    XMPP_ERROR_trigger("test exiftool");
 
     // fix all the data sets
     $exif = unc_exif_fix($exif_raw);
@@ -365,7 +365,7 @@ function unc_image_info_write($file_path) {
 
     $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
     if (!$dtime) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("Daet could not be converted", $file_date);}
+        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("Date could not be converted", $file_date);}
     }
 
     $time_stamp = $dtime->getTimestamp(); // time stamp is easier to compare
@@ -432,35 +432,45 @@ function unc_image_info_write($file_path) {
                 // TODO: Create a single SQL line instead of entering every line by itself
                 // should make the process much faster
                 foreach ($value as $arr_value) {
+                    $data_arr = array(
+                        'file_id' => $insert_id,
+                        'att_group' => $set_name,
+                        'att_name' => $name,
+                        'att_value' => $arr_value,
+                    );
                     $wpdb->insert(
                         $wpdb->prefix . "unc_gallery_att",
-                        array(
-                            'file_id' => $insert_id,
-                            'att_group' => $set_name,
-                            'att_name' => $name,
-                            'att_value' => $arr_value,
-                        )
+                        $data_arr
                     );
                     $insert_id2 = $wpdb->insert_id;
                     if ($insert_id2 == 0) {
-                        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("tried to write array info for attributes, already exists in database", $file_path);}
+                        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("tried to write array info for attributes, already exists in database", $data_arr);}
                         return false;
                     }
                 }
             } else {
+                $data_arr = array(
+                    'file_id' => $insert_id,
+                    'att_group' => $set_name,
+                    'att_name' => $name,
+                    'att_value' => $value,
+                );
                 $wpdb->insert(
                     $wpdb->prefix . "unc_gallery_att",
-                    array(
-                        'file_id' => $insert_id,
-                        'att_group' => $set_name,
-                        'att_name' => $name,
-                        'att_value' => $value,
-                    )
+                    $data_arr
                 );
                 $insert_id2 = $wpdb->insert_id;
                 if ($insert_id2 == 0) {
-                    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("tried to write string info for attributes, already exists in database", $file_path);}
-                    return false;
+                    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("tried to write string info for attributes, already exists in database", $data_arr);}
+                    $wpdb->replace(
+                        $wpdb->prefix . "unc_gallery_att",
+                        $data_arr
+                    );
+                    $replace_id = $wpdb->insert_id;
+                    if ($replace_id == 0) {
+                        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("tried to replace string info for attributes, failed!", $data_arr);}
+                        return false;
+                    }
                 }
             }
             // insert into global var
@@ -519,7 +529,7 @@ function unc_image_info_exiftool($file_path) {
                         $file_data[$our_set][$key_name] = $D[$json_set][$key_name];
                     }
                 } else if (isset($D[$json_set][$key])) {
-                    $file_data[$our_set][$code_key] = $D[$json_set][$key];
+                    $file_data[$our_set][$key] = $D[$json_set][$key];
                 }
             }
         }
@@ -534,6 +544,8 @@ function unc_image_info_exiftool($file_path) {
     $replace_pattern = '$1-$2-$3';
     $correct_date = preg_replace($pattern, $replace_pattern, $D['EXIF']['CreateDate']);
     $file_data['exif']['created'] = $correct_date;
+
+    XMPP_ERROR_trace("Final Exif", $file_data);
 
     // XMPP_ERROR_trace("EXIFTOOL", $file_data);
     return $file_data;
@@ -768,12 +780,15 @@ function unc_exif_fix($exif) {
     $data = array();
     // we only take the EXIF data we need
     foreach ($UNC_GALLERY['codes']['exif'] as $code => $C) {
+        XMPP_ERROR_trace("checking '$code'", $C);
         // we artificially added the filename as an EXIF info to make the admin menu easier
         $hex_tag =  'UndefinedTag:' . $C['hex'];
         if (is_array($C['key'])) { // gps for example is made out of multiple keys
             $val = array();
             foreach ($C['key'] as $key_name => $key_value) {
                 if (!isset($exif[$key_name])) { // we only get this if all sub-tags exist
+                    XMPP_ERROR_trace("Key $key_name does not exit in", $exif);
+
                     continue 2; // continue to the next file in the outer loop
                 }
                 $val[$key_value] = $exif[$key_name];
@@ -784,8 +799,11 @@ function unc_exif_fix($exif) {
             $val = $exif[$hex_tag];
         } else {
             // value is not set
+            XMPP_ERROR_trace("Exif code '$code' not found", $C);
             continue;
         }
+        XMPP_ERROR_trace("val status", $val);
+        // run the conversion function
         if ($C['conversion']) {
             $func = $C['conversion'];
             $val_conv = $func($val);
@@ -797,6 +815,7 @@ function unc_exif_fix($exif) {
         }
         $data[$code] = $val_conv;
     }
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("unc_exif_fix results", $data);}
     return $data;
 }
 
@@ -820,8 +839,8 @@ function unc_exif_convert_gps_combo($gps_arr) {
     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // 'GPSLatitudeRef', 'GPSLatitude', 'GPSLongitudeRef', 'GPSLongitude'
-    $lat_coords = unc_exif_convert_gps(array('Hemisphere' => $gps_arr['GPSLatitudeRef'], 'Coordinates' => $gps_arr['GPSLatitude']));
-    $lon_coords = unc_exif_convert_gps(array('Hemisphere' => $gps_arr['GPSLongitudeRef'], 'Coordinates' => $gps_arr['GPSLongitude']));
+    $lat_coords = unc_exif_convert_gps(array('Hemisphere' => $gps_arr['GPSLatitudeRef'], 'Coordinates' => $gps_arr['GPSLatitude'], 'Version' => $gps_arr['Version']));
+    $lon_coords = unc_exif_convert_gps(array('Hemisphere' => $gps_arr['GPSLongitudeRef'], 'Coordinates' => $gps_arr['GPSLongitude'], 'Version' => $gps_arr['Version']));
     return "$lat_coords,$lon_coords";
 }
 
@@ -842,15 +861,32 @@ function unc_exif_convert_gps($gps_arr) {
     if (!isset($gps_arr['Hemisphere'])) {
         XMPP_ERROR_trigger("GPS Hemisphere not set!");
     }
+
+    if (!isset($gps_arr['Version'])) {
+        XMPP_ERROR_trigger("GPS Version is not set! ");
+        return;
+    }
+
     $coord = $gps_arr['Coordinates'];
     $hemi = $gps_arr['Hemisphere'];
+    $gps_version = $gps_arr['Version'];
 
-    $degrees = count($coord) > 0 ? unc_exif_convert_gps_2_Num($coord[0]) : 0;
-    $minutes = count($coord) > 1 ? unc_exif_convert_gps_2_Num($coord[1]) : 0;
-    $seconds = count($coord) > 2 ? unc_exif_convert_gps_2_Num($coord[2]) : 0;
+    if ($gps_arr['Version'] == '2.2.0.0') {
+        $matches = false;
+        preg_match("/(?'degree'[0-9]*) deg (?'minutes'[0-9]*)' (?'seconds'[\.0-9]*)\"/", $coord, $matches, PREG_OFFSET_CAPTURE);
+        $degrees = $matches['degree'][0];
+        $minutes = $matches['minutes'][0];
+        $seconds =  $matches['seconds'][0];
+    } else {
+        $degrees = count($coord) > 0 ? unc_exif_convert_gps_2_Num($coord[0]) : 0;
+        $minutes = count($coord) > 1 ? unc_exif_convert_gps_2_Num($coord[1]) : 0;
+        $seconds = count($coord) > 2 ? unc_exif_convert_gps_2_Num($coord[2]) : 0;
+    }
 
     $flip = (in_array($hemi, array('W', 'West')) || in_array($hemi, array('S', 'South'))) ? -1 : 1;
     $out = $flip * ($degrees + $minutes / 60 + $seconds / 3600);
+
+    XMPP_ERROR_trace("GPS result:", $out);
     return $out;
 }
 
@@ -958,7 +994,7 @@ function unc_iptc_get($file_path) {
  * @return type
  */
 function unc_iptc_fix($iptc_raw) {
-    global $UNC_GALLERY;
+     global $UNC_GALLERY;
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // location info
     $val_array = array('country','province_state','city','sublocation');
@@ -1012,7 +1048,7 @@ function unc_iptc_convert_date($date, $time) {
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $fulldate = $date . " " . $time;
-    $search_pattern = '/(\d\d\d\d)(\d\d)(\d\d) (\d\d)(\d\d)(\d\d)/';
+    $search_pattern = '/(\d\d\d\d).?(\d\d).?(\d\d) (\d\d).?(\d\d).?(\d\d)/';
     $replace_pattern = '$1-$2-$3 $4:$5:$6';
     $fixed_date = preg_replace($search_pattern, $replace_pattern, $fulldate);
     return $fixed_date;
@@ -1046,7 +1082,7 @@ function unc_iptc_date_write($file_path, $date_str) {
 
 
 /**
- * Class to write IPTC data to a file
+ * Class to read & write IPTC data to a file
  * Source: http://php.net/manual/en/function.iptcembed.php
  *
  * TODO: Upgrade to PHP7 (PHP 4 constructors are now deprecated)
@@ -1055,7 +1091,10 @@ class iptc {
     var $meta=Array();
     var $hasmeta=false;
     var $file=false;
-    function iptc($filename) {
+    
+    // changed this from function iptc to construct_ipct to be PHP 7 compatible.
+    // no idea if this works, needs to be tested.
+    function construct_iptc($filename) {
         $info = false;
         getimagesize($filename, $info);
         $this->hasmeta = isset($info["APP13"]);
@@ -1065,6 +1104,7 @@ class iptc {
         $this->file = $filename;
     }
 
+    // set a specific tag
     function set($tag, $data) {
         global $UNC_GALLERY;
         $id = $UNC_GALLERY['codes']['iptc'][$tag]['code'];
@@ -1072,6 +1112,7 @@ class iptc {
         $this->hasmeta=true;
     }
 
+    // get a specific tag
     function get($tag) {
         global $UNC_GALLERY;
         $id = $UNC_GALLERY['codes']['iptc'][$tag]['code'];
@@ -1082,6 +1123,7 @@ class iptc {
         }
     }
 
+    // dump all tags
     function dump() {
         global $UNC_GALLERY;
         $out = array();
@@ -1120,6 +1162,8 @@ class iptc {
                 . $val;
         }
     }
+    
+    // write tags to file
     function write() {
         global $UNC_GALLERY;
         if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
@@ -1138,7 +1182,8 @@ class iptc {
         fclose($fp);
     }
 
-    #requires GD library installed
+    // requires GD library installed
+    // remove all tags from a file
     function removeAllTags() {
         $this->hasmeta=false;
         $this->meta=Array();
