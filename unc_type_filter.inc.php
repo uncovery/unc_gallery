@@ -24,7 +24,7 @@ function unc_filter_var_init($a) {
     } else {
         $filter_arr = explode("|", $filter_str);
     }
-    if (count($filter_arr) == 3) {
+    if (count($filter_arr) == 4) {
         $files = unc_filter_image_list($filter_arr);
     } else {
         $files = array();
@@ -55,19 +55,31 @@ function unc_filter_image_list($filter_arr) {
     $group_filter = esc_sql($filter_arr[0]);
 
     $sql_str_filter = '';
-    $sql_str_arr = array('', 'att_name', 'att_value');
-    for ($i=1; $i<= count($filter_arr); $i++) {
-        if (isset($filter_arr[$i])) {
+    $sql_str_arr = array(false, 'att_name', 'att_value', false); // we skip the last value since that is the page fo the offset
+    for ($i=0; $i<= count($filter_arr); $i++) { 
+        if (isset($filter_arr[$i]) && $sql_str_arr[$i]) {
             $filter_arr_str = esc_sql(urldecode($filter_arr[$i]));
-            $sql_str_filter .= "AND {$sql_str_arr[$i]}='$filter_arr_str' ";
+            $sql_str_filter .= "AND `{$sql_str_arr[$i]}`='$filter_arr_str' ";
         }
+    }
+    
+    $limit = 54;
+    $offset_str = '';
+    
+    $last_val = count($filter_arr) - 1;
+    $page = $filter_arr[$last_val];
+    if ($page > 0) {
+        $offset = $page * $limit;
+        $offset_str = " OFFSET $offset";
     }
 
     $sql = "SELECT `file_path`, `file_time` FROM $att_table_name
         LEFT JOIN $img_table_name ON id=file_id
         WHERE `att_group`='$group_filter' $sql_str_filter
         ORDER BY $img_table_name.file_time DESC
-        LIMIT 50";
+        LIMIT 50$offset_str;";
+    
+    XMPP_ERROR_trace(__FUNCTION__ . " SQL", $sql);
 
     $files = $wpdb->get_results($sql, 'ARRAY_A');
     $myfiles = array();
@@ -121,11 +133,11 @@ function unc_filter_choice($filter_arr) {
         $filter_key = 'att_value';
         $filter_group = $filter_arr[0];
         $filter_name = $filter_arr[1];
-        if (count($filter_arr) < 3 ) {
+        if (count($filter_arr) < 4 ) {
             $desc1 = "Please select filter field value:&nbsp;";
         }
     }
-    if (count($filter_arr) == 3 ) { // we have enough info for the image list, count result
+    if (count($filter_arr) >= 3 ) { // we have enough info for the image list, count result
         $att_value_filter = esc_sql(urldecode($filter_arr[2]));
         $count_sql = "SELECT count(`file_id`) as `counter` FROM $att_table_name
             LEFT JOIN $img_table_name ON id=file_id
@@ -133,8 +145,11 @@ function unc_filter_choice($filter_arr) {
         $counter = $wpdb->get_results($count_sql, 'ARRAY_A');
         $row_count = $counter[0]['counter'];
         $desc2 = "Filtering for $att_name_filter: " . urldecode($filter_arr[2]);
-        if ($row_count > 49) {
-            $desc2  .= "<br>More than 50 images. ($row_count results)";
+        if ($row_count > 50) {
+            $next_page = $filter_arr[3] + 1;
+            $display_page = $next_page;
+            $desc2  .= "<br>More than 50 images found, showing page $display_page. ($row_count results)"
+                . " <span onclick=\"filter_select('$filter_key', '{$filter_arr[2]}', '$filter_group', '$filter_name', 'list', $next_page)\">Next Page</span>";
         }
     }
 
@@ -146,7 +161,7 @@ function unc_filter_choice($filter_arr) {
     // display the optional tag list
     $out = '';
     if (in_array('dropdown', $options)) {
-        $out .=  $desc1 . "<select id=\"filter\" onchange=\"filter_change('$filter_key', '$filter_group', '$filter_name', 'dropdown')\">\n"
+        $out .=  $desc1 . "<select id=\"filter\" onchange=\"filter_change('$filter_key', '$filter_group', '$filter_name', 'dropdown', 0)\">\n"
             . "<option value=\"false\" selected=\"selected\">Please select</option>\n";
         foreach ($names as $N) {
             $nice_term = ucwords(str_replace("_", " ", $N['term']));
@@ -161,7 +176,7 @@ function unc_filter_choice($filter_arr) {
             foreach ($names as $N) {
                 $nice_term = ucwords(str_replace("_", " ", $N['term']));
                 $fixed_term = urlencode($N['term']);
-                $out .= "<li onclick=\"filter_select('$filter_key', '$fixed_term', '$filter_group', '$filter_name', 'list')\">$nice_term</li>\n";
+                $out .= "<li onclick=\"filter_select('$filter_key', '$fixed_term', '$filter_group', '$filter_name', 'list', 0)\">$nice_term</li>\n";
             }
             $out .= "</ul>\n";
         } else { // make columns
@@ -189,7 +204,7 @@ function unc_filter_choice($filter_arr) {
                         . "<ul>\n";
                 }
 
-                $out .= "<li onclick=\"filter_select('$filter_key', '$fixed_term', '$filter_group', '$filter_name', 'list')\">$nice_term</li>\n";
+                $out .= "<li onclick=\"filter_select('$filter_key', '$fixed_term', '$filter_group', '$filter_name', 'list', 0)\">$nice_term</li>\n";
                 $last_letter = $first_letter;
                 $start = false;
             }
@@ -221,7 +236,6 @@ function unc_filter_map_data($type) {
     if (strlen($UNC_GALLERY['google_api_key']) < 1) {
         return "You need to set a google API key in your Uncovery Gallery Configuration to use Google Maps!";
     }
-
 
     if ($type == 'xmp') {
         $levels = array('country', 'state', 'city', 'location');
@@ -259,6 +273,7 @@ function unc_filter_map_data($type) {
     $locations_details = unc_filter_map_locations($my_levels, $type, $add_level);
     // var_dump($locations);
     if (count($locations_details) == 0) {
+        XMPP_ERROR_trigger("Map Location invalid");
         return "Could not find any results on this location;";
     }
 
@@ -440,7 +455,7 @@ function unc_filter_map_gps_convert($latitudeFrom, $longitudeFrom, $latitudeTo, 
 
 /**
  * Get all the map locations for the current level
- * 
+ *
  * @global type $UNC_GALLERY
  * @global type $wpdb
  * @param type $levels
@@ -466,8 +481,10 @@ function unc_filter_map_locations($levels, $type, $next_level) {
             LEFT JOIN `$att_table_name` as gps_list ON loc_list.file_id=gps_list.file_id
             LEFT JOIN `$att_table_name` as item_list on loc_list.file_id=item_list.file_id
             WHERE loc_list.`att_group`='xmp' AND loc_list.att_name = 'loc_str' AND loc_list.att_value LIKE '$levels_sql' AND item_list.att_name='$next_level' AND gps_list.att_name='gps'
-            GROUP BY gps_list.att_value"; // 
+            GROUP BY gps_list.att_value"; //
     }
+
+    XMPP_ERROR_trace("map location SQL", $sql);
 
     $locations = $wpdb->get_results($sql, 'ARRAY_A');
 
@@ -491,7 +508,7 @@ function unc_filter_map_locations($levels, $type, $next_level) {
 
 /**
  * get the average of all locations in the list to center the GPS
- * 
+ *
  */
 function unc_filter_gps_avg($array) {
     global $UNC_GALLERY;
@@ -525,7 +542,8 @@ function unc_filter_update(){
     $filter_group = filter_input(INPUT_GET, 'filter_group', FILTER_SANITIZE_STRING);
     $filter_name = filter_input(INPUT_GET, 'filter_name', FILTER_SANITIZE_STRING);
     $options = filter_input(INPUT_GET, 'options', FILTER_SANITIZE_STRING);
-
+    $page_raw = filter_input(INPUT_GET, 'page', FILTER_SANITIZE_STRING);
+    
     $filter_str = '';
     if (strlen($filter_group) > 1) { // we have a group set
         $filter_str = $filter_group;
@@ -543,6 +561,11 @@ function unc_filter_update(){
     if ($filter_key == 'att_value' && $filter_value <> 'false') {
         $filter_str .= "|$filter_value";
     }
+    
+    $page = intval($page_raw);
+    
+    $filter_str .= "|$page";
+    
     // the following line has ECHO = FALSE because we do the echo here
     unc_gallery_display_var_init(array('type' => 'filter', 'filter' => $filter_str, 'echo' => false, 'options' => $options));
     ob_clean();
