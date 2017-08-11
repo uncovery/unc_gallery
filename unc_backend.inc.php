@@ -408,9 +408,10 @@ function unc_gallery_admin_rebuild_data() {
     $overall_percentage = 0;
 
     $text = '';
+    $file_no = 0;
     foreach ($target_folders as $date => $folder) {
         $process_step_id++;
-        $text = "Processing $date: <span class=\"file_progress\" style=\"width:0%\">0 %</span>";
+        $text = "Processing $date: <span class=\"file_progress\" style=\"width:0%\">0 % ($file_no files done)</span>";
         $process_step_id = unc_tools_progress_update($process_id, $text, $overall_percentage);
         // iterate all files in a folder, write file info to DB
         $folder_files = glob($folder . "/*");
@@ -423,9 +424,10 @@ function unc_gallery_admin_rebuild_data() {
                 unc_image_info_write($image_file);
                 $folder_percentage += $file_one_percent;
                 $overall_percentage += $overall_one_percent;
+                $file_no++;
             }
             $folder_percentage_text = intval($folder_percentage);
-            $text = "Processing $date: <span class=\"file_progress\" style=\"width:$folder_percentage_text%\">$folder_percentage_text %</span>";
+            $text = "Processing $date: <span class=\"file_progress\" style=\"width:$folder_percentage_text%\">$folder_percentage_text % ($file_no files done)</span>";
             unc_tools_progress_update($process_id, $text, $overall_percentage, $process_step_id);
         }
         $text = "Processing $date: <span class=\"file_progress\" style=\"width:100%\">100 %</span>";
@@ -461,7 +463,7 @@ function unc_gallery_admin_delete_everything() {
 
 /**
  * Wipes all data from the system databases
- * 
+ *
  * @global type $UNC_GALLERY
  * @global type $wpdb
  */
