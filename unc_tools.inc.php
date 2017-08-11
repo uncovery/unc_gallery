@@ -449,16 +449,17 @@ function unc_tools_bytes_get($ini_val) {
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $val = trim($ini_val);
     $last = strtolower($val[strlen($val)-1]);
+    $intval = intval($val);
     switch($last) {
         // The 'G' modifier is available since PHP 5.1.0
         case 'g':
-            $val *= 1024;
+            $intval *= 1024000000;
         case 'm':
-            $val *= 1024;
+            $intval *= 1024000;
         case 'k':
-            $val *= 1024;
+            $intval *= 1024;
     }
-    return $val;
+    return $intval;
 }
 
 /**
@@ -617,6 +618,11 @@ function unc_tools_date_path($date) {
  * @param type $string
  */
 function unc_tools_divide_string($string) {
+    global $UNC_GALLERY;
+    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    if (!strstr($string, "/")) {
+        return $string;
+    }
     $f = explode("/", $string);
     $result = $f[0] / $f[1];
     return number_format($result, 1);
