@@ -131,7 +131,7 @@ function unc_mysql_db_create() {
         file_name VARCHAR(128) NOT NULL,
         file_path VARCHAR(256) NOT NULL,
         UNIQUE KEY `id` (`id`),
-        UNIQUE KEY `file_time` (`file_time`,`file_name`);
+        UNIQUE KEY `file_time` (`file_time`,`file_name`)
     ) $charset_collate;";
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('SQL1', $sql_img);}
     dbDelta($sql_img);
@@ -145,7 +145,7 @@ function unc_mysql_db_create() {
         `att_value` tinytext NOT NULL,
         UNIQUE KEY `id` (`att_id`),
         KEY `att_name` (`att_name`),
-        KEY `file_id` (`file_id`);
+        KEY `file_id` (`file_id`)
     ) $charset_collate;";
     if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('SQL2', $sql_att);}
     dbDelta($sql_att);
