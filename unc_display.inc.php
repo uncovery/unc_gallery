@@ -231,7 +231,7 @@ function unc_gallery_display_page() {
     $out = '';
     $selector_div = '';
 
-    if ($D['type'] == 'day') {
+    if ($D['type'] == 'day' && isset($D['dates'][0])) {
         $date = $D['dates'][0];
 
         $datepicker_div = '';
@@ -267,7 +267,7 @@ function unc_gallery_display_page() {
         if (!$date_path) {
             return;
         }
-    } else { // type = filter
+    } else if (isset($D['filter_arr'])) { // type = filter
         $filter_arr = $D['filter_arr'];
 
         if ($filter_arr[1] == 'map') {
@@ -278,6 +278,8 @@ function unc_gallery_display_page() {
                 . unc_filter_choice($filter_arr)
                 . "</div>\n";
         }
+    } else {
+        $selector_div = "No images in the database!";
     }
 
     if ($D['type'] == 'image' || $D['type'] == 'thumb') {
@@ -335,7 +337,7 @@ function unc_display_images() {
     $D = $UNC_GALLERY['display'];
 
     $header = '';
-    if (isset($D['dates'])) {
+    if (isset($D['dates']) && count($D['dates']) > 0) {
         $date_str = $D['dates'][0];
         if (current_user_can('manage_options') && is_admin()) {
             $url = admin_url('admin.php?page=unc_gallery_admin_menu');
@@ -351,6 +353,9 @@ function unc_display_images() {
 
     // get all the files in the folder with attributes
     $files = $D['files'];
+    if (!$files || count($files) == 0) { // we have no files
+        return;
+    }
 
     // display except for skipped files and files out of time range
     $images = '';
@@ -414,9 +419,6 @@ function unc_display_images() {
         }
         $i++;
     }
-    /* if ($D['slideshow']) {
-        $images .= '</ul>';
-    } **/
 
     $photoswipe = '';
     if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
@@ -549,7 +551,7 @@ function unc_display_photoswipe_js($files) {
             index: index
         };
         var uncg_items_' . $slug . ' = [';
-    foreach ($files  as $F) {
+    foreach ($files as $F) {
         $desc = unc_tools_file_desc($F);
         $out .= "
     {
