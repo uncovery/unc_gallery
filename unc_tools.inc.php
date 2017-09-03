@@ -92,7 +92,7 @@ function unc_date_folder_create($date_str) {
     // let's create a date object for the given date
     $date_obj = new DateTime($date_str);
     // both folders, photo and thumbnail are created together
-    $path_arr = array($UNC_GALLERY['photos'], $UNC_GALLERY['thumbnails'], $UNC_GALLERY['file_data']);
+    $path_arr = array($UNC_GALLERY['photos'], $UNC_GALLERY['thumbnails']);
     // iterate them
     foreach ($path_arr as $img_folder) {
         // create the complete folder
@@ -235,10 +235,15 @@ function unc_tools_import_enumerate($path) {
         if (is_dir($file)) { // recurse lower directory
            unc_tools_import_enumerate($file);
         } else {
-           $UNC_GALLERY['import']['tmp_name'][] = $file;
-           $UNC_GALLERY['import']['type'][] = mime_content_type($file);
-           $UNC_GALLERY['import']['name'][] = basename($file);
-           $UNC_GALLERY['import']['error'][] = 0;
+            $UNC_GALLERY['import']['tmp_name'][] = $file;
+            $UNC_GALLERY['import']['type'][] = mime_content_type($file);
+            $UNC_GALLERY['import']['name'][] = basename($file);
+            $is_writable = is_writable($file);
+            if (!$is_writable) {
+               $UNC_GALLERY['import']['error'][] = "File is not writable!";
+            } else {
+               $UNC_GALLERY['import']['error'][] = 0;
+            }
         }
     }
 }
