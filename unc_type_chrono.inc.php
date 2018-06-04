@@ -10,7 +10,6 @@ if (!defined('WPINC')) {
 
 function unc_chrono_var_init($a) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $chrono_str = $a['chrono'];
     if ($chrono_str == '') {
@@ -22,13 +21,11 @@ function unc_chrono_var_init($a) {
     $UNC_GALLERY['display']['chrono_arr'] = $chrono_arr;
     $UNC_GALLERY['display']['files'] = unc_chrono_files($chrono_arr) ;
     $UNC_GALLERY['display']['file'] = false;
-    XMPP_ERROR_trigger("test");
     return true;
 }
 
 function unc_chrono_data($chrono_arr) {
     global $UNC_GALLERY, $wpdb;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $img_table_name = $wpdb->prefix . "unc_gallery_img";
     $count_sql = "SELECT count(`id`) as `counter` FROM $img_table_name;";
@@ -51,7 +48,6 @@ function unc_chrono_data($chrono_arr) {
 
 function unc_chrono_files($chrono_arr) {
     global $UNC_GALLERY, $wpdb;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $img_table_name = $wpdb->prefix . "unc_gallery_img";
 
@@ -60,7 +56,7 @@ function unc_chrono_files($chrono_arr) {
 
     // $last_val = count($chrono_arr) - 1;
     $page = $chrono_arr[0];
-    XMPP_ERROR_trace("page", $page);
+
     if ($page > 0) {
         $offset = $page * $limit;
         $offset_str = " OFFSET $offset";
@@ -93,7 +89,6 @@ function unc_chrono_files($chrono_arr) {
  */
 function unc_chrono_update(){
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
 
     $page_raw = filter_input(INPUT_GET, 'page', FILTER_SANITIZE_STRING);
 
@@ -102,7 +97,7 @@ function unc_chrono_update(){
     $chrono_str = "$page";
 
     // the following line has ECHO = FALSE because we do the echo here
-    unc_gallery_display_var_init(array('type' => 'chrono', 'chrono' => $chrono_str, 'echo' => false));
+    unc_gallery_display_var_init(array('type' => 'chrono', 'chrono' => $chrono_str, 'ajax_show' => 'all'));
     ob_clean();
     echo unc_gallery_display_page();
     wp_die();

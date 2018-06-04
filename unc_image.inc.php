@@ -250,10 +250,8 @@ $UNC_GALLERY['codes']['iptc'] = array(
 
 function unc_image_info_read($file_path) {
     global $UNC_GALLERY, $UNC_FILE_DATA, $wpdb;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, $file_path);}
-
     if (!file_exists($file_path)) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("tried to read info for non-existing file!");}
+
         return false;
     }
 
@@ -272,10 +270,9 @@ function unc_image_info_read($file_path) {
     // TODO: check if the file exists 2x for sanity check, here or somewhere else
 
     if (count($file_data) == 0) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("File not found in DB, reading from file");}
         $check = unc_image_info_write($file_path);
         if (!$check) {
-            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("could not write file data to database!");}
+
         }
         $file_code = md5($date_path . "/" . $file_name . ".php");
         return $UNC_FILE_DATA[$file_code];
@@ -309,7 +306,7 @@ function unc_image_info_read($file_path) {
         }
     }
     if (count($F) == 0) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("did not read any information from file!");}
+        
     }
 
     $file_code = md5($date_path . "/" . $file_name . ".php");
@@ -318,7 +315,7 @@ function unc_image_info_read($file_path) {
 }
 
 /**
- * On upload, get all information from a file and write it an array
+ * On upload, get all information from a file and write it to database
  *
  * @global type $UNC_GALLERY
  * @param type $file_path
@@ -326,15 +323,12 @@ function unc_image_info_read($file_path) {
  */
 function unc_image_info_write($file_path) {
     global $UNC_GALLERY, $UNC_FILE_DATA, $wpdb;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-
     if (!file_exists($file_path)) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("tried to write info for non-existing file!", $file_path);}
+        
         return false;
     }
 
     if ($UNC_GALLERY['image_data_method'] == 'exiftool') {
-        XMPP_ERROR_trigger("using exiftool");
         $all_data = unc_image_info_exiftool($file_path);
         if (!$all_data) {
             return false;
@@ -353,19 +347,15 @@ function unc_image_info_write($file_path) {
     $xmp = unc_xmp_fix($xmp_raw);
     $iptc = unc_iptc_fix($iptc_raw);
 
-    XMPP_ERROR_trace("exif final", $exif);
-
     if (!isset($exif['created'])) {
         $file_date = unc_iptc_convert_date($iptc['created_date'], $iptc['created_time']);
     } else {
         $file_date = $exif['created'];
     }
 
-    XMPP_ERROR_trace("next step, file date: ", $file_date);
-
     $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
     if (!$dtime) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("Date could not be converted", $file_date);}
+        
     }
 
     $time_stamp = $dtime->getTimestamp(); // time stamp is easier to compare
@@ -382,13 +372,12 @@ function unc_image_info_write($file_path) {
     // remove existing file info
     $check = unc_image_info_delete($file_name, $file_date);
     if (!$check) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("Data did not exist in DB, nothing to delete", $file_path);}
+        
     }
 
     $photo_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
     $thumb_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['thumbnails'] . "/$date_path/$file_name");
 
-    XMPP_ERROR_trace("Inserting file into DB", "$file_date, $file_name, $file_path");
     $file_code = md5($date_path . "/" . $file_name . ".php");
     // insert file into DB
     $wpdb->insert(
@@ -402,7 +391,7 @@ function unc_image_info_write($file_path) {
 
     $insert_id = $wpdb->insert_id;
     if ($insert_id == 0) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("tried to write info for file, already exists in database", $file_path);}
+        
         return false;
     }
 
@@ -424,7 +413,6 @@ function unc_image_info_write($file_path) {
         'iptc' => $iptc,
     );
 
-    XMPP_ERROR_trace("Writing file data to DB", $data_sets);
     foreach ($data_sets as $set_name => $set) {
         foreach ($set as $name => $value) {
             // insert into DB
@@ -444,7 +432,7 @@ function unc_image_info_write($file_path) {
                     );
                     $insert_id2 = $wpdb->insert_id;
                     if ($insert_id2 == 0) {
-                        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("tried to write array info for attributes, already exists in database", $data_arr);}
+                        
                         return false;
                     }
                 }
@@ -461,14 +449,14 @@ function unc_image_info_write($file_path) {
                 );
                 $insert_id2 = $wpdb->insert_id;
                 if ($insert_id2 == 0) {
-                    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("tried to write string info for attributes, already exists in database", $data_arr);}
+                    
                     $wpdb->replace(
                         $wpdb->prefix . "unc_gallery_att",
                         $data_arr
                     );
                     $replace_id = $wpdb->insert_id;
                     if ($replace_id == 0) {
-                        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("tried to replace string info for attributes, failed!", $data_arr);}
+                        
                         return false;
                     }
                 }
@@ -482,7 +470,6 @@ function unc_image_info_write($file_path) {
             }
         }
     }
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("finished image info write");}
     return true;
 }
 
@@ -495,7 +482,6 @@ function unc_image_info_write($file_path) {
  */
 function unc_image_info_exiftool($file_path) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $output = '';
     $command = 'exiftool -s -g -a -json -struct -xmp:all -iptc:all -exif:all -file:all "'.$file_path.'"'; //  -composite:all
@@ -505,7 +491,6 @@ function unc_image_info_exiftool($file_path) {
     if (is_null($metadata_array)) { // json error, exiftool does not exist etc.
         return false;
     }
-    XMPP_ERROR_trace("JSON", $metadata_array);
 
     $D = $metadata_array[0];
 
@@ -516,7 +501,6 @@ function unc_image_info_exiftool($file_path) {
     foreach ($data_sets as $our_set => $json_set) {
         // let's iterate our codes and see if they exist in the JSON
         foreach ($UNC_GALLERY['codes'][$our_set] as $code_key => $code_setting) {
-            //XMPP_ERROR_trace("$json_set", $code_key);
             // we check our code contains a key and if it is 'true'
             if (isset($code_setting['key']) && $code_setting['key']) {
                 // then check if it's in the JSON
@@ -545,9 +529,6 @@ function unc_image_info_exiftool($file_path) {
     $correct_date = preg_replace($pattern, $replace_pattern, $D['EXIF']['CreateDate']);
     $file_data['exif']['created'] = $correct_date;
 
-    XMPP_ERROR_trace("Final Exif", $file_data);
-
-    // XMPP_ERROR_trace("EXIFTOOL", $file_data);
     return $file_data;
 }
 
@@ -563,7 +544,6 @@ function unc_image_info_exiftool($file_path) {
  */
 function unc_image_info_delete($file_name, $file_date) {
     global $wpdb, $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // remove existing file info
 
     // $sql = "SELECT id FROM " . $wpdb->prefix . "unc_gallery_img WHERE file_time LIKE %s AND file_name=%s;";
@@ -596,19 +576,19 @@ function unc_image_info_delete($file_name, $file_date) {
  */
 function unc_image_date($file_path) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
     $exif = unc_exif_date($file_path);
     if (is_null($exif)) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "exif empty, getting iptc");}
+        
         $iptc = unc_iptc_date($file_path);
         if ($iptc) {
             return $iptc;
         } else {
-            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "iptc & EXIF failed, bail!");}
+            
             return false;
         }
     } else if (!$exif) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "EXIF Data invalid!");}
+        
         return false;
     } else {
         return $exif;
@@ -626,7 +606,6 @@ function unc_image_date($file_path) {
  */
 function unc_xmp_get($filepath) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $max_size = 1240000; // maximum size read (1MB)
     $chunk_size = 65536; // read 64k at a time
     $start_tag = '<x:xmpmeta';
@@ -670,7 +649,6 @@ function unc_xmp_get($filepath) {
  */
 function unc_xmp_get_array($xmp_raw) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $xmp_arr = array();
     foreach ($UNC_GALLERY['codes']['xmp'] as $key => $D ) {
         $match = false;
@@ -697,7 +675,6 @@ function unc_xmp_get_array($xmp_raw) {
  */
 function unc_xmp_fix($xmp_raw) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // custom location string
     $val_array = array(
         'country', 'state', 'city', 'location',
@@ -707,7 +684,6 @@ function unc_xmp_fix($xmp_raw) {
         if (isset($xmp_raw[$loc_type])) {
             $loc_arr[$loc_type] = $xmp_raw[$loc_type];
         } else {
-            XMPP_ERROR_trigger("Loc string for $loc_type is not set!");
             $loc_arr[$loc_type] = 'n/a';
             $xmp_raw[$loc_type] = 'n/a';
         }
@@ -735,7 +711,6 @@ function unc_xmp_fix($xmp_raw) {
  */
 function unc_image_options_array($var) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $out = array();
     $set = $UNC_GALLERY['codes'][$var];
     foreach ($set as $key => $D) {
@@ -752,7 +727,6 @@ function unc_image_options_array($var) {
  */
 function unc_exif_get($image_path) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // we need to apply a custom error handler to catch 'illegal IFD size' errors
     set_error_handler('unc_exif_catch_errors', E_WARNING);
     // we are setting this ariable to have a bridge into the error handling function
@@ -775,20 +749,16 @@ function unc_exif_get($image_path) {
  */
 function unc_exif_fix($exif) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $data = array();
     // we only take the EXIF data we need
     foreach ($UNC_GALLERY['codes']['exif'] as $code => $C) {
-        XMPP_ERROR_trace("checking '$code'", $C);
         // we artificially added the filename as an EXIF info to make the admin menu easier
         $hex_tag =  'UndefinedTag:' . $C['hex'];
         if (is_array($C['key'])) { // gps for example is made out of multiple keys
             $val = array();
             foreach ($C['key'] as $key_name => $key_value) {
                 if (!isset($exif[$key_name])) { // we only get this if all sub-tags exist
-                    XMPP_ERROR_trace("Key $key_name does not exit in", $exif);
-
                     continue 2; // continue to the next file in the outer loop
                 }
                 $val[$key_value] = $exif[$key_name];
@@ -799,10 +769,8 @@ function unc_exif_fix($exif) {
             $val = $exif[$hex_tag];
         } else {
             // value is not set
-            XMPP_ERROR_trace("Exif code '$code' not found", $C);
             continue;
         }
-        XMPP_ERROR_trace("val status", $val);
         // run the conversion function
         if ($C['conversion']) {
             $func = $C['conversion'];
@@ -815,7 +783,6 @@ function unc_exif_fix($exif) {
         }
         $data[$code] = $val_conv;
     }
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("unc_exif_fix results", $data);}
     return $data;
 }
 
@@ -828,7 +795,6 @@ function unc_exif_fix($exif) {
  */
 function unc_exif_convert_gps_link($gps_arr) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $str = unc_exif_convert_gps_combo($gps_arr);
     $link = "<a href='http://www.google.com/maps/place/$str' target='_blank'>Link</a>";
     return $link;
@@ -837,7 +803,6 @@ function unc_exif_convert_gps_link($gps_arr) {
 
 function unc_exif_convert_gps_combo($gps_arr) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // 'GPSLatitudeRef', 'GPSLatitude', 'GPSLongitudeRef', 'GPSLongitude'
     $lat_coords = unc_exif_convert_gps(array('Hemisphere' => $gps_arr['GPSLatitudeRef'], 'Coordinates' => $gps_arr['GPSLatitude'], 'Version' => $gps_arr['Version']));
     $lon_coords = unc_exif_convert_gps(array('Hemisphere' => $gps_arr['GPSLongitudeRef'], 'Coordinates' => $gps_arr['GPSLongitude'], 'Version' => $gps_arr['Version']));
@@ -853,17 +818,16 @@ function unc_exif_convert_gps_combo($gps_arr) {
  */
 function unc_exif_convert_gps($gps_arr) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // $gps array elelemt 1 is the reference, 0 is the coordinate
     if (!isset($gps_arr['Coordinates'])) {
-        XMPP_ERROR_trigger("GPS Coord not set!");
+
     }
     if (!isset($gps_arr['Hemisphere'])) {
-        XMPP_ERROR_trigger("GPS Hemisphere not set!");
+
     }
 
     if (!isset($gps_arr['Version'])) {
-        XMPP_ERROR_trigger("GPS Version is not set! ");
+
         return;
     }
 
@@ -886,7 +850,6 @@ function unc_exif_convert_gps($gps_arr) {
     $flip = (in_array($hemi, array('W', 'West')) || in_array($hemi, array('S', 'South'))) ? -1 : 1;
     $out = $flip * ($degrees + $minutes / 60 + $seconds / 3600);
 
-    XMPP_ERROR_trace("GPS result:", $out);
     return $out;
 }
 
@@ -899,7 +862,6 @@ function unc_exif_convert_gps($gps_arr) {
  */
 function unc_exif_convert_gps_2_Num($coordPart) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $parts = explode('/', $coordPart);
 
     if (count($parts) <= 0) {
@@ -923,7 +885,6 @@ function unc_exif_convert_gps_2_Num($coordPart) {
  */
 function unc_exif_date($file_path) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     set_error_handler('unc_exif_catch_errors', E_WARNING);
     $exif_data = exif_read_data($file_path);
@@ -949,7 +910,6 @@ function unc_exif_date($file_path) {
  */
 function unc_exif_convert_date($date) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $search_pattern = '/(\d\d\d\d):(\d\d):(\d\d \d\d:\d\d:\d\d)/';
     $replace_pattern = '$1-$2-$3';
     $fixed_date = preg_replace($search_pattern, $replace_pattern, $date);
@@ -981,7 +941,6 @@ function unc_exif_catch_errors($errno, $errstr, $errfile, $errline) {
  */
 function unc_iptc_get($file_path) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $iptc_obj = new IPTC($file_path);
     return $iptc_obj->dump();
@@ -995,7 +954,7 @@ function unc_iptc_get($file_path) {
  */
 function unc_iptc_fix($iptc_raw) {
      global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
     // location info
     $val_array = array('country','province_state','city','sublocation');
     $loc_arr = array();
@@ -1021,14 +980,13 @@ function unc_iptc_fix($iptc_raw) {
  */
 function unc_iptc_date($file_path) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $iptc_obj = new IPTC($file_path);
 
     $iptc_date = $iptc_obj->get('created_date'); //  '20160220',
     $iptc_time = $iptc_obj->get('created_time'); //  '235834',
     if (strlen($iptc_date . $iptc_time) != 14) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "iptc length wrong: $iptc_date / $iptc_time");}
+        
         return false;
     }
     $search_pattern = '/(\d\d\d\d)(\d\d)(\d\d) (\d\d)(\d\d)(\d\d)/';
@@ -1045,7 +1003,6 @@ function unc_iptc_date($file_path) {
  */
 function unc_iptc_convert_date($date, $time) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $fulldate = $date . " " . $time;
     $search_pattern = '/(\d\d\d\d).?(\d\d).?(\d\d) (\d\d).?(\d\d).?(\d\d)/';
@@ -1064,7 +1021,7 @@ function unc_iptc_convert_date($date, $time) {
  */
 function unc_iptc_date_write($file_path, $date_str) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
     // convert date_str to IPTC
     $search_pattern = '/(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)/';
     $date_pattern = '$1$2$3';
@@ -1072,12 +1029,11 @@ function unc_iptc_date_write($file_path, $date_str) {
     $time_pattern = '$4$5$6';
     $iptc_time = preg_replace($search_pattern, $time_pattern, $date_str);
 
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('will write IPTC date in format', "$iptc_date / $iptc_time");}
     // write IPTC Date / time
-    $taget_iptc_obj = new iptc($file_path);
-    $taget_iptc_obj->set('created_date', $iptc_date);
-    $taget_iptc_obj->set('created_time', $iptc_time);
-    $taget_iptc_obj->write();
+    $target_iptc_obj = new iptc($file_path);
+    $target_iptc_obj->set('created_date', $iptc_date);
+    $target_iptc_obj->set('created_time', $iptc_time);
+    $target_iptc_obj->write();
 }
 
 
@@ -1091,12 +1047,9 @@ class iptc {
     var $meta=Array();
     var $hasmeta=false;
     var $file=false;
-    
-    // changed this from function iptc to construct_ipct to be PHP 7 compatible.
-    // no idea if this works, needs to be tested.
-    function construct_iptc($filename) {
+
+    function __construct($filename) {
         $info = false;
-        getimagesize($filename, $info);
         $this->hasmeta = isset($info["APP13"]);
         if ($this->hasmeta) {
             $this->meta = iptcparse($info["APP13"]);
@@ -1104,7 +1057,7 @@ class iptc {
         $this->file = $filename;
     }
 
-    // set a specific tag
+    // set a specific tag and translate it to the right HEX code
     function set($tag, $data) {
         global $UNC_GALLERY;
         $id = $UNC_GALLERY['codes']['iptc'][$tag]['code'];
@@ -1162,13 +1115,12 @@ class iptc {
                 . $val;
         }
     }
-    
+
     // write tags to file
     function write() {
         global $UNC_GALLERY;
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
         if(!function_exists('iptcembed')) {
-            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "iptcembed Does not exist!!");}
+            
             return false;
         }
         $mode = 0;

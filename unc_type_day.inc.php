@@ -13,8 +13,7 @@
  */
 function unc_day_var_init($a) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-// we convert the start time and end time to unix timestamp for better
+    // we convert the start time and end time to unix timestamp for better
         // comparison
     $UNC_GALLERY['display']['range'] = array('start_time' => false, 'end_time' => false);
     foreach ($UNC_GALLERY['display']['range'] as $key => $value) {
@@ -111,7 +110,6 @@ function unc_day_var_init($a) {
     }
 
     if (count($UNC_GALLERY['display']['files']) == 0 && !$UNC_GALLERY['display']['file']) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("No files found in date range!");}
         if ($UNC_GALLERY['no_image_alert'] == 'error') {
             $UNC_GALLERY['errors'][] = unc_display_errormsg("No images found for this date!");
         } else if ($UNC_GALLERY['no_image_alert'] == 'not_found') {
@@ -133,7 +131,6 @@ function unc_day_var_init($a) {
  */
 function unc_day_images_list($D = false) {
     global $UNC_GALLERY, $wpdb;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     if (!$D) {
         $D = $UNC_GALLERY['display'];
@@ -181,11 +178,6 @@ function unc_day_images_list($D = false) {
         WHERE ($att_table_name.att_name='date_str') AND $sql_filter
         ORDER BY file_time ASC;";
     $file_data = $wpdb->get_results($sql, 'ARRAY_A');
-    XMPP_ERROR_trace("sql", $sql);
-    //XMPP_ERROR_trace("sql_dates", $file_data);
-    //XMPP_ERROR_trace("Date settings", $D);
-    //XMPP_ERROR_trigger("test");
-
     foreach ($file_data as $F) {
         $I = unc_image_info_read($F['file_path']);
         if (in_array($F['file_name'], $D['featured_image'])) {
@@ -222,7 +214,7 @@ function unc_day_images_list($D = false) {
     }
 
     if (count($files) == 0) {
-        if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("Zero images found");}
+
     }
 
     return $files;
@@ -236,7 +228,7 @@ function unc_day_images_list($D = false) {
  */
 function unc_day_validate_date($date_str) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    
     $pattern = "/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/";
     if (preg_match($pattern, $date_str)) {
         return $date_str;
@@ -254,7 +246,7 @@ function unc_day_validate_date($date_str) {
  */
 function unc_day_date_span($date1, $date2) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    
     // we try to sort the dates
     if ($date1 < $date2) {
         $early = $date1;
@@ -289,9 +281,7 @@ function unc_day_date_span($date1, $date2) {
  * @return type
  */
 function unc_day_date_latest() {
-
     global $UNC_GALLERY, $wpdb;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $img_table_name = $wpdb->prefix . "unc_gallery_img";
 
@@ -313,8 +303,6 @@ function unc_day_date_latest() {
  */
 function unc_day_date_random() {
     global $UNC_GALLERY, $wpdb;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-
     $img_table_name = $wpdb->prefix . "unc_gallery_img";
     $sql = "SELECT SUBSTR(file_time, 1, 10) as date_str FROM `$img_table_name` GROUP BY SUBSTR(file_time, 1, 10) ORDER BY RAND() LIMIT 1";
     $file_data = $wpdb->get_results($sql, 'ARRAY_A');

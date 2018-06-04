@@ -10,7 +10,6 @@ if (!defined('WPINC')) {
  */
 function unc_uploads_form() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     if (isset($_SESSION['uploads_iterate_files'])) {
         unset($_SESSION['uploads_iterate_files']);
@@ -89,14 +88,16 @@ function unc_uploads_form() {
 }
 
 /**
- * Main iterator for uploads handling after form was submitted
+ * Main iterator for uploads handling after form was submitted. Is called through
+ * AJAX button and JS Function unc_gallery_import_images()
  *
  * @return boolean
  */
 function unc_uploads_iterate_files() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-
+    
+    unc_tools_debug_trace(__FUNCTION__, "file upload started");
+    
     // get the amount of files
     // do we have an upload or an import?
     $F = false;
@@ -110,7 +111,8 @@ function unc_uploads_iterate_files() {
             $count = count($F["name"]);
             unc_tools_progress_update($process_id, "Found $count files $import_path", 0);
         } else {
-            $msg = '<p style=\"color: #F00;\">' . $import_path . " cannot be accessed or does not exist! Make sure its readable by the apache user!</p>";
+            $check = var_export(unc_tools_folder_access_check($import_path), true);
+            $msg = '<p style=\"color: #F00;\">' . $import_path . " cannot be accessed or does not exist! Make sure its readable by the apache user ($check)!</p>";
             unc_tools_progress_update($process_id, $msg, 0);
             wp_die();
         }
@@ -156,6 +158,7 @@ function unc_uploads_iterate_files() {
         echo "Bad import option: $import_option!";
         wp_die();
     }
+
     $overwrite = $import_option;
     unc_tools_progress_update($process_id, $status . $valid_options[$import_option], 0);
 
@@ -168,7 +171,6 @@ function unc_uploads_iterate_files() {
     for ($i=0; $i < $count; $i++){
         // process one file
         $result_arr = unc_uploads_process_file($i, $overwrite);
-        XMPP_ERROR_trace("File done uploading:", $i);
         $date_str = $result_arr['date'];
         $date_str_arr[] = $date_str;
         $action = $result_arr['action'];
@@ -180,7 +182,6 @@ function unc_uploads_iterate_files() {
         }
         $percentage += $one_file_percent;
         unc_tools_progress_update($process_id, "File " . ($i + 1) . ": " . $string, $percentage);
-        XMPP_ERROR_trace("File done processing:", $i);
     }
 
     $string = 'All images processed!<br><br>
@@ -195,6 +196,8 @@ function unc_uploads_iterate_files() {
     unc_tools_progress_update($process_id, $string, 100);
     // this signals to the JS function that we can terminate the process_get loop
     unc_tools_progress_update($process_id, false);
+    
+    unc_tools_debug_trace(__FUNCTION__, "file upload ended");
     wp_die();
 }
 
@@ -208,7 +211,6 @@ function unc_uploads_iterate_files() {
  */
 function unc_uploads_process_file($i, $overwrite) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $action = false;
     //$_FILES(1) {
     //    ["userImage"]=> array(5) {
@@ -241,8 +243,9 @@ function unc_uploads_process_file($i, $overwrite) {
     }
 
     // is there an error with the file?
-    if ($F["error"][$i] > 0){
-        return array('date'=> false, 'action' => "Unable to read the file, upload cancelled of file " . $F['name'][$i]);
+    if ($F["error"][$i] !== 0){
+        $errormsg = $F["error"][$i];
+        return array('date'=> false, 'action' => "Unable to process file ($errormsg), upload cancelled: " . $F['name'][$i]);
     }
 
     // if there is an imagesize, we have a valid image
@@ -306,17 +309,17 @@ function unc_uploads_process_file($i, $overwrite) {
         return array('date'=> false, 'action' => "'$date_str' is invalid date in EXIF or IPTC");
     }
     // echo "File date is $date_str";
-    
+
     // check if there is another image with the same date and same filename
     global $wpdb;
     $day_string = substr($date_str, 0, 8);
-    $check_sql = "SELECT * FROM `wp_unc_gallery_img` 
+    $check_sql = "SELECT * FROM `wp_unc_gallery_img`
         WHERE (file_time >= '$day_string 00:00:00' AND file_time <= '$day_string 23:59:59') AND file_name='$target_filename' AND file_time <> '$date_str'";
-    $check_files = $wpdb->get_results($check_sql);   
+    $check_files = $wpdb->get_results($check_sql);
     if (count($check_files) > 0) {
         return array('date'=> false, 'action' => "File $target_filename cannot be uploaded since there is already a file with the sane name but a different time on that date");
     }
-    
+
     // create all the by-day folders
     $date_obj = unc_date_folder_create($date_str);
     // if it failed return back
@@ -399,7 +402,7 @@ function unc_uploads_process_file($i, $overwrite) {
 
     $check_xmp = unc_image_info_write($new_path);
     if (!$check_xmp) {
-        return array('date' => false, 'action' => "Could not write XMP/IPTC/EXIF data to file");
+        return array('date' => false, 'action' => "Could not write XMP/IPTC/EXIF data to database $target_filename");
     }
 
     return array('date'=> $date_str, 'action' => $target_filename . ": " . $action);
@@ -420,7 +423,6 @@ function unc_uploads_process_file($i, $overwrite) {
  */
 function unc_import_image_resize($image_file_path, $target_file_path, $size, $extension, $quality, $format = false) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $img_types = array(1 => 'GIF', 2 => 'JPEG', 3 => 'PNG');
 
     //
@@ -439,10 +441,6 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ex
         $file_date = $UNC_GALLERY['upload_file_info']['date_str'];
     }
 
-    //XMPP_ERROR_trace("width / height", "$original_width / $original_height");
-
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("Read image date result", $file_date);}
-
     // for long-edge fitting, check which one is longer
     if ($original_height > $original_width) {
         $long_edge = 'height';
@@ -451,8 +449,6 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ex
         $long_edge = 'width';
         $short_edge = 'height';
     }
-
-    //XMPP_ERROR_trace("Long edge", $long_edge);
 
     if ($original_height > $original_width) {
         $square_x = 0;
@@ -470,10 +466,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ex
         $new_height = $size;
         $new_width = intval($original_width * ($size / $original_height));
     }
-
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("New image dims", "$original_width x $original_height ==> $new_width x $new_height");}
     // get image extension from MIME type
-
 
     // set the function names for processing
     $img_generator = "Image" . $extension;
@@ -513,8 +506,6 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ex
     // write iptc date to new thumbnail file
     unc_iptc_date_write($target_file_path, $file_date);
     $new_file_date = unc_image_date($target_file_path);
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace("check IPTC result", $new_file_date);}
-    //XMPP_ERROR_trigger("test");
     imagedestroy($new_image); // free up the memory
     return true;
 }

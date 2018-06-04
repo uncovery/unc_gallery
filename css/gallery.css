@@ -21,6 +21,10 @@
     font-size: 0.9em;
 }
 
+.admin_section {
+    margin-bottom: 30px;
+}
+
 #uploadForm label {
     margin:2px;
     font-size:1em;
@@ -179,6 +183,9 @@
     top:2px;
 }
 
+.unc_gallery .next_page_link {
+    cursor: pointer;
+}
 
 .unc_gallery .delete_image_link:hover {
     background-color:transparent;

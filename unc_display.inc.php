@@ -12,10 +12,9 @@ if (!defined('WPINC')) {
  */
 function unc_display_ajax_folder() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // we get the date from the GET value
     $date_str = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
-    unc_gallery_display_var_init(array('date' => $date_str, 'echo' => true));
+    unc_gallery_display_var_init(array('date' => $date_str, 'ajax_show' => 'images'));
     return unc_display_images();
 }
 
@@ -26,8 +25,7 @@ function unc_display_ajax_folder() {
  */
 function unc_gallery_images_refresh() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
-    unc_gallery_display_var_init(array('echo' => true));
+    unc_gallery_display_var_init(array('ajax_show' => 'images'));
     return unc_display_images();
 }
 
@@ -40,7 +38,6 @@ function unc_gallery_images_refresh() {
  */
 function unc_gallery_apply($atts = array()) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $check = unc_gallery_display_var_init($atts);
     if ($check) {
@@ -61,7 +58,6 @@ function unc_gallery_apply($atts = array()) {
  */
 function unc_gallery_display_var_init($atts = array()) {
     global $UNC_GALLERY, $post;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $possible_attributes = array(
         'type' => 'day',    // display type
@@ -73,12 +69,13 @@ function unc_gallery_display_var_init($atts = array()) {
         'end_time' => false, // time of the day when we stop displaying this date
         'description' => false, // description for the whole day
         'details' => false, // description for individual files
-        'echo' => false, // internal variable, used by AJAX call
         'offset' => false, // offset for date string to cover photos after midnight
         'limit_rows' => false,
         'limit_images' => false,
+        'ajax_show' => false, // what to refresh in case of an ajax call
         'filter' => false, // if type=tag, the tags will be here
         'files' => false, // internal variable, used by filters
+        'chrono' => false // for chronological display
     );
 
     // defaults
@@ -86,9 +83,12 @@ function unc_gallery_display_var_init($atts = array()) {
     $UNC_GALLERY['errors'] = array();
 
     // check if all the attributes exist
+    if (!is_array($atts)) {
+        unc_tools_debug_trace(__FUNCTION__, $atts);
+    }
+    
     foreach ($atts as $key => $value) {
         if (!isset($possible_attributes[$key])) {
-            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("You have an invalid setting '$key' in your gallery shortcode!");}
             echo unc_display_errormsg("You have an invalid setting '$key' in your gallery shortcode!");
             return false;
         }
@@ -116,7 +116,7 @@ function unc_gallery_display_var_init($atts = array()) {
         $options = explode(" ", trim($a['options']));
     }
     $UNC_GALLERY['display']['options'] = $options;
-    $UNC_GALLERY['display']['echo'] = trim($a['echo']);
+    $UNC_GALLERY['display']['ajax_show'] = trim($a['ajax_show']);
 
     // icon or image?
     $thumb = false;
@@ -125,7 +125,7 @@ function unc_gallery_display_var_init($atts = array()) {
     }
 
     $UNC_GALLERY['display']['filter'] = trim($a['filter']);
-
+    $UNC_GALLERY['display']['chrono'] = trim($a['chrono']);
     $UNC_GALLERY['display']['description'] = trim($a['description']);
     $UNC_GALLERY['display']['limit_rows'] = trim($a['limit_rows']);
     $UNC_GALLERY['display']['limit_images'] = trim($a['limit_images']);
@@ -140,7 +140,10 @@ function unc_gallery_display_var_init($atts = array()) {
         $check = unc_filter_var_init($a);
     } else if ($type == 'image') {
         // $check = unc_image_var_init($a);
+    } else if ($type == 'chrono') {
+        $check = unc_chrono_var_init($a);
     }
+
     if (!$check) { // there was some critical error, let's return that
         return false;
     }
@@ -170,7 +173,7 @@ function unc_gallery_display_var_init($atts = array()) {
 
     // options
     if (!isset($keywords['type'][$type])) {
-        echo unc_display_errormsg("You have an invalid type value in your tag."
+        echo unc_display_errormsg("You have an invalid type ($type) value in your tag."
             . "<br>Valid options are: " . implode(", ", $keywords['type']));
         return false;
     }
@@ -221,8 +224,6 @@ function unc_gallery_display_var_init($atts = array()) {
  */
 function unc_gallery_display_page() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
-
 
     $D = $UNC_GALLERY['display'];
     // do not let wp manipulate linebreaks
@@ -231,6 +232,7 @@ function unc_gallery_display_page() {
     $out = '';
     $selector_div = '';
 
+    // TODO: Thesee functions should be in the type_XXXX.inc.php file
     if ($D['type'] == 'day' && isset($D['dates'][0])) {
         $date = $D['dates'][0];
 
@@ -278,6 +280,9 @@ function unc_gallery_display_page() {
                 . unc_filter_choice($filter_arr)
                 . "</div>\n";
         }
+    } else if ($D['type'] == 'chrono') {
+        $chrono_arr = $D['chrono_arr'];
+        $selector_div = unc_chrono_data($chrono_arr);
     } else {
         $selector_div = "No images in the database!";
     }
@@ -302,25 +307,27 @@ function unc_gallery_display_page() {
         }
         $out .= unc_display_image_html($file_path, $thumb, false, $link_type);
     } else { // type = day
-        XMPP_ERROR_trace("print");
         $images_html = unc_display_images();
-        XMPP_ERROR_trace("images");
         $delete_link = '';
         $limit_rows = '';
         if ($D['limit_rows']) {
             $limit_rows = 'limit_rows_' . $D['limit_rows'];
         }
         $out .= "
-            <div class=\"unc_gallery\">
                 $selector_div
                 $delete_link
                 <div class=\"photos $limit_rows\" id=\"selector_target\">
         $images_html
-            </div>
+                </div>
+";
+        if ($D['ajax_show'] !== 'all') { // we wrap into this div except when we requild the page with ajax, in that case the div is kept
+            $out = "
+            <div class=\"unc_gallery\" id=\"unc_gallery\">
+            $out
             </div>
             <span style=\"clear:both;\"></span>";
+        }
     }
-    XMPP_ERROR_trace("out");
     return $out;
 }
 
@@ -332,7 +339,6 @@ function unc_gallery_display_page() {
  */
 function unc_display_images() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
 
     $D = $UNC_GALLERY['display'];
 
@@ -427,13 +433,13 @@ function unc_display_images() {
     if ($UNC_GALLERY['post_keywords'] != 'none') {
         $check_tags = unc_tags_apply($files);
         if ($check_tags) {
-            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("Tags have been updated");}
+
         }
     }
     if ($UNC_GALLERY['post_categories'] != 'none') {
         $check_cats = unc_categories_apply($files);
         if ($check_cats) {
-            if ($UNC_GALLERY['debug']) {XMPP_ERROR_send_msg("Categories have been updated");}
+            
         }
     }
 
@@ -458,10 +464,9 @@ function unc_display_images() {
     $summary = "<div class=\"images_summary\">$counter images</div>";
     $out = $header . $featured . $images . $photoswipe . $summary;
 
-    if ($D['echo']) {
+    if ($D['ajax_show'] == 'images') {
         ob_clean();
         echo $out;
-        // XMPP_ERROR_trigger("test");
         wp_die();
     } else {
         return $out;
@@ -469,7 +474,7 @@ function unc_display_images() {
 }
 
 /**
- * Display one simgle image
+ * Display one single image
  *
  * @global type $UNC_GALLERY
  * @param type $file_path
@@ -480,7 +485,6 @@ function unc_display_images() {
  */
 function unc_display_image_html($file_path, $show_thumb, $file_data = false, $link_type = false) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $out = '';
     if (!$file_data) {
         $F = unc_image_info_read($file_path);
@@ -541,7 +545,6 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false, $li
  */
 function unc_display_photoswipe_js($files) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, "file data");}
 
     $slug = $UNC_GALLERY['display']['slug'];
     $out = '
@@ -580,7 +583,7 @@ function unc_display_photoswipe_js($files) {
  */
 function unc_display_errormsg($error) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
+
     return "<div class=\"unc_gallery_error\">ERROR: $error</div>";
 }
 
@@ -591,7 +594,6 @@ function unc_display_errormsg($error) {
  */
 function unc_display_photoswipe() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__);}
     $out = '<!-- Root element of PhotoSwipe. Must have class pswp. -->
 <div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
 

@@ -153,6 +153,17 @@ function filter_select(filter_key, filter_value, filter_group, filter_name, opti
     });
 }
 
+/**
+ * bridge between the dropdown filter and the list filter
+ *
+ * @param {type} filter_key
+ * @param {type} filter_group
+ * @param {type} filter_name
+ * @param {type} options
+ * @param {type} page
+ * @param {type} inst
+ * @returns {undefined}
+ */
 function filter_change(filter_key, filter_group, filter_name, options, page, inst) {
     var filter_value = jQuery('#filter').val();
     filter_select(filter_key, filter_value, filter_group, filter_name, options, page, inst);
@@ -162,6 +173,22 @@ function map_filter(position, inst) {
     filter_select('att_value', position, 'exif', 'gps', 'map', inst);
 }
 
+
+function chrono_select(page, inst) {
+    jQuery.ajax({
+        url: ajaxurl,
+        method: 'GET',
+        dataType: 'text',
+        data: {action: 'unc_chrono_update', page: page},
+        complete: function (response) {
+            jQuery('#unc_gallery').html(response.responseText);
+            window.scrollTo(0,document.body.scrollHeight);
+        },
+        error: function () {
+
+        }
+    });
+}
 
 /**
  * action for the delete image link
@@ -251,6 +278,7 @@ Date.prototype.addMinutes= function(m){
 
 /**
  * importing images in the admin screen
+ * calls PHP function unc_uploads_iterate_files()
  *
  * @returns {undefined}
  */
@@ -275,12 +303,15 @@ function unc_gallery_import_images() {
         method: 'POST',
         dataType: 'text',
         data: {action: 'unc_gallery_import_images', import_path: path, overwrite_import: [overwrite_import_stats, overwrite_import_vals], process_id: process_id},
-        complete: function (response) {
+        complete: function (jqXHR, textstatus) {
             unc_gallery_progress_get(process_id, 'import_targetLayer', 'import-process-progress-bar', 'Import', unc_interval);
         },
         error: function (request, status, error) {
-            alert(request.responseText);
-        }
+
+        },
+        susccss: function (data, textstatus, jqXHR ) {
+
+        },
     });
 }
 

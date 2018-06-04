@@ -12,7 +12,6 @@ if (!defined('WPINC')) {
  */
 function unc_gallery_admin_menu() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // the main page where we manage the options
 
     // in the settings page
@@ -44,7 +43,6 @@ function unc_gallery_admin_menu() {
  */
 function unc_gallery_admin_init() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     add_settings_section(
         'unc_gallery_pluginPage_section',
@@ -73,7 +71,7 @@ function unc_gallery_admin_init() {
             $callback = 'unc_gallery_setting_multiple_render';
             $args['options'] = $D['options'];
         } else if ($UNC_GALLERY['debug']) {
-            if ($UNC_GALLERY['debug']) {XMPP_ERROR_trigger("Illegal option type ". $D['type']);}
+
         }
         add_settings_field(
             $prefix . $setting,
@@ -99,7 +97,6 @@ function unc_gallery_admin_init() {
  */
 function unc_gallery_setting_text_field_render($A) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $def_text = str_replace(" ", '&nbsp;', $A['default']);
     $out = "<input type='text' name='{$A['setting']}' value='{$A['value']}'></td><td>{$A['help']} <strong>Default:</strong>&nbsp;'$def_text'\n";
     echo $out;
@@ -111,7 +108,6 @@ function unc_gallery_setting_text_field_render($A) {
  */
 function unc_gallery_setting_drodown_render($A) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $out = "<select name=\"{$A['setting']}\">\n";
     foreach ($A['options'] as $option => $text) {
         $sel = '';
@@ -131,7 +127,6 @@ function unc_gallery_setting_drodown_render($A) {
  */
 function unc_gallery_setting_multiple_render($A) {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     $out = '';
     if (!is_array($A['value'])) {
         $A['value'] = $A['default'];
@@ -168,7 +163,6 @@ function unc_gallery_settings_section_callback() {
  */
 function unc_gallery_admin_settings() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     remove_filter('the_content', 'wpautop');
     echo '<div class="wrap">
     <h2>Uncovery Gallery</h2>
@@ -189,37 +183,41 @@ function unc_gallery_admin_settings() {
     <ul>' . "\n";
 
     # Set up tab titles
-    echo "<li><a href='#tab1'><span>Settings</span></a></li>\n"
-        . "<li><a href='#tab2'><span>Upload</span></a></li>\n"
-        . "<li><a href='#tab3'><span>Manage Images</span></a></li>\n"
-        . "<li><a href='#tab4'><span>Maintenance</span></a></li>\n"
-        . "<li><a href='#tab5'><span>Documentation</span></a></li>\n"
-        . "</ul>\n";
+    echo "<li><a href='#tab1'><span>Settings</span></a></li>
+        <li><a href='#tab2'><span>Upload</span></a></li>
+        <li><a href='#tab3'><span>Manage Images</span></a></li>
+        <li><a href='#tab4'><span>Maintenance</span></a></li>
+        <li><a href='#tab5'><span>Documentation</span></a></li>";
+    if ($UNC_GALLERY['debug'] == 'yes') {
+        echo "<li><a href='#tab6'><span>Debug Logs</span></a></li>\n";
+    }
+    echo "</ul>\n";
 
-    echo "<div id='tab1'>\n";
-    echo '<form method="post" action="options.php">'. "\n";
+    echo "<div id='tab1'>
+        <form method=\"post\" action=\"options.php\">\n";
     settings_fields('unc_gallery_settings_page');
     do_settings_sections( 'unc_gallery_settings_page');
     submit_button();
-    echo "</form>\n";
-    echo "</div>\n";
-
-    echo "<div id='tab2'>\n";
+    echo "</form>
+        </div>
+        <div id='tab2'>\n";
     echo unc_uploads_form();
-    echo "</div>\n";
-
-    echo "<div id='tab3'>\n";
+    echo "</div>
+        <div id='tab3'>\n";
     echo unc_gallery_admin_display_images();
-    echo "</div>\n";
-
-    echo "<div id='tab4'>\n";
+    echo "</div>
+        <div id='tab4'>\n";
     echo unc_gallery_admin_maintenance();
-    echo "</div>\n";
-
-    echo "<div id='tab5'>\n";
+    echo "</div>
+        <div id='tab5'>\n";
     echo unc_gallery_admin_show_documentation();
-    echo "</div>\n";
-
+    echo "</div>";
+    
+    if ($UNC_GALLERY['debug'] == 'yes') {
+        echo "<div id='tab6'>\n";
+        echo unc_gallery_admin_show_debuglogs();
+        echo "</div>\n";
+    }
     echo "</div>";
 }
 
@@ -231,7 +229,6 @@ function unc_gallery_admin_settings() {
  */
 function unc_gallery_admin_display_images() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
 
     $out = "<h2>Manage Images</h2>\n";
     // check first if there is a folder to delete:
@@ -252,8 +249,6 @@ function unc_gallery_admin_display_images() {
  * @return string
  */
 function unc_gallery_admin_maintenance() {
-    global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // unc_gallery_generic_ajax(action, target_div, confirmation_message, post, progress_div, progress_text)
     $out = '<h2>Maintenance</h2>
         <div class="admin_section"><button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_thumbnails_rebuild\', \'maintenance_target_div\', \'Are you sure?\nThis can take a while for the whole database!\', true)">
@@ -289,6 +284,12 @@ function unc_gallery_admin_maintenance() {
             <div id="maintenance-process-progress-bar">0%</div>
         </div>
         <div id="maintenance_target_div"></div>';
+    
+    // TODO: create a query that deletes orphaned attachment entries where the file is gone 
+    // DELETE `wp_unc_gallery_att` FROM `wp_unc_gallery_att` LEFT JOIN 
+    //    wp_unc_gallery_img ON wp_unc_gallery_att.file_id=wp_unc_gallery_img.id
+    //    WHERE file_name IS NULL
+    
     return $out;
 }
 
@@ -297,8 +298,6 @@ function unc_gallery_admin_maintenance() {
  * We are using https://github.com/erusev/parsedown
  */
 function unc_gallery_admin_show_documentation() {
-    global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     require_once(__DIR__  . '/libraries/Parsedown.php');
 
     $markdown_docs = file_get_contents(__DIR__  . '/README.md');
@@ -307,13 +306,43 @@ function unc_gallery_admin_show_documentation() {
     return $Parsedown->text($markdown_fixed);
 }
 
+function unc_gallery_admin_show_debuglogs() {
+    $path = plugin_dir_path(__FILE__) . "logs";
+    $out = '<h2>Debug Logs</h2>
+        <button class="button button-primary" onclick="
+            unc_gallery_generic_ajax(
+                \'unc_gallery_admin_remove_logs\',
+                \'debug_logs_target_div\',
+                \'Are you sure?\nThis will erase all logfiles!\',
+                true,
+                \'maintenance-process-progress-bar\',
+                \'Remove\'
+            )
+            ">
+            Erase all debug logs
+        </button>
+        <div id="debug_logs_target_div">';
+    $out .= "<ol>";
+    $files = glob($path.'/*.html');
+    if (count($files) == 0) {
+        return "No debug logfiles found.";
+    }
+    foreach($files as $file) {
+        $path = pathinfo($file);
+        $basename = $path['basename'];
+        $file_url = plugin_dir_url( __FILE__ ) . "logs/$basename";
+        $out .= "<li><a href=\"$file_url\" target=\"_blank\">$basename</a></li>";
+    }
+    $out .= "</ol></div>";
+    return $out;
+}
+
 /**
  * function to re-build all thumbnails
  * @global type $UNC_GALLERY
  */
 function unc_gallery_admin_rebuild_thumbs() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
     if (!current_user_can('manage_options') || !is_admin()) {
         echo "Cannot rebuild Thumbs, you are not admin!";
@@ -335,8 +364,6 @@ function unc_gallery_admin_rebuild_thumbs() {
 
     $target_folders = unc_tools_recurse_folders($photo_folder);
     unc_tools_progress_update($process_id, "Got a list of all folders");
-
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('target folders:', $target_folders);}
 
     // create thumbnaisl
     foreach ($target_folders as $date => $folder) {
@@ -374,7 +401,6 @@ function unc_gallery_admin_rebuild_thumbs() {
  */
 function unc_gallery_admin_rebuild_data() {
     global $UNC_GALLERY, $wpdb;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
 
     // $max_time = ini_get('max_execution_time');
@@ -419,7 +445,7 @@ function unc_gallery_admin_rebuild_data() {
         $file_one_percent = 100 / $folder_file_count;
         $folder_percentage = 0;
         foreach ($folder_files as $image_file) {
-            if (!is_dir($image_file)) {
+            if (!is_dir($image_file)) { // && stristr($image_file, '2018') TODO YEar filter
                 // TODO: ERror in case the info cannot be written
                 unc_image_info_write($image_file);
                 $folder_percentage += $file_one_percent;
@@ -445,7 +471,6 @@ function unc_gallery_admin_rebuild_data() {
  */
 function unc_gallery_admin_delete_everything() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     ob_clean();
     if (!current_user_can('manage_options')) {
         echo "Cannot delete all, you are not admin!";
@@ -468,8 +493,7 @@ function unc_gallery_admin_delete_everything() {
  * @global type $wpdb
  */
 function unc_gallery_admin_remove_data() {
-    global $UNC_GALLERY, $wpdb;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+    global $wpdb;
     ob_clean();
 
     if (!current_user_can('manage_options')) {
@@ -485,6 +509,33 @@ function unc_gallery_admin_remove_data() {
     // get the Process ID for the Ajax live update
     $process_id = filter_input(INPUT_POST, 'process_id');
     unc_tools_progress_update($process_id, "Cleared existing data!", 100);
+    unc_tools_progress_update($process_id, false);
+    wp_die();
+}
+
+function unc_gallery_admin_remove_logs() {
+    ob_clean();
+
+    if (!current_user_can('manage_options')) {
+        echo "Cannot remove logs, you are not admin!";
+        wp_die();
+    }
+    // delete all existing logfiles 
+  
+    $path = plugin_dir_path(__FILE__) . "logs";
+    $files = glob($path.'/*.html');
+    if (count($files) == 0) {
+        $out = "No debug logfiles found.";
+    } else {
+        foreach($files as $file) {
+            unlink($file);
+        }
+        $out = "Cleared existing data!";
+    }
+    
+    // get the Process ID for the Ajax live update
+    $process_id = filter_input(INPUT_POST, 'process_id');
+    unc_tools_progress_update($process_id, $out, 100);
     unc_tools_progress_update($process_id, false);
     wp_die();
 }

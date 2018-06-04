@@ -24,7 +24,8 @@ $UNC_GALLERY['keywords'] = array(
         'day' => array('calendar', 'datelist'), //, 'slideshow'), // shows a single date's gallery, optional date picker
         'image' => array('link','link_post'), // only one image, requires file addon unless random or latest
         'thumb' => array('link','link_post'), // only the icon of one image, requires file addon unless random or latest
-        'filter' => array('dropdown', 'list', 'map'),
+        'filter' => array('dropdown', 'list', 'link_list', 'map'),
+        'chrono' => array(),
     ),
     'date' => array('random', 'latest'),  // whichdate to chose
     'file' => array('random', 'latest'), // in case of image or icon type, you can chose one filename
@@ -216,5 +217,12 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'dropdown',
         'options' => array('yes' => 'Delete all images!', 'no' => 'Keep all images!'),
         'title' => 'Uninstall behavior',
+    ),
+    'debug' => array(
+        'help' => 'Use this when asking for support',
+        'default' => 'no',
+        'type' => 'dropdown',
+        'options' => array('yes' => 'Create Debug logs', 'no' => 'Do not create debug logs'),
+        'title' => 'Create debug logfiles?',
     ),
 );

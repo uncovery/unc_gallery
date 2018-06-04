@@ -23,6 +23,10 @@ if (!defined('WPINC')) {
 global $UNC_FILE_DATA, $UNC_GALLERY;
 $UNC_GALLERY['debug'] = false;
 
+if (!isset($UNC_GALLERY['start_time'])) {
+    $UNC_GALLERY['start_time'] = microtime(true);
+}
+
 $UNC_GALLERY['data_version'] = 1; // increase this number when you change the format!
 
 require_once( plugin_dir_path( __FILE__ ) . "unc_backend.inc.php");
@@ -30,20 +34,11 @@ require_once( plugin_dir_path( __FILE__ ) . "unc_upload.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_display.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_type_day.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_type_filter.inc.php");
+require_once( plugin_dir_path( __FILE__ ) . "unc_type_chrono.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_tools.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_image.inc.php");
 // co nfig has to be last because it runs function in unc_image.inc.php
 require_once( plugin_dir_path( __FILE__ ) . "unc_config.inc.php");
-
-global $XMPP_ERROR;
-if (@file_exists('/home/includes/xmpp_error/xmpp_error.php')) {
-    $UNC_GALLERY['debug'] = true;
-    require_once('/home/includes/xmpp_error/xmpp_error.php');
-    $XMPP_ERROR['config']['project_name'] = 'unc_gallery';
-    $XMPP_ERROR['config']['enabled'] = true;
-    $XMPP_ERROR['config']['include_warnings'] = 'unc_gallery';
-    $XMPP_ERROR['config']['track_globals'] = array('UNC_GALLERY');
-}
 
 // actions on activating and deactivating the plugin
 register_activation_hook( __FILE__, 'unc_gallery_plugin_activate');
@@ -69,12 +64,14 @@ if (is_admin() === true) {
     add_action('wp_ajax_unc_tools_progress_get', 'unc_tools_progress_get');
     add_action('wp_ajax_nopriv_unc_tools_progress_get', 'unc_tools_progress_get');
     add_action('wp_ajax_unc_filter_update', 'unc_filter_update');
+    add_action('wp_ajax_unc_chrono_update', 'unc_chrono_update');
     add_action('wp_ajax_unc_gallery_image_delete', 'unc_tools_image_delete');
     add_action('wp_ajax_unc_gallery_images_refresh', 'unc_gallery_images_refresh');
     add_action('wp_ajax_unc_gallery_thumbnails_rebuild', 'unc_gallery_admin_rebuild_thumbs');
     add_action('wp_ajax_unc_gallery_admin_rebuild_data', 'unc_gallery_admin_rebuild_data');
     add_action('wp_ajax_unc_gallery_admin_remove_data',  'unc_gallery_admin_remove_data');
     add_action('wp_ajax_unc_gallery_delete_everything', 'unc_gallery_admin_delete_everything');
+    add_action('wp_ajax_unc_gallery_admin_remove_logs', 'unc_gallery_admin_remove_logs');
 }
 
 add_action( 'wp_enqueue_scripts', 'unc_gallery_add_css_and_js' );
@@ -98,6 +95,13 @@ foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
     $UNC_GALLERY[$setting] = get_option($UNC_GALLERY['settings_prefix'] . $setting, $D['default']);
 }
 
+// debug run
+if ($UNC_GALLERY['debug'] == 'yes') {
+    $UNC_GALLERY['debug_log'] = array();
+    register_shutdown_function("unc_tools_debug_write");
+}
+
+
 /**
  * standard wordpress function to activate the plugin.
  * creates the uploads folder
@@ -106,7 +110,6 @@ foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
  */
 function unc_gallery_plugin_activate() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     if (!file_exists($UNC_GALLERY['upload_path'])) {
         $result = mkdir($UNC_GALLERY['upload_path'], 0755);
         // check success
@@ -133,7 +136,6 @@ function unc_mysql_db_create() {
         UNIQUE KEY `id` (`id`),
         UNIQUE KEY `file_time` (`file_time`,`file_name`)
     ) $charset_collate;";
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('SQL1', $sql_img);}
     dbDelta($sql_img);
 
     $table_name_att = $wpdb->prefix . "unc_gallery_att";
@@ -147,7 +149,7 @@ function unc_mysql_db_create() {
         KEY `att_name` (`att_name`),
         KEY `file_id` (`file_id`)
     ) $charset_collate;";
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace('SQL2', $sql_att);}
+
     dbDelta($sql_att);
 
     add_option( "unc_gallery_db_version", "1.0" );
@@ -160,7 +162,7 @@ function unc_mysql_db_create() {
  */
 function unc_gallery_plugin_deactivate() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
     // deactivate all settings
     $prefix = $UNC_GALLERY['settings_prefix'];
     foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
@@ -175,7 +177,6 @@ function unc_gallery_plugin_deactivate() {
  */
 function unc_gallery_plugin_uninstall() {
     global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
     // delete all images optional
 
     if ($UNC_GALLERY['uninstall_deletes_images'] == 'yes') {
@@ -197,8 +198,7 @@ function unc_gallery_plugin_uninstall() {
  */
 function unc_gallery_add_css_and_js() {
     global $UNC_GALLERY;
-        global $UNC_GALLERY;
-    if ($UNC_GALLERY['debug']) {XMPP_ERROR_trace(__FUNCTION__, func_get_args());}
+
     // jquery etc
     wp_enqueue_script('jquery-ui');
     wp_enqueue_script('jquery-form');
