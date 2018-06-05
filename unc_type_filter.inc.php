@@ -23,9 +23,11 @@ function unc_filter_var_init($a) {
     } else {
         $filter_arr = explode("|", $filter_str);
     }
+    // if we have 4 filters, it means that we have enough info to  display the
+    // image list
     if (count($filter_arr) == 4) {
         $files = unc_filter_image_list($filter_arr);
-    } else {
+    } else { // ifwe have less filters, we still show the options to drill down
         $files = array();
     }
 
@@ -46,7 +48,7 @@ function unc_filter_var_init($a) {
  * @param array $filter_arr
  */
 function unc_filter_image_list($filter_arr) {
-    global $UNC_GALLERY, $wpdb;
+    global $wpdb;
 
     $img_table_name = $wpdb->prefix . "unc_gallery_img";
     $att_table_name = $wpdb->prefix . "unc_gallery_att";
@@ -102,6 +104,9 @@ function unc_filter_choice($filter_arr) {
 
     $desc2 = '';
     $desc1 = '';
+    
+    // depending on the depth of filters we have, we show more and more
+    // specific information
     if (!$filter_arr || count($filter_arr) == 0) {
         $names_sql = "SELECT `att_group` as `term` FROM $att_table_name
             LEFT JOIN $img_table_name ON id=file_id
@@ -163,19 +168,17 @@ function unc_filter_choice($filter_arr) {
         }
         $out .="</select>\n$desc2\n";
     } else if (in_array('list', $options) || in_array('link_list', $options)) {
-        if (in_array('list', $options)) {
-            $feature = 'list';
-        } else {
-            $feature = 'link_list';
-        }
         $columns = 4;
         $out .= $desc1;
+        
+        $options_string = implode(" ", $options);
+        
         if (count($names) < 20) { // we make colums only for large lists
             $out .= "<ul>\n";
             foreach ($names as $N) {
                 $nice_term = ucwords(str_replace("_", " ", $N['term']));
                 $fixed_term = urlencode($N['term']);
-                $out .= "<li onclick=\"filter_select('$filter_key', '$fixed_term', '$filter_group', '$filter_name', '$feature', 0)\">$nice_term</li>\n";
+                $out .= "<li onclick=\"filter_select('$filter_key', '$fixed_term', '$filter_group', '$filter_name', '$options_string', 0)\">$nice_term</li>\n";
             }
             $out .= "</ul>\n";
         } else { // make columns
@@ -202,7 +205,7 @@ function unc_filter_choice($filter_arr) {
                     $out .= "<div class=\"filter_column\">\n<h3>$first_letter</h3>\n"
                         . "<ul>\n";
                 }
-                $out .= "<li onclick=\"filter_select('$filter_key', '$fixed_term', '$filter_group', '$filter_name', '$feature', 0)\">$nice_term</li>\n";
+                $out .= "<li onclick=\"filter_select('$filter_key', '$fixed_term', '$filter_group', '$filter_name', '$options_string', 0)\">$nice_term</li>\n";
                 $last_letter = $first_letter;
                 $start = false;
             }
@@ -216,7 +219,7 @@ function unc_filter_choice($filter_arr) {
         $val_opt_text = implode(", ", $valid_options);
         $out .= unc_display_errormsg("You have an option set that is not compatible with filters! Valid options are: $val_opt_text");
     }
-
+    
     return $out;
 }
 
@@ -399,7 +402,6 @@ function unc_filter_map_data($type) {
  * @return type
  */
 function unc_filter_map_zoom_level($lat1, $lon1, $lat2, $lon2) {
-    global $UNC_GALLERY;
 
     $max = 40000000; // world is 40k KM large, Zoom 2
     $distance = intval(unc_filter_map_gps_convert($lat1, $lon1, $lat2, $lon2));
@@ -430,7 +432,6 @@ function unc_filter_map_zoom_level($lat1, $lon1, $lat2, $lon2) {
  * @return float Distance between points in [m] (same as earthRadius)
  */
 function unc_filter_map_gps_convert($latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo, $earthRadius = 6371000) {
-    global $UNC_GALLERY;
 
     // convert from degrees to radians
     $latFrom = deg2rad($latitudeFrom);
@@ -458,7 +459,7 @@ function unc_filter_map_gps_convert($latitudeFrom, $longitudeFrom, $latitudeTo, 
  * @return type
  */
 function unc_filter_map_locations($levels, $type, $next_level) {
-    global $UNC_GALLERY, $wpdb;
+    global $wpdb;
 
     $att_table_name = $wpdb->prefix . "unc_gallery_att";
 
@@ -502,8 +503,6 @@ function unc_filter_map_locations($levels, $type, $next_level) {
  *
  */
 function unc_filter_gps_avg($array) {
-    global $UNC_GALLERY;
-
     foreach ($array as $name => $lower) {
         if (isset($lower['gps'])) {
             $lat = array_sum($lower['gps']['lat']) / count($lower['gps']['lat']);
@@ -519,13 +518,13 @@ function unc_filter_gps_avg($array) {
 
 /**
  * This is the function called by Ajax when the filter dropdown on the website is updated
+ * or a link in the tags list is clicked
  *
  * @global type $wpdb
  * @global type $UNC_GALLERY
  * @return type
  */
 function unc_filter_update(){
-    global $UNC_GALLERY;
     $filter_key = filter_input(INPUT_GET, 'filter_key', FILTER_SANITIZE_STRING);
     $filter_value = filter_input(INPUT_GET, 'filter_value', FILTER_SANITIZE_STRING);
     $filter_group = filter_input(INPUT_GET, 'filter_group', FILTER_SANITIZE_STRING);
@@ -583,7 +582,8 @@ function unc_filter_check_type($group, $key) {
 
 
 /**
- * Compare existing post tags with the image and fix missing ones.
+ * Compare existing tags assigned to a post with the image's tags 
+ * and assign missing ones to the post.
  *
  * @global type $UNC_GALLERY
  * @param type $F
