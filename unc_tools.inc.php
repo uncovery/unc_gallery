@@ -244,8 +244,6 @@ function unc_tools_import_enumerate($path) {
  * @return type
  */
 function unc_display_fix_timezones($dates) {
-    global $UNC_GALLERY;
-
     $new_dates = array();
     foreach ($dates as $date => $details) {
         $date_obj = new DateTime($date);
@@ -599,7 +597,6 @@ function unc_tools_date_path($date) {
  * @param type $string
  */
 function unc_tools_divide_string($string) {
-    global $UNC_GALLERY;
     if (!strstr($string, "/")) {
         return $string;
     }
@@ -616,8 +613,6 @@ function unc_tools_divide_string($string) {
  * @return type
  */
 function unc_tools_array_analyse($array1, $array2) {
-    global $UNC_GALLERY;
-
     $only_1 = array_diff($array1, $array2);
     $only_2 = array_diff($array2, $array1);
     $section = array_intersect($array1, $array2);
@@ -679,7 +674,7 @@ function unc_tools_debug_write() {
         return;
     }
     
-    $ip = filter_input(INPUT_SERVER, "REMOTE_ADDR", FILTER_SANITIZE_STRING);
+    $ip = filter_input(INPUT_SERVER, "REMOTE_ADDR");
     
     // HTML header for the error reports
     $msg_text = '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
@@ -700,6 +695,7 @@ function unc_tools_debug_write() {
         <body>' . "\n";    
     
     $path = plugin_dir_path(__FILE__) . "logs";
+    
     foreach ($UNC_GALLERY['debug_log'] as $title => $text) {
         $msg_text .= "<div class=\"data_block\"><h2>$title:</h2>\n" . unc_tools_array2text($text) . "</div>\n";
     }
@@ -719,7 +715,7 @@ function unc_tools_debug_trace($type, $data = '') {
     if (isset($UNC_GALLERY['debug_log'][$time])) {
         unc_tools_debug_trace($type, $data);
     } else {
-        $UNC_GALLERY['debug_log'][$time][$type] = $data;
+        $UNC_GALLERY['debug_log'][$time][$type] = unc_tools_array2text($data);
     }
 }
 
@@ -729,7 +725,8 @@ function unc_tools_microtime2string($microtime = false, $format = 'Y-m-d H-i-s')
         $microtime = microtime(true);
     }
     $date_obj = new DateTime();
-    $date_obj->setTimezone(new DateTimeZone(system('date +%Z')));
+    $timezone = get_option('timezone_string');
+    $date_obj->setTimezone(new DateTimeZone($timezone));
     $time_str = $date_obj->format($format) . substr((string)$microtime, 1, 8);
     return $time_str;
 }
