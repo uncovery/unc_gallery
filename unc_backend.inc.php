@@ -251,7 +251,13 @@ function unc_gallery_admin_display_images() {
 function unc_gallery_admin_maintenance() {
     // unc_gallery_generic_ajax(action, target_div, confirmation_message, post, progress_div, progress_text)
     $out = '<h2>Maintenance</h2>
-        <div class="admin_section"><button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_thumbnails_rebuild\', \'maintenance_target_div\', \'Are you sure?\nThis can take a while for the whole database!\', true)">
+        <div class="admin_section"><button class="button button-primary" onclick="
+            unc_gallery_generic_ajax(
+                \'unc_gallery_admin_rebuild_thumbs\', 
+                \'maintenance_target_div\', 
+                \'Are you sure?\nThis can take a while for the whole database!\', 
+                true
+            )">
             Rebuild Thumbnails</div>
         <div class="admin_section"><button class="button button-primary" onclick="
             unc_gallery_generic_ajax(
@@ -343,6 +349,7 @@ function unc_gallery_admin_show_debuglogs() {
  */
 function unc_gallery_admin_rebuild_thumbs() {
     global $UNC_GALLERY;
+    unc_tools_debug_trace(__FUNCTION__);
     ob_clean();
     if (!current_user_can('manage_options') || !is_admin()) {
         echo "Cannot rebuild Thumbs, you are not admin!";
