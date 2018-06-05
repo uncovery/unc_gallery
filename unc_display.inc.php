@@ -11,7 +11,6 @@ if (!defined('WPINC')) {
  * @return type
  */
 function unc_display_ajax_folder() {
-    global $UNC_GALLERY;
     // we get the date from the GET value
     $date_str = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
     unc_gallery_display_var_init(array('date' => $date_str, 'ajax_show' => 'images'));
@@ -24,21 +23,25 @@ function unc_display_ajax_folder() {
  * @return type
  */
 function unc_gallery_images_refresh() {
-    global $UNC_GALLERY;
     unc_gallery_display_var_init(array('ajax_show' => 'images'));
     return unc_display_images();
 }
 
 /**
  * This is the core function that actually is called when a shortcode
- * is parsed
+ * is parsed [unc_gallery]
  *
  * @param string $atts
  * @return string
  */
 function unc_gallery_apply($atts = array()) {
     global $UNC_GALLERY;
-
+    
+    if (!is_array($atts)) {
+        // if we return the shortcode without arguments, we need to re-set this here.
+        $atts = array();
+    }
+    
     $check = unc_gallery_display_var_init($atts);
     if ($check) {
         return unc_gallery_display_page();
@@ -84,7 +87,7 @@ function unc_gallery_display_var_init($atts = array()) {
 
     // check if all the attributes exist
     if (!is_array($atts)) {
-        unc_tools_debug_trace(__FUNCTION__, $atts);
+        unc_tools_debug_trace(__FUNCTION__  . ": ATTS array is not an array:", $atts);
     }
     
     foreach ($atts as $key => $value) {
@@ -148,7 +151,6 @@ function unc_gallery_display_var_init($atts = array()) {
         return false;
     }
 
-
     // details
     $details_raw = $a['details'];
     $UNC_GALLERY['display']['details'] = false;
@@ -173,14 +175,14 @@ function unc_gallery_display_var_init($atts = array()) {
 
     // options
     if (!isset($keywords['type'][$type])) {
-        echo unc_display_errormsg("You have an invalid type ($type) value in your tag."
+        echo unc_display_errormsg("You have an invalid type ($type) value in your tag: $type"
             . "<br>Valid options are: " . implode(", ", $keywords['type']));
         return false;
     }
     $possible_type_options = $keywords['type'][$type];
     foreach ($UNC_GALLERY['display']['options'] as $option) {
         if (!in_array($option, $possible_type_options)) {
-            echo unc_display_errormsg("You have an invalid option for the display type \"option\" in your tag."
+            echo unc_display_errormsg("You have an invalid option for the display type \"option\" in your tag: $option"
                 . "<br>Valid options are: " . implode(", ", $keywords['type'][$type]));
             return false;
         }
@@ -226,6 +228,7 @@ function unc_gallery_display_page() {
     global $UNC_GALLERY;
 
     $D = $UNC_GALLERY['display'];
+    unc_tools_debug_trace(__FUNCTION__, $D);
     // do not let wp manipulate linebreaks
     remove_filter('the_content', 'wpautop');
 
@@ -254,7 +257,7 @@ function unc_gallery_display_page() {
                     datepicker_ready('{$date}');
                 });
                 </script>";
-                $selector_div = "Pick a Date: <input type=\"text\" id=\"datepicker\" value=\"$date\" size=\"10\">";
+                $selector_div = "<div id=\"datepicker_wrap\">Pick a Date: <input id=\"datepicker\" type=\"text\" value=\"$date\" size=\"10\"></div>";
             } else if ($D['date_selector'] == 'datelist') {
                 $selector_div = "<select id=\"datepicker\" onchange=\"datelist_change()\">\n";
                 foreach ($avail_dates as $folder_date => $counter) {
@@ -286,7 +289,7 @@ function unc_gallery_display_page() {
     } else {
         $selector_div = "No images in the database!";
     }
-
+    
     if ($D['type'] == 'image' || $D['type'] == 'thumb') {
         $thumb = false;
         if ($D['type'] == 'thumb') {
@@ -318,14 +321,13 @@ function unc_gallery_display_page() {
                 $delete_link
                 <div class=\"photos $limit_rows\" id=\"selector_target\">
         $images_html
-                </div>
-";
+                </div>\n";
         if ($D['ajax_show'] !== 'all') { // we wrap into this div except when we requild the page with ajax, in that case the div is kept
             $out = "
             <div class=\"unc_gallery\" id=\"unc_gallery\">
             $out
             </div>
-            <span style=\"clear:both;\"></span>";
+            <span style=\"clear:both;\"></span>\n";
         }
     }
     return $out;
