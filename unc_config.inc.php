@@ -24,7 +24,7 @@ $UNC_GALLERY['keywords'] = array(
         'day' => array('calendar', 'datelist'), //, 'slideshow'), // shows a single date's gallery, optional date picker
         'image' => array('link','link_post'), // only one image, requires file addon unless random or latest
         'thumb' => array('link','link_post'), // only the icon of one image, requires file addon unless random or latest
-        'filter' => array('dropdown', 'list', 'link_list', 'map'),
+        'filter' => array('dropdown', 'list', 'link_list', 'map', 'tagged_posts'),
         'chrono' => array(),
     ),
     'date' => array('random', 'latest'),  // whichdate to chose
