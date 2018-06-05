@@ -67,7 +67,7 @@ if (is_admin() === true) {
     add_action('wp_ajax_unc_chrono_update', 'unc_chrono_update');
     add_action('wp_ajax_unc_gallery_image_delete', 'unc_tools_image_delete');
     add_action('wp_ajax_unc_gallery_images_refresh', 'unc_gallery_images_refresh');
-    add_action('wp_ajax_unc_gallery_thumbnails_rebuild', 'unc_gallery_admin_rebuild_thumbs');
+    add_action('wp_ajax_unc_gallery_admin_rebuild_thumbs', 'unc_gallery_admin_rebuild_thumbs');
     add_action('wp_ajax_unc_gallery_admin_rebuild_data', 'unc_gallery_admin_rebuild_data');
     add_action('wp_ajax_unc_gallery_admin_remove_data',  'unc_gallery_admin_remove_data');
     add_action('wp_ajax_unc_gallery_delete_everything', 'unc_gallery_admin_delete_everything');
@@ -122,7 +122,7 @@ function unc_gallery_plugin_activate() {
 }
 
 function unc_mysql_db_create() {
-    global $wpdb, $UNC_GALLERY;
+    global $wpdb;
 
     $charset_collate = $wpdb->get_charset_collate();
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -180,7 +180,7 @@ function unc_gallery_plugin_uninstall() {
     // delete all images optional
 
     if ($UNC_GALLERY['uninstall_deletes_images'] == 'yes') {
-        unc_tools_ecurse_files($UNC_GALLERY['upload_path'], 'unlink', 'rmdir');
+        unc_tools_recurse_files($UNC_GALLERY['upload_path'], 'unlink', 'rmdir');
     }
     // TODO: check and remove databases
 
