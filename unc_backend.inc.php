@@ -187,7 +187,8 @@ function unc_gallery_admin_settings() {
         <li><a href='#tab2'><span>Upload</span></a></li>
         <li><a href='#tab3'><span>Manage Images</span></a></li>
         <li><a href='#tab4'><span>Maintenance</span></a></li>
-        <li><a href='#tab5'><span>Documentation</span></a></li>";
+        <li><a href='#tab5'><span>Data Integrity</span></a></li>
+        <li><a href='#tab6'><span>Documentation</span></a></li>";
     if ($UNC_GALLERY['debug'] == 'yes') {
         echo "<li><a href='#tab6'><span>Debug Logs</span></a></li>\n";
     }
@@ -210,6 +211,9 @@ function unc_gallery_admin_settings() {
     echo unc_gallery_admin_maintenance();
     echo "</div>
         <div id='tab5'>\n";
+    echo unc_gallery_data_integrity();
+    echo "</div>
+        <div id='tab6'>\n";
     echo unc_gallery_admin_show_documentation();
     echo "</div>";
     
@@ -249,7 +253,6 @@ function unc_gallery_admin_display_images() {
  * @return string
  */
 function unc_gallery_admin_maintenance() {
-    // unc_gallery_generic_ajax(action, target_div, confirmation_message, post, progress_div, progress_text)
     $out = '<h2>Maintenance</h2>
         <div class="admin_section"><button class="button button-primary" onclick="
             unc_gallery_generic_ajax(
@@ -289,13 +292,7 @@ function unc_gallery_admin_maintenance() {
         <div class="progress-div">
             <div id="maintenance-process-progress-bar">0%</div>
         </div>
-        <div id="maintenance_target_div"></div>';
-    
-    // TODO: create a query that deletes orphaned attachment entries where the file is gone 
-    // DELETE `wp_unc_gallery_att` FROM `wp_unc_gallery_att` LEFT JOIN 
-    //    wp_unc_gallery_img ON wp_unc_gallery_att.file_id=wp_unc_gallery_img.id
-    //    WHERE file_name IS NULL
-    
+        <div id="maintenance_target_div"></div>';   
     return $out;
 }
 
@@ -310,6 +307,49 @@ function unc_gallery_admin_show_documentation() {
     $markdown_fixed = str_replace('/images/', plugins_url( '/images/', __FILE__ ), $markdown_docs);
     $Parsedown = new Parsedown();
     return $Parsedown->text($markdown_fixed);
+}
+
+function unc_gallery_data_integrity() {
+    global $wpdb;
+    // check for locations where we have more than one GPS data.
+    $check_sql = "SELECT loc_table.att_value as location, gps_table.att_value as gps, count(gps_table.att_value) as filecount
+        FROM `wp_unc_gallery_att` as loc_table LEFT JOIN wp_unc_gallery_att as gps_table ON loc_table.file_id=gps_table.file_id 
+        WHERE loc_table.att_name='loc_str' AND gps_table.att_name = 'gps' 
+        GROUP BY gps_table.att_value";
+    $records = $wpdb->get_results($check_sql);
+    $locations = array();
+    $has_duplicate_gps = false;
+    foreach ($records as $line) {
+        $location = $line->location;
+        $gps = $line->gps;
+        if (isset($locations[$location])) {
+            $has_duplicate_gps = true;
+        }
+        $filecount = $line->filecount;
+        $locations[$location][] = "$gps ($filecount images)";
+    }
+    
+    if ($has_duplicate_gps) {
+        // now remove all single GPS locations from the array
+        $out = "<h2>You have identical locations with several different GPS data:</h2>";
+        $out .= "<ul>\n";
+        foreach ($locations as $loc_name => $loc_data) {
+            if (count($loc_data) > 1) {
+                $out .= "<li>$loc_name\n<ul>\n";
+                foreach ($loc_data as $gps) {
+                    $out .= "<li>$gps</li>\n";
+                }
+                $out .= "</ul>\n</li>\n";
+            }
+        }
+        $out .= "</ul>\n";
+    }
+    return $out;
+    
+    // TODO: create a query that deletes orphaned attachment entries where the file is gone 
+    // DELETE `wp_unc_gallery_att` FROM `wp_unc_gallery_att` LEFT JOIN 
+    //    wp_unc_gallery_img ON wp_unc_gallery_att.file_id=wp_unc_gallery_img.id
+    //    WHERE file_name IS NULL    
 }
 
 function unc_gallery_admin_show_debuglogs() {
