@@ -331,8 +331,9 @@ function unc_gallery_data_integrity() {
     
     if ($has_duplicate_gps) {
         // now remove all single GPS locations from the array
-        $out = "<h2>You have identical locations with several different GPS data:</h2>";
-        $out .= "<ul>\n";
+        $out = "<h2>You have identical locations with several different GPS data:</h2>
+            As of now, the Map display won't work for locations where you have several GPS sets.
+            <ul>\n";
         foreach ($locations as $loc_name => $loc_data) {
             if (count($loc_data) > 1) {
                 $out .= "<li>$loc_name\n<ul>\n";
