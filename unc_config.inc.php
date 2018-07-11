@@ -197,6 +197,16 @@ $UNC_GALLERY['user_settings'] = array(
         ),
         'title' => 'Google Map type',
     ),
+    'google_maps_markerstyle' => array(
+        'help' => 'Do you want to click through map layers (country,province, city etc) or show all at one?',
+        'default' => 'cluster',
+        'type' => 'dropdown',
+        'options' => array(
+            'cluster' => 'Show all markers, cluster nearby ones',
+            'layer' => 'Click through layers',
+        ),
+        'title' => 'Google Map Marker Style',
+    ),    
     'settings_location' => array(
         'help' => 'Do you want the admin screen of this plugin to be shown as a menu entry in the sidebar or a sub-menu of the settings menu?',
         'default' => 'sidebar',
