@@ -96,7 +96,6 @@ function unc_gallery_admin_init() {
  * @param type $A
  */
 function unc_gallery_setting_text_field_render($A) {
-    global $UNC_GALLERY;
     $def_text = str_replace(" ", '&nbsp;', $A['default']);
     $out = "<input type='text' name='{$A['setting']}' value='{$A['value']}'></td><td>{$A['help']} <strong>Default:</strong>&nbsp;'$def_text'\n";
     echo $out;
@@ -107,7 +106,6 @@ function unc_gallery_setting_text_field_render($A) {
  * @param type $A
  */
 function unc_gallery_setting_drodown_render($A) {
-    global $UNC_GALLERY;
     $out = "<select name=\"{$A['setting']}\">\n";
     foreach ($A['options'] as $option => $text) {
         $sel = '';
