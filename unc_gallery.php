@@ -231,8 +231,10 @@ function unc_gallery_add_css_and_js() {
         $api_key = $UNC_GALLERY['google_api_key'];
         wp_register_script('unc_gallery_google_maps', "https://maps.googleapis.com/maps/api/js?key=$api_key", array(), '', false);
         wp_register_script('unc_gallery_makerwithlabel_js', plugin_dir_url( __FILE__ ) . 'js/markerwithlabel.js', array(), '', false);
+        wp_register_script('unc_gallery_makercluster_js', plugin_dir_url( __FILE__ ) . 'js/markerclusterer.js', array(), '', false);
         wp_enqueue_script('unc_gallery_google_maps');
         wp_enqueue_script('unc_gallery_makerwithlabel_js');
+        wp_enqueue_script('unc_gallery_makercluster_js');
     }
 
 }

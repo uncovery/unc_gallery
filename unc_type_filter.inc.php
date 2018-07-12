@@ -81,6 +81,7 @@ function unc_filter_image_list($filter_arr) {
 
     $files = $wpdb->get_results($sql, 'ARRAY_A');
     $myfiles = array();
+    
     foreach ($files as $file) {
         $file_path = $file['file_path'];
         $file_date = $file['file_time'];
@@ -95,6 +96,7 @@ function unc_filter_image_list($filter_arr) {
 
 function unc_filter_choice($filter_arr) {
     global $UNC_GALLERY, $wpdb;
+    unc_tools_debug_trace(__FUNCTION__, $filter_arr);
     $img_table_name = $wpdb->prefix . "unc_gallery_img";
     $att_table_name = $wpdb->prefix . "unc_gallery_att";
     $group_filter = esc_sql($filter_arr[0]);
@@ -136,6 +138,8 @@ function unc_filter_choice($filter_arr) {
             $desc1 = "Please select filter field value:&nbsp;";
         }
     }
+    unc_tools_debug_trace('names sql', $names_sql);
+    
     if (count($filter_arr) >= 3 ) { // we have enough info for the image list, count result
         $att_value_filter = esc_sql(urldecode($filter_arr[2]));
         $count_sql = "SELECT count(`file_id`) as `counter` FROM $att_table_name
@@ -147,10 +151,23 @@ function unc_filter_choice($filter_arr) {
         if ($row_count > 50) {
             $next_page = $filter_arr[3] + 1;
             $display_page = $next_page;
-            $next_page_link = " <a class=\"next_page_link\" onclick=\"filter_select('$filter_key', '{$filter_arr[2]}', '$filter_group', '$filter_name', 'list', $next_page)\">Next Page</a>";
+            $next_page_link = " <a 
+                class=\"next_page_link\" 
+                onclick=\"filter_select(
+                    '$filter_key',
+                    '{$filter_arr[2]}',
+                    '$filter_group', 
+                    '$filter_name',
+                    'list', 
+                    $next_page)\">
+                        Next Page
+            </a>";
             $desc2  .= "<br>More than 50 images found, showing page $display_page ($row_count results)." . $next_page_link;
+        } else if ($row_count == 0) {
+            unc_tools_debug_trace('unc_filter_choice no images found!',  $count_sql);  
         }
     }
+
 
     $names = $wpdb->get_results($names_sql, 'ARRAY_A');
 
@@ -233,6 +250,8 @@ function unc_filter_choice($filter_arr) {
 function unc_filter_map_data($type) {
     global $UNC_GALLERY;
 
+    unc_tools_debug_trace(__FUNCTION__, $type);
+    
     if (strlen($UNC_GALLERY['google_api_key']) < 1) {
         return "You need to set a google API key in your Uncovery Gallery Configuration to use Google Maps!";
     }
@@ -253,22 +272,23 @@ function unc_filter_map_data($type) {
         if (is_null($temp_value)) {
             break;
         }
-        $my_levels[$level] = $temp_value;
-        $queries[] = "$level=$temp_value";
+        $my_levels[$level] = urldecode($temp_value);
+        $queries[] = "$level=" . urlencode($temp_value);
         $i++;
     }
 
     $link_code = 'window.location.href = this.url;';
-    if (count($levels) == ($i + 1)) { // the last level is always the link to the data
+    if (count($levels) == ($i + 1) || $UNC_GALLERY['google_maps_markerstyle'] == 'cluster') { // the last level is always the link to the data
         $link_code = 'map_filter(this.gps_raw);';
     }
 
-
-    // we need to always add one level to the existing so that it will be shown
-    $add_level = $levels[$i];
-    // false is the wildcard to display all contents
-    $my_levels[$add_level] = false;
-
+    $add_level = false;
+    if ($UNC_GALLERY['google_maps_markerstyle'] == 'layer') {
+        // we need to always add one level to the existing so that it will be shown
+        $add_level = $levels[$i];
+        // false is the wildcard to display all contents
+        $my_levels[$add_level] = false;
+    }
     // let's get all the locations from the DB:
     $locations_details = unc_filter_map_locations($my_levels, $type, $add_level);
     // var_dump($locations);
@@ -290,23 +310,36 @@ function unc_filter_map_data($type) {
     $min_long = 200;
     foreach ($locations as $L) {
         foreach ($L as $loc_name => $gps) {
-            $loc_name_encoded = addslashes($loc_name);
             $z_index++;
-
-            $this_queries = $queries;
-            $this_queries[] = "$level=$loc_name_encoded";
-            if (count($queries) == count($levels)) {
-                $link = "https://uncovery.net/";
+            $loc_name_display = addslashes(urldecode($loc_name));
+            if ($UNC_GALLERY['google_maps_markerstyle'] == 'cluster') {
+                $loc_name_array = explode("|", $loc_name_display);
+                $i = 0;
+                $link_tmp = "?";
+                foreach ($loc_name_array as $loc_name) {
+                    $link_tmp .= urlencode($levels[$i]) . "=" . urlencode($loc_name) . "&";
+                    $i++;
+                }
+                $link = substr($link_tmp, 0, -1);
             } else {
-                $link = "?" . implode("&", $this_queries);
+                $this_queries = $queries;
+                $this_queries[] = "$level=" . urlencode($loc_name);
+                if (count($queries) == count($levels)) {
+                    $link = "/";
+                } else {
+                    $link = "?" . implode("&", $this_queries);
+                }
             }
 
             $lat = $gps['lat'];
             $all_lat += $lat;
             $long = $gps['long'];
             $all_long += $long;
-
-            $markers_list .= "['$loc_name_encoded',$lat,$long,$z_index,'$link',''],\n";
+            if ($UNC_GALLERY['google_maps_markerstyle'] == 'cluster') {
+                $loc_name_array_short = array_slice($loc_name_array, -2, 2);
+                $loc_name_display = implode(", ", $loc_name_array_short);
+            }
+            $markers_list .= "['$loc_name_display',$lat,$long,$z_index,'$link'],\n";
             $max_lat = max($max_lat, $lat);
             $max_long = max($max_long, $long);
             $min_lat = min($min_lat, $lat);
@@ -327,18 +360,28 @@ function unc_filter_map_data($type) {
         // from http://stackoverflow.com/questions/10268033/google-maps-api-v3-method-fitbounds
         // and http://jsfiddle.net/gaby/22qte/
         $bounds = "
-                var bounds = new google.maps.LatLngBounds();
-                bounds.extend(new google.maps.LatLng ($max_lat,$max_long));
-                bounds.extend(new google.maps.LatLng ($min_lat,$min_long));
-                map.fitBounds(bounds);
+            var bounds = new google.maps.LatLngBounds();
+            bounds.extend(new google.maps.LatLng ($max_lat,$max_long));
+            bounds.extend(new google.maps.LatLng ($min_lat,$min_long));
+            map.fitBounds(bounds);
         ";
+    }
+    
+    $cluster = '';
+    if ($UNC_GALLERY['google_maps_markerstyle'] == 'cluster') {
+        $cluster = '
+            var mcOptions = {imagePath: \''.plugin_dir_url( __FILE__ ) .'images/m\', pane: "floatPane"};
+            var markerCluster = new MarkerClusterer(map, markers, mcOptions);';
     }
 
     $markers_list .= "\n];\n";
 
     // mapwithmarker reference:
-    // http://google-maps-utility-library-v3.googlecode.com/svn/trunk/markerwithlabel/docs/reference.html
+    // https://developers.google.com/maps/documentation/javascript/tutorial
 
+    // Marker Cluster
+    // https://developers.google.com/maps/documentation/javascript/marker-clustering
+    
     // on-hover visibility method from
     // http://stackoverflow.com/questions/25981512/markerwithlabel-mouseover-issue
 
@@ -350,10 +393,11 @@ function unc_filter_map_data($type) {
 
     $out = '
     <div id="map" style="height:600px"></div>
-
     <script>
         var map;
         var marker;
+        var infowindow;
+        
         function initMap() {
             map = new google.maps.Map(document.getElementById(\'map\'), {
                 center: {lat: '.$avg_lat.', lng: '.$avg_long.'},
@@ -361,64 +405,33 @@ function unc_filter_map_data($type) {
                 mapTypeId: google.maps.MapTypeId.'.$map_type.'
             });
             ' . $markers_list . '
+            var markers = new Array();
             for (var i = 0; i < points.length; i++) {
                 var point = points[i];
-                var location = point[1] + "," + point[2];
+                
                 marker = MarkerWithLabelAndHover(
                     new MarkerWithLabel({
-                        pane: "overlayMouseTarget",
+                        pane: "floatPane",
                         position: new google.maps.LatLng(point[1], point[2]),
-                        labelContent: "",
-                        hoverContent: point[0] + "<br>Click to open",
+                    //    labelContent: "",
+                        hoverContent: point[0] + "<br>Click to show images",
                         labelAnchor: new google.maps.Point(40, -5),
                         map: map,
-                        labelClass: "labels",
-                        hoverClass: "hoverlabels",
+                    //    labelClass: "google_map_labels",
+                        hoverClass: "google_map_labels_hover",
                         url: point[4],
                         gps_raw: point[1] + "," + point[2],
                     })
                 );
-                google.maps.event.addListener(marker, \'click\', function() {
-                    '.$link_code.'
-                });
+                markers.push(marker);
+                google.maps.event.addListener(marker, \'click\', function() {'.$link_code.'});
             }
             '. $bounds .'
+            '. $cluster . '          
         }
         google.maps.event.addDomListener(window, \'load\', initMap);
     </script>';
     return $out;
-}
-
-/**
- * Attempt to calculate a good zoom level depending on the max distance between
- * markers on the map. This is not very good and also not used anymore.
- * We replaced this by using the map.fitBounds() function instead
- *
- * @global type $UNC_GALLERY
- * @param type $lat1
- * @param type $lon1
- * @param type $lat2
- * @param type $lon2
- * @return type
- */
-function unc_filter_map_zoom_level($lat1, $lon1, $lat2, $lon2) {
-
-    $max = 40000000; // world is 40k KM large, Zoom 2
-    $distance = intval(unc_filter_map_gps_convert($lat1, $lon1, $lat2, $lon2));
-    $fraction = intval($max / $distance);
-
-    // the following variable are estimates
-    $min_zoom = 1;
-    $max_zoom = 17;
-    $steps = 4.5;
-    // this formula tries to create a scale between min_zoom and max_zoom that
-    // corresponds with the google maps zoom levels from the
-    // fraction of the distance between the available points and the circumference of the world.
-    $zoom_index = $min_zoom + pow($fraction, log10($max_zoom) / $steps);
-
-    // since 2 is the widest we need to invert
-    $zoom_level = intval($zoom_index);
-    return $zoom_level;
 }
 
 /**
@@ -459,36 +472,55 @@ function unc_filter_map_gps_convert($latitudeFrom, $longitudeFrom, $latitudeTo, 
  * @return type
  */
 function unc_filter_map_locations($levels, $type, $next_level) {
-    global $wpdb;
+    global $wpdb, $UNC_GALLERY;
 
     $att_table_name = $wpdb->prefix . "unc_gallery_att";
-
-    if (count($levels) == 1) { // we have no input, look for countries
-        $sql = "SELECT loc_list.att_value as country, gps_list.att_value as gps FROM `$att_table_name` as loc_list
-            LEFT JOIN `$att_table_name` as gps_list ON loc_list.file_id=gps_list.file_id
-            WHERE loc_list.`att_group`='$type' AND loc_list.att_name = '$next_level' AND gps_list.att_name='gps'
-            GROUP BY gps_list.att_value;";
-    } else {
-        $levels_sql = implode("|", $levels) . '%';
-        $sql = "SELECT loc_list.att_value as loc_str, gps_list.att_value as gps, item_list.att_value as item
+    if ($UNC_GALLERY['google_maps_markerstyle'] == 'layer') {
+        if (count($levels) == 1) { // we have no input, look for countries
+            $sql = "SELECT loc_list.att_value as country, gps_list.att_value as gps FROM `$att_table_name` as loc_list
+                LEFT JOIN `$att_table_name` as gps_list ON loc_list.file_id=gps_list.file_id
+                WHERE loc_list.`att_group`='$type' AND loc_list.att_name = '$next_level' AND gps_list.att_name='gps'
+                GROUP BY gps_list.att_value;";
+        } else {
+            $levels_sql = implode("|", $levels) . '%';
+            $sql = "SELECT loc_list.att_value as loc_str, gps_list.att_value as gps, item_list.att_value as item
+                FROM `$att_table_name` as loc_list
+                LEFT JOIN `$att_table_name` as gps_list ON loc_list.file_id=gps_list.file_id
+                LEFT JOIN `$att_table_name` as item_list on loc_list.file_id=item_list.file_id
+                WHERE loc_list.`att_group`='xmp' 
+                    AND loc_list.att_name = 'loc_str' 
+                    AND loc_list.att_value LIKE '$levels_sql' 
+                    AND item_list.att_name='$next_level' 
+                    AND gps_list.att_name='gps'
+                GROUP BY gps_list.att_value"; //
+        }
+    } else { // cluster 
+        $levels = 3;
+        $sql = "SELECT  loc_list.att_value as loc_str, gps_list.att_value as gps, item_list.att_value as item
             FROM `$att_table_name` as loc_list
             LEFT JOIN `$att_table_name` as gps_list ON loc_list.file_id=gps_list.file_id
             LEFT JOIN `$att_table_name` as item_list on loc_list.file_id=item_list.file_id
-            WHERE loc_list.`att_group`='xmp' AND loc_list.att_name = 'loc_str' AND loc_list.att_value LIKE '$levels_sql' AND item_list.att_name='$next_level' AND gps_list.att_name='gps'
+            WHERE loc_list.`att_group`='xmp' 
+                AND loc_list.att_name = 'loc_str' 
+                AND gps_list.att_name='gps'
             GROUP BY gps_list.att_value"; //
     }
-
+  
     $locations = $wpdb->get_results($sql, 'ARRAY_A');
 
     $final = array();
     foreach ($locations as $L) {
         $gps_arr = explode(",", $L['gps']);
-        if (count($levels) == 1) {
+        if (count($levels) == 1 && $UNC_GALLERY['google_maps_markerstyle'] == 'layer') {
             $country = $L['country'];
             $final[$country]['gps']['lat'][] = floatval($gps_arr[0]);
             $final[$country]['gps']['long'][] = floatval($gps_arr[1]);
         } else {
-            $item = $L['item'];
+            if ($UNC_GALLERY['google_maps_markerstyle'] == 'layer') {
+                $item = $L['item'];
+            } else {
+                $item = $L['loc_str'];
+            }
             $final[$item]['gps']['lat'][] = floatval($gps_arr[0]);
             $final[$item]['gps']['long'][] = floatval($gps_arr[1]);
         }
@@ -525,6 +557,8 @@ function unc_filter_gps_avg($array) {
  * @return type
  */
 function unc_filter_update(){
+    unc_tools_debug_trace(__FUNCTION__ . "GET input", $_GET);
+    
     $filter_key = filter_input(INPUT_GET, 'filter_key', FILTER_SANITIZE_STRING);
     $filter_value = filter_input(INPUT_GET, 'filter_value', FILTER_SANITIZE_STRING);
     $filter_group = filter_input(INPUT_GET, 'filter_group', FILTER_SANITIZE_STRING);
@@ -557,6 +591,7 @@ function unc_filter_update(){
     // the following line has ECHO = FALSE because we do the echo here
     unc_gallery_display_var_init(array('type' => 'filter', 'filter' => $filter_str, 'ajax_show' => 'all', 'options' => $options));
     ob_clean();
+    echo "Photos: ";
     echo unc_gallery_display_page();
     wp_die();
 }
@@ -777,6 +812,7 @@ function unc_categories_apply($file_data) {
                 $this_id = $all_cat_index[$cat_id]['id'];
             } else {
                 $this_id = wp_create_category($cat, $next_parent);
+                // add the GPS data to the location
             }
             $post_categories[] = $this_id; // collect the categories to add them to the post
             $next_parent = $this_id;

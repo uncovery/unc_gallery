@@ -60,6 +60,7 @@ function unc_gallery_apply($atts = array()) {
  * @return type
  */
 function unc_gallery_display_var_init($atts = array()) {
+    unc_tools_debug_trace(__FUNCTION__ , $atts);
     global $UNC_GALLERY, $post;
 
     $possible_attributes = array(
@@ -148,6 +149,7 @@ function unc_gallery_display_var_init($atts = array()) {
     }
 
     if (!$check) { // there was some critical error, let's return that
+        unc_tools_debug_trace("Critical error", 'unc_gallery_display_var_init');
         return false;
     }
 
@@ -215,6 +217,7 @@ function unc_gallery_display_var_init($atts = array()) {
     $UNC_GALLERY['slugs'][] = $slug;
     $UNC_GALLERY['display']['slug'] = $slug;
 
+    unc_tools_debug_trace('UNC_GALLERY display' , $UNC_GALLERY['display']);
     return true;
 }
 
@@ -277,10 +280,12 @@ function unc_gallery_display_page() {
 
         if ($filter_arr[1] == 'map') {
             $selector_div = unc_filter_map_data($filter_arr[0])
-                . "<div id=\"filter_selector\">\n</div>\n";
+                . "<div id=\"filter_selector\">\n<!-- empty insert with map by unc_gallery_display_page --></div>\n";
         } else {
+            // duplication on update?
             $selector_div = "<div id=\"filter_selector\">\n"
                 . unc_filter_choice($filter_arr)
+                . "<!-- inserted by unc_gallery_display_page -->"
                 . "</div>\n";
         }
     } else if ($D['type'] == 'chrono') {
@@ -314,12 +319,14 @@ function unc_gallery_display_page() {
         $delete_link = '';
         $limit_rows = '';
         if ($D['limit_rows']) {
-            $limit_rows = 'limit_rows_' . $D['limit_rows'];
+            $limit_rows = ' limit_rows_' . $D['limit_rows'];
         }
         $out .= "
+                <div id=\"filter_wrap\">
                 $selector_div
+                </div>
                 $delete_link
-                <div class=\"photos $limit_rows\" id=\"selector_target\">
+                <div id=\"selector_target\" class=\"photos$limit_rows\">
         $images_html
                 </div>\n";
         if ($D['ajax_show'] !== 'all') { // we wrap into this div except when we requild the page with ajax, in that case the div is kept
@@ -362,7 +369,7 @@ function unc_display_images() {
     // get all the files in the folder with attributes
     $files = $D['files'];
     if (!$files || count($files) == 0) { // we have no files
-        return;
+        return "-";
     }
 
     // display except for skipped files and files out of time range
@@ -373,10 +380,6 @@ function unc_display_images() {
     if ($UNC_GALLERY['featured_size_for_mixed_sizes'] <> 'dynamic' && count($D['featured_image']) > 1) {
         $featured_fixed = $UNC_GALLERY['featured_size_for_mixed_sizes'];
     }
-
-    /*if ($D['slideshow']) {
-        $images .= '<ul id="lightSlider">';
-    } */
 
     $i = 0;
 
@@ -467,9 +470,9 @@ function unc_display_images() {
     $out = $header . $featured . $images . $photoswipe . $summary;
 
     if ($D['ajax_show'] == 'images') {
-        ob_clean();
+        //ob_clean();
         echo $out;
-        wp_die();
+        //wp_die();
     } else {
         return $out;
     }
@@ -584,8 +587,6 @@ function unc_display_photoswipe_js($files) {
  * @return type
  */
 function unc_display_errormsg($error) {
-    global $UNC_GALLERY;
-
     return "<div class=\"unc_gallery_error\">ERROR: $error</div>";
 }
 
@@ -595,7 +596,6 @@ function unc_display_errormsg($error) {
  * @global type $UNC_GALLERY
  */
 function unc_display_photoswipe() {
-    global $UNC_GALLERY;
     $out = '<!-- Root element of PhotoSwipe. Must have class pswp. -->
 <div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
 

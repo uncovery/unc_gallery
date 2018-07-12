@@ -178,6 +178,11 @@ function unc_day_images_list($D = false) {
         WHERE ($att_table_name.att_name='date_str') AND $sql_filter
         ORDER BY file_time ASC;";
     $file_data = $wpdb->get_results($sql, 'ARRAY_A');
+    
+    if (count($file_data) == 0) {
+        unc_tools_debug_trace('unc_day_images_list no images for date found!',  $sql); 
+    }
+    
     foreach ($file_data as $F) {
         $I = unc_image_info_read($F['file_path']);
         if (in_array($F['file_name'], $D['featured_image'])) {
@@ -281,13 +286,14 @@ function unc_day_date_span($date1, $date2) {
  * @return type
  */
 function unc_day_date_latest() {
-    global $UNC_GALLERY, $wpdb;
+    global $wpdb;
 
     $img_table_name = $wpdb->prefix . "unc_gallery_img";
 
     $sql ="SELECT SUBSTR(file_time, 1, 10) as date_str FROM `$img_table_name` ORDER BY file_time DESC LIMIT 1;";
     $file_data = $wpdb->get_results($sql, 'ARRAY_A');
     if (count($file_data) == 0) {
+        unc_tools_debug_trace('unc_day_date_latest no images found!',  $sql);  
         return false;
     }
     $date_str = $file_data[0]['date_str'];

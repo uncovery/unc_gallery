@@ -543,7 +543,7 @@ function unc_image_info_exiftool($file_path) {
  * @return boolean
  */
 function unc_image_info_delete($file_name, $file_date) {
-    global $wpdb, $UNC_GALLERY;
+    global $wpdb;
     // remove existing file info
 
     // $sql = "SELECT id FROM " . $wpdb->prefix . "unc_gallery_img WHERE file_time LIKE %s AND file_name=%s;";
@@ -575,8 +575,6 @@ function unc_image_info_delete($file_name, $file_date) {
  * @return boolean
  */
 function unc_image_date($file_path) {
-    global $UNC_GALLERY;
-
     $exif = unc_exif_date($file_path);
     if (is_null($exif)) {
         
@@ -605,7 +603,6 @@ function unc_image_date($file_path) {
  * @return boolean
  */
 function unc_xmp_get($filepath) {
-    global $UNC_GALLERY;
     $max_size = 1240000; // maximum size read (1MB)
     $chunk_size = 65536; // read 64k at a time
     $start_tag = '<x:xmpmeta';
@@ -674,7 +671,6 @@ function unc_xmp_get_array($xmp_raw) {
  * @return type
  */
 function unc_xmp_fix($xmp_raw) {
-    global $UNC_GALLERY;
     // custom location string
     $val_array = array(
         'country', 'state', 'city', 'location',

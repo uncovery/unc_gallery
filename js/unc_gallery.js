@@ -138,13 +138,14 @@ function datelist_change(inst) {
 
 
 function filter_select(filter_key, filter_value, filter_group, filter_name, options, page, inst) {
+    calling_function = arguments.callee.caller.toString();
     jQuery.ajax({
         url: ajaxurl,
         method: 'GET',
         dataType: 'text',
         data: {action: 'unc_filter_update', filter_key: filter_key, filter_value: filter_value, filter_group: filter_group, filter_name: filter_name, page: page, options: options},
         complete: function (response) {
-            jQuery('#filter_selector').html(response.responseText);
+            jQuery('#selector_target').html(response.responseText);
             window.scrollTo(0,document.body.scrollHeight);
         },
         error: function () {
@@ -170,6 +171,7 @@ function filter_change(filter_key, filter_group, filter_name, options, page, ins
 }
 
 function map_filter(position, inst) {
+    calling_function = arguments.callee.caller.toString();
     filter_select('att_value', position, 'exif', 'gps', 'map', inst);
 }
 

@@ -106,13 +106,17 @@ function unc_uploads_iterate_files() {
     if (!is_null($import_path)) {
         if (is_dir($import_path)) {
             // iterate files in the path
-            unc_tools_import_enumerate($import_path);
+            $check = unc_tools_import_enumerate($import_path);
+            if (!$check) {
+                unc_tools_progress_update($process_id, "Could not enumerate files in folder $import_path", 0);
+                wp_die();
+            }
             $F = $UNC_GALLERY['import'];
             $count = count($F["name"]);
-            unc_tools_progress_update($process_id, "Found $count files $import_path", 0);
+            unc_tools_progress_update($process_id, "Found $count files in folder $import_path", 0);
         } else {
-            $check = var_export(unc_tools_folder_access_check($import_path), true);
-            $msg = '<p style=\"color: #F00;\">' . $import_path . " cannot be accessed or does not exist! Make sure its readable by the apache user ($check)!</p>";
+            $check = unc_tools_folder_access_check($import_path);
+            $msg = '<p style=\"color: #F00;\">' . $import_path . " cannot be accessed or does not exist! Make sure its readable by the apache user: $check</p>";
             unc_tools_progress_update($process_id, $msg, 0);
             wp_die();
         }
@@ -127,13 +131,14 @@ function unc_uploads_iterate_files() {
         $count = count($F["name"]);
         $ini_max = ini_get('max_file_uploads');
         if ($count > $ini_max) {
-            echo "Your server does not allow you to upload more than $ini_max files, you picked $count!";
+            unc_tools_progress_update($process_id, "Your server does not allow you to upload more than $ini_max files, you picked $count!");
             wp_die();
         }
     }
 
     if ($count < 1) {
-        echo "No images found to upload";
+        unc_tools_progress_update($process_id, var_export($_FILES["userImage"], true));
+        unc_tools_progress_update($process_id, "No images found to upload");
         wp_die();
     }
 

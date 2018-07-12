@@ -140,7 +140,7 @@ function unc_date_folder_delete($date_str) {
 
     // delete images from DB
     $table_name = $wpdb->prefix . "unc_gallery_img";
-    $sql = "DELETE * FROM $table_name WHERE file_time LIKE '$date_str%';";
+    $sql = "DELETE FROM $table_name WHERE file_time LIKE '$date_str%';";
 
     $wpdb->get_results($sql);
     // now clean up all image info
@@ -219,10 +219,6 @@ function unc_tools_folder_delete_empty($path) {
  */
 function unc_tools_import_enumerate($path) {
     global $UNC_GALLERY;
-
-    if (!current_user_can('manage_options')) {
-        return false;
-    }
     foreach (glob($path . "/*") as $file) {
         if (is_dir($file)) { // recurse lower directory
            unc_tools_import_enumerate($file);
@@ -233,6 +229,7 @@ function unc_tools_import_enumerate($path) {
             $UNC_GALLERY['import']['error'][] = 0;
         }
     }
+    return true;
 }
 
 /**
@@ -555,7 +552,6 @@ function unc_tools_image_delete() {
  * @return boolean
  */
 function unc_tools_filename_validate($file_name) {
-    global $UNC_GALLERY;
     if (strpbrk($file_name, "\\/?%*:|\"<>") === FALSE) {
         return $file_name;
     } else {
@@ -638,24 +634,90 @@ function unc_tools_folder_access_check($path) {
     if ($last_letter == "/") {
         $path = substr($path, 0, -1);
     }
-    $report = '';
-    // check if we have read perissions:
+    $report = '<br>';
+    // clear the cache to make sure we have the latest data:
+    clearstatcache();
+    // check if we have read perissions on the complete path:
     $check_read = is_readable($path);
     if (!$check_read) {
-        $path_emelents = explode("/", $path);
+        $path_elements = explode("/", $path);
         $new_path = "";
-        foreach ($path_emelents as $folder) {
-            $new_path .= "/$folder";
-            $check = fileperms($new_path);
-            if ($check){ 
-                $report .= "$new_path: $check<br>";
+        foreach ($path_elements as $folder) {
+            if ($new_path == '/') {
+                $new_path .= "$folder";
             } else {
-                $report .= "$new_path: failed!<br>";
+                $new_path .= "/$folder";
+            }
+            $check_read_subfolder = is_readable($new_path);
+            if ($check_read_subfolder) {
+                $report .= "$new_path: OK!<br>";
+            } else {
+                $fileperms = unc_tools_fileperms_text($new_path);
+                $report .= "$new_path: $fileperms<br>";
             }
         }
+    } else {
+         $report .= "$path: OK!<br>";
     }
     return $report;
 }
+
+function unc_tools_fileperms_text($folder) { 
+    $perms = fileperms($folder);
+    // return the actual numeric file permissions
+    $num_perms = $perms;
+    $fileperms_numeric = substr(sprintf('%o', $num_perms), -4);
+
+    switch ($perms & 0xF000) {
+        case 0xC000: // socket
+            $info = 's';
+            break;
+        case 0xA000: // symbolic link
+            $info = 'l';
+            break;
+        case 0x8000: // regular
+            $info = 'r';
+            break;
+        case 0x6000: // block special
+            $info = 'b';
+            break;
+        case 0x4000: // directory
+            $info = 'd';
+            break;
+        case 0x2000: // character special
+            $info = 'c';
+            break;
+        case 0x1000: // FIFO pipe
+            $info = 'p';
+            break;
+        default: // unknown
+            $info = 'u';
+    }
+
+    // Owner
+    $info .= (($perms & 0x0100) ? 'r' : '-');
+    $info .= (($perms & 0x0080) ? 'w' : '-');
+    $info .= (($perms & 0x0040) ?
+                (($perms & 0x0800) ? 's' : 'x' ) :
+                (($perms & 0x0800) ? 'S' : '-'));
+
+    // Group
+    $info .= (($perms & 0x0020) ? 'r' : '-');
+    $info .= (($perms & 0x0010) ? 'w' : '-');
+    $info .= (($perms & 0x0008) ?
+                (($perms & 0x0400) ? 's' : 'x' ) :
+                (($perms & 0x0400) ? 'S' : '-'));
+
+    // World
+    $info .= (($perms & 0x0004) ? 'r' : '-');
+    $info .= (($perms & 0x0002) ? 'w' : '-');
+    $info .= (($perms & 0x0001) ?
+                (($perms & 0x0200) ? 't' : 'x' ) :
+                (($perms & 0x0200) ? 'T' : '-'));
+
+    return "$fileperms_numeric $info";
+}
+
 
 function unc_tools_debug_write() {
     global $UNC_GALLERY;
@@ -715,7 +777,7 @@ function unc_tools_debug_trace($type, $data = '') {
     if (isset($UNC_GALLERY['debug_log'][$time])) {
         unc_tools_debug_trace($type, $data);
     } else {
-        $UNC_GALLERY['debug_log'][$time][$type] = unc_tools_array2text($data);
+        $UNC_GALLERY['debug_log'][$time][$type] = $data;
     }
 }
 
@@ -725,8 +787,16 @@ function unc_tools_microtime2string($microtime = false, $format = 'Y-m-d H-i-s')
         $microtime = microtime(true);
     }
     $date_obj = new DateTime();
+    // wordpress stores named & numbered timezones differently, see here:
+    // https://wordpress.stackexchange.com/questions/8400/how-to-get-wordpress-time-zone-setting#8404
     $timezone = get_option('timezone_string');
+    if ($timezone == '') {
+        $offset = get_option('gmt_offset');
+        $timezone = sprintf("%+'05g", $offset * 100) . "\n";
+        // this returns a string like 2 or -2. need to convert to +0200 or -0200
+    }
     $date_obj->setTimezone(new DateTimeZone($timezone));
+   
     $time_str = $date_obj->format($format) . substr((string)$microtime, 1, 8);
     return $time_str;
 }

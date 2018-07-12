@@ -80,6 +80,16 @@
     display:none;
 }
 
+#datepicker {
+    display: inline;
+    width: initial;
+    padding: 5px;
+}
+
+#datepicker_wrap {
+    margin: 10px;
+}
+
 .unc_gallery {
     overflow:auto;
     position: relative;
@@ -253,7 +263,7 @@
     text-decoration: underline;
 }
 
-.hoverlabels {
+.google_map_labels_hover, .google_map_labels {
     color: #000;
     background-color: white;
     font-family: "Lucida Grande", "Arial", sans-serif;
