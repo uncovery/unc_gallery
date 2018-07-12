@@ -435,17 +435,13 @@ function unc_display_images() {
     if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
         $photoswipe = unc_display_photoswipe_js($files);
     }
+    
     if ($UNC_GALLERY['post_keywords'] != 'none') {
-        $check_tags = unc_tags_apply($files);
-        if ($check_tags) {
-
-        }
+        unc_tags_apply($files);
     }
+    
     if ($UNC_GALLERY['post_categories'] != 'none') {
-        $check_cats = unc_categories_apply($files);
-        if ($check_cats) {
-            
-        }
+        unc_categories_apply($files);
     }
 
     if ($D['slideshow']) {
