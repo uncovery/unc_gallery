@@ -342,8 +342,9 @@ function unc_gallery_data_integrity() {
             }
         }
         $out .= "</ul>\n";
+        return $out;
     }
-    return $out;
+    
     
     // TODO: create a query that deletes orphaned attachment entries where the file is gone 
     // DELETE `wp_unc_gallery_att` FROM `wp_unc_gallery_att` LEFT JOIN 
