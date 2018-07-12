@@ -448,8 +448,11 @@ function unc_image_info_write($file_path) {
                     $data_arr
                 );
                 $insert_id2 = $wpdb->insert_id;
+                
+                // TODO remove the REPLACE here since it's labor intensive.
+                // rather use ON DUPLICATE KEY UPDATE
+                // https://stackoverflow.com/questions/2366813/on-duplicate-key-ignore#4920619
                 if ($insert_id2 == 0) {
-                    
                     $wpdb->replace(
                         $wpdb->prefix . "unc_gallery_att",
                         $data_arr
