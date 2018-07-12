@@ -188,7 +188,7 @@ function unc_gallery_admin_settings() {
         <li><a href='#tab5'><span>Data Integrity</span></a></li>
         <li><a href='#tab6'><span>Documentation</span></a></li>";
     if ($UNC_GALLERY['debug'] == 'yes') {
-        echo "<li><a href='#tab6'><span>Debug Logs</span></a></li>\n";
+        echo "<li><a href='#tab7'><span>Debug Logs</span></a></li>\n";
     }
     echo "</ul>\n";
 
@@ -216,7 +216,7 @@ function unc_gallery_admin_settings() {
     echo "</div>";
     
     if ($UNC_GALLERY['debug'] == 'yes') {
-        echo "<div id='tab6'>\n";
+        echo "<div id='tab7'>\n";
         echo unc_gallery_admin_show_debuglogs();
         echo "</div>\n";
     }
@@ -308,6 +308,8 @@ function unc_gallery_admin_show_documentation() {
 }
 
 function unc_gallery_data_integrity() {
+    $out = "<h2>Data Integrity checks</h2>";
+    
     global $wpdb;
     // check for locations where we have more than one GPS data.
     $check_sql = "SELECT loc_table.att_value as location, gps_table.att_value as gps, count(gps_table.att_value) as filecount
@@ -329,8 +331,8 @@ function unc_gallery_data_integrity() {
     
     if ($has_duplicate_gps) {
         // now remove all single GPS locations from the array
-        $out = "<h2>You have identical locations with several different GPS data:</h2>
-            As of now, the Map display won't work for locations where you have several GPS sets.
+        $out .= "<h2>You have identical locations with several different GPS data:</h2>
+            The Google Map display won't work for locations where you have several GPS data sets.
             <ul>\n";
         foreach ($locations as $loc_name => $loc_data) {
             if (count($loc_data) > 1) {
@@ -342,9 +344,11 @@ function unc_gallery_data_integrity() {
             }
         }
         $out .= "</ul>\n";
-        return $out;
+        
+    } else {
+        $out .= "No Data Integrity issues found";
     }
-    
+    return $out;
     
     // TODO: create a query that deletes orphaned attachment entries where the file is gone 
     // DELETE `wp_unc_gallery_att` FROM `wp_unc_gallery_att` LEFT JOIN 
@@ -354,8 +358,15 @@ function unc_gallery_data_integrity() {
 
 function unc_gallery_admin_show_debuglogs() {
     $path = plugin_dir_path(__FILE__) . "logs";
-    $out = '<h2>Debug Logs</h2>
-        <button class="button button-primary" onclick="
+    $files = glob($path.'/*.html');
+    
+    $out = '<h2>Debug Logs</h2>';
+    if (count($files) == 0) {
+        $out . "No debug logfiles found.";
+        return $out;
+    }
+    
+    $out .= '<button class="button button-primary" onclick="
             unc_gallery_generic_ajax(
                 \'unc_gallery_admin_remove_logs\',
                 \'debug_logs_target_div\',
@@ -369,10 +380,7 @@ function unc_gallery_admin_show_debuglogs() {
         </button>
         <div id="debug_logs_target_div">';
     $out .= "<ol>";
-    $files = glob($path.'/*.html');
-    if (count($files) == 0) {
-        return "No debug logfiles found.";
-    }
+    
     foreach($files as $file) {
         $path = pathinfo($file);
         $basename = $path['basename'];
