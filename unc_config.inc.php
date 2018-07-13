@@ -198,7 +198,7 @@ $UNC_GALLERY['user_settings'] = array(
         'title' => 'Google Map type',
     ),
     'google_maps_markerstyle' => array(
-        'help' => 'Do you want to click through map layers (country,province, city etc) or show all at one?',
+        'help' => 'Do you want to click through map layers (country,province, city etc) or show all at once (clustered, splitting out on zoom)?',
         'default' => 'cluster',
         'type' => 'dropdown',
         'options' => array(
@@ -206,6 +206,16 @@ $UNC_GALLERY['user_settings'] = array(
             'layer' => 'Click through layers',
         ),
         'title' => 'Google Map Marker Style',
+    ),   
+    'google_maps_resultstyle' => array(
+        'help' => 'Do you want to show photos or posts when clicking on a map point? Posts works only if you have "Auto-Categorize posts by Location" enabled.',
+        'default' => 'posts',
+        'type' => 'dropdown',
+        'options' => array(
+            'photos' => 'Show photos',
+            'posts' => 'Show posts',
+        ),
+        'title' => 'Google Map Result type',
     ),    
     'settings_location' => array(
         'help' => 'Do you want the admin screen of this plugin to be shown as a menu entry in the sidebar or a sub-menu of the settings menu?',

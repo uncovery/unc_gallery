@@ -278,8 +278,13 @@ function unc_filter_map_data($type) {
     }
 
     $link_code = 'window.location.href = this.url;';
+    // in case we have reached the end of the levels (except for clusters), we show the photos
     if (count($levels) == ($i + 1) || $UNC_GALLERY['google_maps_markerstyle'] == 'cluster') { // the last level is always the link to the data
-        $link_code = 'map_filter(this.gps_raw);';
+        if ($UNC_GALLERY['google_maps_resultstyle'] == 'posts') {
+            $link_code = 'show_category(this.category_id);';
+        } else {
+            $link_code = 'map_filter(this.gps_raw);';
+        }
     }
 
     $add_level = false;
@@ -339,7 +344,12 @@ function unc_filter_map_data($type) {
                 $loc_name_array_short = array_slice($loc_name_array, -2, 2);
                 $loc_name_display = implode(", ", $loc_name_array_short);
             }
-            $markers_list .= "['$loc_name_display',$lat,$long,$z_index,'$link'],\n";
+            $loc_string = implode("-", $loc_name_array);
+            $category_id = unc_categories_link_read($loc_string);
+            if (!$category_id) {
+                echo "Could not find category_id for $loc_string";
+            }
+            $markers_list .= "['$loc_name_display',$lat,$long,$z_index,'$link',$category_id],\n";
             $max_lat = max($max_lat, $lat);
             $max_long = max($max_long, $long);
             $min_lat = min($min_lat, $lat);
@@ -370,7 +380,7 @@ function unc_filter_map_data($type) {
     $cluster = '';
     if ($UNC_GALLERY['google_maps_markerstyle'] == 'cluster') {
         $cluster = '
-            var mcOptions = {imagePath: \''.plugin_dir_url( __FILE__ ) .'images/m\', pane: "floatPane"};
+            var mcOptions = {imagePath: \''.plugin_dir_url( __FILE__ ) .'images/m\', pane: "floatPane", gridSize: 10};
             var markerCluster = new MarkerClusterer(map, markers, mcOptions);';
     }
 
@@ -421,6 +431,7 @@ function unc_filter_map_data($type) {
                         hoverClass: "google_map_labels_hover",
                         url: point[4],
                         gps_raw: point[1] + "," + point[2],
+                        category_id: point[5]
                     })
                 );
                 markers.push(marker);
@@ -505,6 +516,8 @@ function unc_filter_map_locations($levels, $type, $next_level) {
                 AND gps_list.att_name='gps'
             GROUP BY gps_list.att_value"; //
     }
+    
+    echo "<!-- DEBUG $sql -->\n";
   
     $locations = $wpdb->get_results($sql, 'ARRAY_A');
 
@@ -557,6 +570,7 @@ function unc_filter_gps_avg($array) {
  * @return type
  */
 function unc_filter_update(){
+    global $UNC_GALLERY;
     unc_tools_debug_trace(__FUNCTION__ . "GET input", $_GET);
     
     $filter_key = filter_input(INPUT_GET, 'filter_key', FILTER_SANITIZE_STRING);
@@ -587,14 +601,54 @@ function unc_filter_update(){
     $page = intval($page_raw);
 
     $filter_str .= "|$page";
+    if ($UNC_GALLERY['google_maps_resultstyle'] == 'posts' && $UNC_GALLERY['post_categories'] != 'none') {
+        ob_clean();
+        unc_categories_show_posts($filter_value);
+        wp_die();
+    }
 
     // the following line has ECHO = FALSE because we do the echo here
     unc_gallery_display_var_init(array('type' => 'filter', 'filter' => $filter_str, 'ajax_show' => 'all', 'options' => $options));
     ob_clean();
+    echo $UNC_GALLERY['google_maps_resultstyle'];
+    echo $UNC_GALLERY['post_categories'];
     echo "Photos: ";
     echo unc_gallery_display_page();
     wp_die();
 }
+
+function unc_categories_show_posts($cat_id) {
+    $limit = 10;
+    query_posts("cat=$cat_id&posts_per_page=$limit");
+
+    echo '<div class="archive">' . "\n";
+    $i = 0;
+    $num_posts = number_postpercat($cat_id);
+    
+    if (have_posts()) {
+        while ( have_posts() ) {
+            $i++;
+            the_post();
+            get_template_part('template-parts/post/content', get_post_format() );
+        }
+        $link = get_category_link($cat_id);
+        echo "<div>$i of $num_posts posts shown. <a href=\"$link\">Click here to see all posts from this location</a></div>";
+        
+    } else {
+        get_template_part( 'template-parts/post/content', 'none' );
+    }
+
+    echo '</div>' . "\n";
+    return;
+}
+
+function number_postpercat($idcat) {
+    global $wpdb;
+    $query = "SELECT count FROM $wpdb->term_taxonomy WHERE term_id = $idcat";
+    $num = $wpdb->get_col($query);
+    return $num[0];
+}
+
 
 function unc_filter_check_type($group, $key) {
     global $UNC_GALLERY;
@@ -754,9 +808,9 @@ function unc_categories_apply($file_data) {
         $all_cat_index[$lower_name]['parent'] = $C->parent;
     }
 
-    // find out what the current setting is
+    // find out what the current config setting is
     $setting = $UNC_GALLERY['post_categories'];
-    // split into array:
+    // split into array: e.g. 'xmp_country_state_city_location'
     $setting_array = explode("_", $setting); // this will be filled with strings such as 'city' etc
     $data_type = array_shift($setting_array); // remove the XPM/EXIF from the front of the array
     // iterate all files and get all the different levels of categories
@@ -768,9 +822,9 @@ function unc_categories_apply($file_data) {
     foreach ($file_data as $F) {
         // we go through the wanted fields from the setting
         $file_cats = array();
-        foreach ($setting_array as $exif_code) {
-            $cat_sets[$exif_code] = false; // with this we also catch empty levels
-            if (!isset($F[$data_type][$exif_code])) {
+        foreach ($setting_array as $exif_code) { // country... state ... city... location
+            $cat_sets[$exif_code] = false; // we assume it does not exist, so with this we also catch empty levels
+            if (!isset($F[$data_type][$exif_code])) { // we look for $F['xmp']['city'] etc
                 $value = '%%none%%';
             } else {
                 $has_cats = true;
@@ -779,7 +833,9 @@ function unc_categories_apply($file_data) {
             $file_cats[] = $value;
         }
         // we try to create a code to make sure we do not make duplicates
-        $cats_id = implode("-", $file_cats);
+        $cats_id = implode("-", $file_cats); // this will look like 'hongkong-hongkongisland-central-grappas'
+        // so we created a array key that has the whole list of location names as the line above and then contains an 
+        // array of the individual names of the location.
         $cat_sets[$cats_id] = $file_cats;
     }
     if (!$has_cats) {
@@ -788,7 +844,8 @@ function unc_categories_apply($file_data) {
 
     $post_categories = array();
 
-    // now we go through the collected categories and apply them to the poat
+    // now we go through the collected categories and apply them to the post
+    // and create them in the system if required
     foreach ($cat_sets as $cat_set) {
         // iterate each level
         $depth = 1; // depth of the hierarchical cats
@@ -796,31 +853,82 @@ function unc_categories_apply($file_data) {
         if (!$cat_set) {
             continue;
         }
+        $cat_string = '';
+        // lets iterate the categories from country -> location
         foreach ($cat_set as $cat) {
+            // we re-build a unique string for the current cat hierarchy to act 
+            // as an index for the category/location link.
+            $cat_string .= "-" . $cat;
             // check if the post has a category of that name already
             $cat_id = strtolower($cat);
             if ($cat == '%%none%%') {
                 continue;
-            } else if (isset($curr_cats[$cat_id])) {
+            } else if (isset($curr_cats[$cat_id])) { // we check if this exists in the current post categories
                 // get the existing cat ID and add it to the post
                 $post_categories[] = $curr_cats[$cat_id]['id'];
+                // since it exists, we declare this one as a parent and move to the next
+                // we use the parent info to make sure that the next category is the right one.
                 $next_parent = $curr_cats[$cat_id]['id'];
                 continue;
             }
-            // check if the current cat already exists in wordpress
+            // check if the current cat already exists in wordpress, make sure it has the same parent
+            // this has a potential 
             if (isset($all_cat_index[$cat_id]) && $all_cat_index[$cat_id]['parent'] == $next_parent) {
                 $this_id = $all_cat_index[$cat_id]['id'];
             } else {
                 $this_id = wp_create_category($cat, $next_parent);
-                // add the GPS data to the location
             }
+            // make sure we remember the link between the location and the category:
+            // strip the first "-"
+            $cat_string_index = substr($cat_string, 1);
+            unc_categories_link_create($this_id, $cat_string_index);
+            
             $post_categories[] = $this_id; // collect the categories to add them to the post
             $next_parent = $this_id;
             $depth++;
         }
     }
-
-    // TODO only update if we need to!
-    // we need to check if the categories we added have the right hierarchy, so let's get the whole list first
     wp_set_post_categories($post_id, $post_categories, false); // true means cats will be added, not replaced
+}
+
+
+/**
+ * Since we want to show all the posts that are related to a location (exif), we need to link the location to
+ * the category that we created. This here creates a link in a table so we can look it up later.
+ *  
+ * @param type $category_id
+ * @param type $exif_code
+ */
+function unc_categories_link_create($category_id, $exif_code) {
+    global $wpdb;
+    // we check first if we have this already
+    $check = unc_categories_link_read($exif_code);
+
+    if ($check) {
+        return;
+    }
+   
+    // since the key does not exist yet, insert it
+    $insert_sql = "INSERT INTO {$wpdb->prefix}unc_gallery_cat_links (location_code,category_id) VALUES (%s,%d);";
+    $insert_prepared_sql = $wpdb->prepare($insert_sql, $exif_code, $category_id);
+    $wpdb->query($insert_prepared_sql);
+}
+
+/**
+ * This here reads a link in a table so we can look it up later.
+ *  
+ * @param type $exif_code
+ */
+function unc_categories_link_read($exif_code) {
+    global $wpdb;
+    // we check first if we have this already
+    $select_sql = "SELECT category_id FROM {$wpdb->prefix}unc_gallery_cat_links WHERE location_code LIKE '%s';";
+    $select_prepared_sql = $wpdb->prepare($select_sql, $exif_code);
+    
+    $data = $wpdb->get_results($select_prepared_sql, 'ARRAY_A');
+    if ($wpdb->num_rows == 0) {
+        return false;
+    } else {
+        return $data[0]['category_id'];
+    }
 }

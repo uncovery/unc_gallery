@@ -3,7 +3,7 @@
 Plugin Name: Uncovery Gallery
 Plugin URI:  https://uncovery.net/about
 Description: A simple, self-generating, date-based gallery with bulk uploading
-Version:     4.1.3
+Version:     5.0
 Author:      Uncovery
 Author URI:  http://uncovery.net
 License:     GPL2
@@ -145,14 +145,24 @@ function unc_mysql_db_create() {
         `att_group` ENUM('default','iptc','exif','xmp') NOT NULL,
         `att_name` VARCHAR(25) NOT NULL,
         `att_value` tinytext NOT NULL,
-        UNIQUE KEY `id` (`att_id`),
+        UNIQUE KEY `att_id` (`att_id`),
         KEY `att_name` (`att_name`),
         KEY `file_id` (`file_id`)
     ) $charset_collate;";
 
     dbDelta($sql_att);
+    
+    $table_name_att = $wpdb->prefix . "unc_gallery_cat_links";
+    $sql_link = "CREATE TABLE $table_name_att (
+        `location_code` tinytext NOT NULL,
+        `category_id` mediumint(9) NOT NULL,
+        UNIQUE KEY `category_id` (`category_id`),
+        UNIQUE KEY `location_code` (`location_code`)
+    ) $charset_collate;";    
+    
+    dbDelta($sql_link);
 
-    add_option( "unc_gallery_db_version", "1.0" );
+    add_option( "unc_gallery_db_version", "2.2" );
 }
 
 /**

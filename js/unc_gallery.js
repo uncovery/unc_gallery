@@ -146,7 +146,9 @@ function filter_select(filter_key, filter_value, filter_group, filter_name, opti
         data: {action: 'unc_filter_update', filter_key: filter_key, filter_value: filter_value, filter_group: filter_group, filter_name: filter_name, page: page, options: options},
         complete: function (response) {
             jQuery('#selector_target').html(response.responseText);
-            window.scrollTo(0,document.body.scrollHeight);
+            jQuery('html, body').animate({
+                scrollTop: jQuery("#selector_target").offset().top
+            }, 2000);
         },
         error: function () {
 
@@ -171,8 +173,13 @@ function filter_change(filter_key, filter_group, filter_name, options, page, ins
 }
 
 function map_filter(position, inst) {
-    calling_function = arguments.callee.caller.toString();
+    // calling_function = arguments.callee.caller.toString();
     filter_select('att_value', position, 'exif', 'gps', 'map', inst);
+}
+
+function show_category(category_id, inst) {
+    // calling_function = arguments.callee.caller.toString();
+    filter_select('category_id', category_id, 'n/a', 'n/a', 'map', inst);
 }
 
 
