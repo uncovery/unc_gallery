@@ -74,7 +74,7 @@ if (is_admin() === true) {
     add_action('wp_ajax_unc_gallery_admin_remove_logs', 'unc_gallery_admin_remove_logs');
 }
 
-add_action( 'wp_enqueue_scripts', 'unc_gallery_add_css_and_js' );
+add_action( 'wp_enqueue_scripts', 'unc_gallery_enqueue_css_and_js' );
 
 // get the AjaxURL in the frontend
 add_action('wp_head','pluginname_ajaxurl');
@@ -131,8 +131,8 @@ function unc_mysql_db_create() {
     $sql_img = "CREATE TABLE $table_name_img (
         id mediumint(9) NOT NULL AUTO_INCREMENT,
         file_time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-        file_name VARCHAR(128) NOT NULL,
-        file_path VARCHAR(256) NOT NULL,
+        file_name varchar(128) NOT NULL,
+        file_path varchar(256) NOT NULL,
         UNIQUE KEY `id` (`id`),
         UNIQUE KEY `file_time` (`file_time`,`file_name`)
     ) $charset_collate;";
@@ -143,8 +143,8 @@ function unc_mysql_db_create() {
         `att_id` mediumint(9) NOT NULL AUTO_INCREMENT,
         `file_id` mediumint(9) NOT NULL,
         `att_group` ENUM('default','iptc','exif','xmp') NOT NULL,
-        `att_name` VARCHAR(25) NOT NULL,
-        `att_value` tinytext NOT NULL,
+        `att_name` varchar(25) NOT NULL,
+        `att_value` varchar(255) NOT NULL,
         UNIQUE KEY `att_id` (`att_id`),
         KEY `att_name` (`att_name`),
         KEY `file_id` (`file_id`)
@@ -154,7 +154,7 @@ function unc_mysql_db_create() {
     
     $table_name_att = $wpdb->prefix . "unc_gallery_cat_links";
     $sql_link = "CREATE TABLE $table_name_att (
-        `location_code` tinytext NOT NULL,
+        `location_code` varchar(128) NOT NULL,
         `category_id` mediumint(9) NOT NULL,
         UNIQUE KEY `category_id` (`category_id`),
         UNIQUE KEY `location_code` (`location_code`)
@@ -162,7 +162,7 @@ function unc_mysql_db_create() {
     
     dbDelta($sql_link);
 
-    add_option( "unc_gallery_db_version", "2.2" );
+    add_option( "unc_gallery_db_version", "2.3" );
 }
 
 /**
@@ -206,9 +206,18 @@ function unc_gallery_plugin_uninstall() {
  * function that includes all the CSS and JS that are needed.
  *
  */
-function unc_gallery_add_css_and_js() {
-    global $UNC_GALLERY;
+function unc_gallery_enqueue_css_and_js() {
+    global $UNC_GALLERY, $post;
 
+    //we load the code only if we are actually using it.
+    // the issue is that we don't know at this point if we are 
+    // a) showing only the excerpt or also the content
+    // b) if we are using the map
+    // since a lot of the code has to be in the header, we need to enqueue the scripts here.
+    if (!is_null($post) && !has_shortcode($post->post_content, 'unc_gallery') ) {
+        return;
+    }
+   
     // jquery etc
     wp_enqueue_script('jquery-ui');
     wp_enqueue_script('jquery-form');
@@ -227,12 +236,14 @@ function unc_gallery_add_css_and_js() {
         wp_enqueue_style('unc_gallery_lightbox_css', plugin_dir_url( __FILE__ ) . 'css/lightbox.min.css');
     } else if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
         //photoswipe
-        wp_register_script('unc_gallery_photoswipe_ui_js', plugin_dir_url( __FILE__ ) . 'js/photoswipe-ui-default.min.js', array(), '4.1.1', true);
+        wp_register_script('unc_gallery_photoswipe_ui_js', plugin_dir_url( __FILE__ ) . 'js/photoswipe-ui-default.min.js', array(), '4.1.2', true);
+        wp_register_script('unc_gallery_photoswipe_js', plugin_dir_url( __FILE__ ) . 'js/photoswipe.min.js', array(), '4.1.2', true);
         wp_enqueue_script('unc_gallery_photoswipe_ui_js');
-        wp_register_script('unc_gallery_photoswipe_js', plugin_dir_url( __FILE__ ) . 'js/photoswipe.min.js', array(), '4.1.1', true);
         wp_enqueue_script('unc_gallery_photoswipe_js');
         wp_enqueue_style('unc_gallery_photoswipe_css', plugin_dir_url( __FILE__ ) . 'css/photoswipe.css');
         wp_enqueue_style('unc_gallery_photoswipe_skin_css', plugin_dir_url( __FILE__ ) . 'css/default-skin.css');
+        // these two add the HTML from function unc_display_photoswipe() to the page footer
+        // without this, photoswipe does not work (duh).
         add_action('wp_footer', 'unc_display_photoswipe');
         add_action('admin_footer', 'unc_display_photoswipe');
     }
@@ -244,7 +255,6 @@ function unc_gallery_add_css_and_js() {
         wp_register_script('unc_gallery_makercluster_js', plugin_dir_url( __FILE__ ) . 'js/markerclusterer.js', array(), '', false);
         wp_enqueue_script('unc_gallery_google_maps');
         wp_enqueue_script('unc_gallery_makerwithlabel_js');
-        wp_enqueue_script('unc_gallery_makercluster_js');
+        wp_enqueue_script('unc_gallery_makercluster_js');           
     }
-
 }

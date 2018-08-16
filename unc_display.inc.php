@@ -36,12 +36,12 @@ function unc_gallery_images_refresh() {
  */
 function unc_gallery_apply($atts = array()) {
     global $UNC_GALLERY;
-    
+
     if (!is_array($atts)) {
         // if we return the shortcode without arguments, we need to re-set this here.
         $atts = array();
     }
-    
+        
     $check = unc_gallery_display_var_init($atts);
     if ($check) {
         return unc_gallery_display_page();

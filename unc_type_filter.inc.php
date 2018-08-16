@@ -250,7 +250,6 @@ function unc_filter_choice($filter_arr) {
 function unc_filter_map_data($type) {
     global $UNC_GALLERY;
 
-    unc_tools_debug_trace(__FUNCTION__, $type);
     
     if (strlen($UNC_GALLERY['google_api_key']) < 1) {
         return "You need to set a google API key in your Uncovery Gallery Configuration to use Google Maps!";
@@ -341,8 +340,9 @@ function unc_filter_map_data($type) {
             $long = $gps['long'];
             $all_long += $long;
             if ($UNC_GALLERY['google_maps_markerstyle'] == 'cluster') {
+                // we take only the city and location
                 $loc_name_array_short = array_slice($loc_name_array, -2, 2);
-                $loc_name_display = implode(", ", $loc_name_array_short);
+                $loc_name_display = $loc_name_array_short[1] . " (" .$loc_name_array_short[0] . ")";
             }
             $loc_string = implode("-", $loc_name_array);
             $category_id = unc_categories_link_read($loc_string);
@@ -380,7 +380,7 @@ function unc_filter_map_data($type) {
     $cluster = '';
     if ($UNC_GALLERY['google_maps_markerstyle'] == 'cluster') {
         $cluster = '
-            var mcOptions = {imagePath: \''.plugin_dir_url( __FILE__ ) .'images/m\', pane: "floatPane", gridSize: 10};
+            var mcOptions = {imagePath: \''.plugin_dir_url( __FILE__ ) .'images/m\', pane: "floatPane", gridSize: 20};
             var markerCluster = new MarkerClusterer(map, markers, mcOptions);';
     }
 
@@ -399,6 +399,9 @@ function unc_filter_map_data($type) {
     // https://developers.google.com/maps/documentation/javascript/examples/event-simple
 
 
+    // fix the z-index:
+    // https://stackoverflow.com/questions/9339431/changing-z-index-of-marker-on-hover-to-make-it-visible/9340671
+    
     $map_type = $UNC_GALLERY['google_maps_type'];
 
     $out = '
@@ -407,7 +410,7 @@ function unc_filter_map_data($type) {
         var map;
         var marker;
         var infowindow;
-        
+
         function initMap() {
             map = new google.maps.Map(document.getElementById(\'map\'), {
                 center: {lat: '.$avg_lat.', lng: '.$avg_long.'},
@@ -418,29 +421,31 @@ function unc_filter_map_data($type) {
             var markers = new Array();
             for (var i = 0; i < points.length; i++) {
                 var point = points[i];
-                
                 marker = MarkerWithLabelAndHover(
                     new MarkerWithLabel({
                         pane: "floatPane",
                         position: new google.maps.LatLng(point[1], point[2]),
-                    //    labelContent: "",
                         hoverContent: point[0] + "<br>Click to show images",
                         labelAnchor: new google.maps.Point(40, -5),
                         map: map,
-                    //    labelClass: "google_map_labels",
                         hoverClass: "google_map_labels_hover",
                         url: point[4],
                         gps_raw: point[1] + "," + point[2],
-                        category_id: point[5]
+                        category_id: point[5],
+                        zIndex: 1,
                     })
                 );
+                google.maps.event.addListener(marker, \'click\', function() {
+                    '.$link_code.'
+                });                 
                 markers.push(marker);
-                google.maps.event.addListener(marker, \'click\', function() {'.$link_code.'});
             }
             '. $bounds .'
-            '. $cluster . '          
+            '. $cluster . '      
+                   
         }
         google.maps.event.addDomListener(window, \'load\', initMap);
+ 
     </script>';
     return $out;
 }
@@ -601,7 +606,8 @@ function unc_filter_update(){
     $page = intval($page_raw);
 
     $filter_str .= "|$page";
-    if ($UNC_GALLERY['google_maps_resultstyle'] == 'posts' && $UNC_GALLERY['post_categories'] != 'none') {
+    
+    if ($options == 'map' && $UNC_GALLERY['google_maps_resultstyle'] == 'posts' && $UNC_GALLERY['post_categories'] != 'none') {
         ob_clean();
         unc_categories_show_posts($filter_value);
         wp_die();
@@ -610,9 +616,6 @@ function unc_filter_update(){
     // the following line has ECHO = FALSE because we do the echo here
     unc_gallery_display_var_init(array('type' => 'filter', 'filter' => $filter_str, 'ajax_show' => 'all', 'options' => $options));
     ob_clean();
-    echo $UNC_GALLERY['google_maps_resultstyle'];
-    echo $UNC_GALLERY['post_categories'];
-    echo "Photos: ";
     echo unc_gallery_display_page();
     wp_die();
 }
@@ -621,7 +624,7 @@ function unc_categories_show_posts($cat_id) {
     $limit = 10;
     query_posts("cat=$cat_id&posts_per_page=$limit");
 
-    echo '<div class="archive">' . "\n";
+    echo '<div class="archive" style="margin-top:25px;">' . "\n";
     $i = 0;
     $num_posts = number_postpercat($cat_id);
     
@@ -632,7 +635,7 @@ function unc_categories_show_posts($cat_id) {
             get_template_part('template-parts/post/content', get_post_format() );
         }
         $link = get_category_link($cat_id);
-        echo "<div>$i of $num_posts posts shown. <a href=\"$link\">Click here to see all posts from this location</a></div>";
+        echo "<div style=\"clear:both\">$i of $num_posts posts shown. <a href=\"$link\">Click here to see all posts from this location</a></div>";
         
     } else {
         get_template_part( 'template-parts/post/content', 'none' );
@@ -644,7 +647,8 @@ function unc_categories_show_posts($cat_id) {
 
 function number_postpercat($idcat) {
     global $wpdb;
-    $query = "SELECT count FROM $wpdb->term_taxonomy WHERE term_id = $idcat";
+    
+    $query = "SELECT count FROM $wpdb->term_taxonomy WHERE term_id = \"$idcat\"";
     $num = $wpdb->get_col($query);
     return $num[0];
 }

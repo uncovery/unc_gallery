@@ -32,7 +32,7 @@ function unc_gallery_admin_menu() {
             'unc_gallery_admin_settings' // $function, $icon_url, $position
         );
     }
-    add_action('admin_print_scripts-' . $main_options_page_hook_suffix, 'unc_gallery_add_css_and_js');
+    add_action('admin_print_scripts-' . $main_options_page_hook_suffix, 'unc_gallery_enqueue_css_and_js');
 }
 
 
