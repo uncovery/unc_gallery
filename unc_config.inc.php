@@ -123,6 +123,13 @@ $UNC_GALLERY['user_settings'] = array(
         'options' => array('photoswipe' => 'Photoswipe', 'lightbox' => 'Lightbox', 'none' => 'Direct image link'),
         'title' => 'Image view method',
     ),
+    'show_other_data' => array(
+        'help' => 'Which basic data do you want to show in image descriptions?',
+        'default' => array('permalink'),
+        'type' => 'multiple',
+        'options' => array('permalink' => 'Image Permalink', 'file_name' => 'Filename', 'dimensions' => 'Dimensions'), // this function just returns an array
+        'title' => 'Description Other Data choices',
+    ),      
     'show_exif_data' => array(
         'help' => 'Which EXIF data do you want to show in image descriptions?',
         'default' => array('exposure_time', 'f', 'iso'),
@@ -143,7 +150,7 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'multiple',
         'options' => unc_image_options_array('iptc'), // this function just returns an array
         'title' => 'Description IPTC Data choices',
-    ),
+    ),  
     'image_data_method' => array(
         'help' => 'What method do you want to use to retrieve image data? ExifTool requires PHP\'s exec() and the <a href="http://www.sno.phy.queensu.ca/~phil/exiftool/install.html">Exiftool</a>.',
         'default' => 'internal',
@@ -167,6 +174,12 @@ $UNC_GALLERY['user_settings'] = array(
         ),
         'title' => 'Auto-Tag posts with Keywords',
     ),
+    'keyword_default_description' => array(
+        'help' => 'When adding a new keyword (see above), do you want to have a default text description applied?',
+        'default' => '',
+        'type' => 'longtext',
+        'title' => 'Default Keyword description',
+    ),     
     'post_categories' => array(
         'help' => 'Do you want to automatically add XMP-data location-based hierarchical categories to posts? This will not remove manually added categories, only create and add new ones',
         'default' => 'none',
@@ -179,6 +192,12 @@ $UNC_GALLERY['user_settings'] = array(
         ),
         'title' => 'Auto-Categorize posts by Location',
     ),
+    'category_default_description' => array(
+        'help' => 'When adding a new location category (see above), do you want to have a default text description applied?',
+        'default' => '',
+        'type' => 'longtext',
+        'title' => 'Default Category description',
+    ),    
     'google_api_key' => array(
         'help' => 'Your google API key to display maps.',
         'default' => '',
@@ -214,6 +233,22 @@ $UNC_GALLERY['user_settings'] = array(
         'options' => array(
             'photos' => 'Show photos',
             'posts' => 'Show posts',
+        ),
+        'title' => 'Google Map Result type',
+    ), 
+    'gps_round_data' => array(
+        'help' => 'Do you want to round the GPS accuracy? This is recommended to group locations together.',
+        'default' => '5',
+        'type' => 'dropdown',
+        'options' => array(
+            'false' => 'Don\t round',
+            '0' => 'Zero digits after the comma',
+            '1' => '1 digits after the comma',
+            '2' => '2 digits after the comma',
+            '3' => '3 digits after the comma',
+            '4' => '4 digits after the comma',
+            '5' => '5 digits after the comma',
+            '6' => '6 digits after the comma',
         ),
         'title' => 'Google Map Result type',
     ),    
