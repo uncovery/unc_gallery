@@ -64,6 +64,8 @@ function unc_gallery_admin_init() {
         );
         if ($D['type'] == 'text') {
             $callback = 'unc_gallery_setting_text_field_render';
+        } else if ($D['type'] == 'longtext') {
+            $callback = 'unc_gallery_setting_longtext_field_render';            
         } else if ($D['type'] == 'dropdown') {
             $callback = 'unc_gallery_setting_drodown_render';
             $args['options'] = $D['options'];
@@ -93,16 +95,29 @@ function unc_gallery_admin_init() {
 
 /**
  * Generic function to render a text input for WP settings dialogues
+ * called by unc_gallery_admin_init
  * @param type $A
  */
 function unc_gallery_setting_text_field_render($A) {
     $def_text = str_replace(" ", '&nbsp;', $A['default']);
-    $out = "<input type='text' name='{$A['setting']}' value='{$A['value']}'></td><td>{$A['help']} <strong>Default:</strong>&nbsp;'$def_text'\n";
+    $out = "<input class='textinput' type='text' name='{$A['setting']}' value='{$A['value']}'></td><td>{$A['help']} <strong>Default:</strong>&nbsp;'$def_text'\n";
+    echo $out;
+}
+
+/**
+ * Generic function to render a long text input for WP settings dialogues
+ * called by unc_gallery_admin_init
+ * @param type $A
+ */
+function unc_gallery_setting_longtext_field_render($A) {
+    $def_text = str_replace(" ", '&nbsp;', $A['default']);
+    $out = "<textarea name='{$A['setting']}' rows=4>{$A['value']}</textarea></td><td>{$A['help']} <strong>Default:</strong>&nbsp;'$def_text'\n";
     echo $out;
 }
 
 /**
  * Generic function to render a dropdown input for WP settings dialogues
+ * called by unc_gallery_admin_init
  * @param type $A
  */
 function unc_gallery_setting_drodown_render($A) {
@@ -121,6 +136,7 @@ function unc_gallery_setting_drodown_render($A) {
 
 /**
  * Generic function to render a checkkbox input for WP settings dialogues
+ * called by unc_gallery_admin_init
  * @param type $A
  */
 function unc_gallery_setting_multiple_render($A) {
@@ -162,7 +178,7 @@ function unc_gallery_settings_section_callback() {
 function unc_gallery_admin_settings() {
     global $UNC_GALLERY;
     remove_filter('the_content', 'wpautop');
-    echo '<div class="wrap">
+    echo '<div class="wrap unc_gallery unc_gallery_admin">
     <h2>Uncovery Gallery</h2>
     <script type="text/javascript">
         jQuery(document).ready(function() {
