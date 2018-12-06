@@ -255,14 +255,14 @@ function unc_display_fix_timezones($dates) {
 
 
 /**
- * Assemble a file description from EXIF values
+ * Assemble a file description from EXIF & config values
  *
  * @param type $F
  */
 function unc_tools_file_desc($F) {
     global $UNC_GALLERY;
     $out = '';
-    $code_sets = array('exif', 'xmp', 'iptc');
+    $code_sets = array('exif', 'xmp', 'iptc', 'other');
     // we iterate the 3 information sets
     foreach ($code_sets as $set_name) {
         // we get the configured settings to know which parts we take
@@ -275,15 +275,24 @@ function unc_tools_file_desc($F) {
         foreach ($set as $key => $desc) {
             // only look if it's actually set. This should not be needed
             if (isset($F[$set_name][$key])) {
-                // arrays should be exploded
-                if (is_array($F[$set_name][$key])) {
-                    $text = implode(",&nbsp;", $F[$set_name][$key]);
-                } else {
-                    $text = $F[$set_name][$key];
-                }
-                // write the code. This could be improved for CSS
-                $out .= "<b>$desc:</b>&nbsp;$text; ";
+                $data = $F[$set_name][$key];
+            } else if (isset($F[$key])) {
+                $data = $F[$key];
+            } else {
+                echo "<!-- $set_name / $key is not set! \n" . var_export($F, true) . " -->\n";
+                continue;
             }
+            
+            // arrays should be exploded
+            if (is_array($data)) {
+                $text = implode(",&nbsp;", $data);
+            } else {
+                $text = $data;
+            }
+            
+            // write the code. This could be improved for CSS
+            $out .= "<b>$desc:</b>&nbsp;$text; ";
+
         }
     }
 

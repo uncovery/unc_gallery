@@ -1,6 +1,6 @@
 <?php
 /**
- * This file hosts all the runctions that deal with the EXIF/XMP/IPTC data of images
+ * This file hosts all the functions that deal with the EXIF/XMP/IPTC data of images
  */
 
 if (!defined('WPINC')) {
@@ -11,13 +11,6 @@ global $UNC_GALLERY;
 // detailed info on EXIF Codes
 // http://www.exiv2.org/tags.html
 $UNC_GALLERY['codes']['exif'] = array(
-    'file_name' => array(
-        'hex' => false,
-        'key' => false,
-        'conversion' => false,
-        'unit' => false,
-        'description' => 'File Name',
-    ),
     'file_height' => array(
         'hex' => false,
         'key' => 'file_height',
@@ -31,7 +24,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'conversion' => false,
         'unit' => false,
         'description' => 'File Width',
-    ),
+    ),        
     'camera_manuf' => array(
         'hex' => '0x010F',
         'key' => 'Make',
@@ -115,7 +108,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'key' => array('GPSLatitudeRef' => 'GPSLatitudeRef', 'GPSLatitude' =>'GPSLatitude', 'GPSLongitudeRef' => 'GPSLongitudeRef', 'GPSLongitude' => 'GPSLongitude', 'GPSVersion' => 'Version'),
         'conversion' => 'unc_exif_convert_gps_link',
         'unit' => false,
-        'description' => 'Map',
+        'description' => 'Map Link',
     )
 );
 
@@ -405,6 +398,8 @@ function unc_image_info_write($file_path) {
         'file_date' => $file_date, // full date including time
         'date_str' => substr($file_date, 0, 10), // only the day 0000-00-00
         'orientation' => $orientation,
+        'permalink' => "<a href=\'$photo_url\'>click here</a>",
+        'dimensions' => $exif['file_width'] . "px/" . $exif['file_height'] . "px",
     );
     $data_sets = array(
         'default' => $default,
@@ -497,7 +492,7 @@ function unc_image_info_exiftool($file_path) {
 
     $D = $metadata_array[0];
 
-    $data_sets = array('exif' => 'EXIF', 'xmp' => 'XMP', 'iptc' => 'IPTC');
+    $data_sets = array('exif' => 'EXIF', 'xmp' => 'XMP', 'iptc' => 'IPTC', 'other' => 'Other');
 
     // iterate data types
     $file_data = array();
@@ -521,17 +516,6 @@ function unc_image_info_exiftool($file_path) {
             }
         }
     }
-
-    // those two are special and manually converted
-    $file_data['exif']['file_width'] = $D['File']['ImageWidth'];
-    $file_data['exif']['file_height'] = $D['File']['ImageHeight'];
-
-    // convert date from 2016:10:01 to 2016-10:01
-    $pattern = '/(\d\d\d\d):(\d\d):(\d\d \d\d:\d\d:\d\d)/';
-    $replace_pattern = '$1-$2-$3';
-    $correct_date = preg_replace($pattern, $replace_pattern, $D['EXIF']['CreateDate']);
-    $file_data['exif']['created'] = $correct_date;
-
     return $file_data;
 }
 
@@ -752,7 +736,6 @@ function unc_exif_fix($exif) {
     $data = array();
     // we only take the EXIF data we need
     foreach ($UNC_GALLERY['codes']['exif'] as $code => $C) {
-        // we artificially added the filename as an EXIF info to make the admin menu easier
         $hex_tag =  'UndefinedTag:' . $C['hex'];
         if (is_array($C['key'])) { // gps for example is made out of multiple keys
             $val = array();

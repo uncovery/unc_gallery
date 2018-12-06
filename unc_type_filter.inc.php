@@ -522,30 +522,56 @@ function unc_filter_map_locations($levels, $type, $next_level) {
             GROUP BY gps_list.att_value"; //
     }
     
-    echo "<!-- DEBUG $sql -->\n";
-  
+    // echo "<!-- DEBUG $sql -->\n";
     $locations = $wpdb->get_results($sql, 'ARRAY_A');
 
     $final = array();
     foreach ($locations as $L) {
         $gps_arr = explode(",", $L['gps']);
+        
+        $gps_0 = unc_filter_gps_round($gps_arr[0]);
+        $gps_1 = unc_filter_gps_round($gps_arr[1]);
+        
         if (count($levels) == 1 && $UNC_GALLERY['google_maps_markerstyle'] == 'layer') {
             $country = $L['country'];
-            $final[$country]['gps']['lat'][] = floatval($gps_arr[0]);
-            $final[$country]['gps']['long'][] = floatval($gps_arr[1]);
+            $final[$country]['gps']['lat'][] = $gps_0;
+            $final[$country]['gps']['long'][] = $gps_1;
         } else {
             if ($UNC_GALLERY['google_maps_markerstyle'] == 'layer') {
                 $item = $L['item'];
             } else {
                 $item = $L['loc_str'];
             }
-            $final[$item]['gps']['lat'][] = floatval($gps_arr[0]);
-            $final[$item]['gps']['long'][] = floatval($gps_arr[1]);
+            $final[$item]['gps']['lat'][] = $gps_0;
+            $final[$item]['gps']['long'][] = $gps_1;
         }
     }
-
     return $final;
 }
+
+/**
+ * convert GPS coordinates and round them according to settings.
+ * 
+ * @global type $UNC_GALLERY
+ * @param type $value
+ * @return type
+ */
+function unc_filter_gps_round($value) {
+    global $UNC_GALLERY;
+    
+    $round_digits = false;
+    if ($UNC_GALLERY['gps_round_data'] != false) {
+        $round_digits = $UNC_GALLERY['gps_round_data'];
+    }
+    $gps = floatval($value);
+    if ($round_digits) {
+        $gps_out = round($gps, $round_digits);
+    } else {
+        $gps_out = $gps;
+    }
+    return $gps_out;
+}
+
 
 
 /**
@@ -699,6 +725,7 @@ function unc_tags_apply($F) {
     // it's a string a_b_c, split it
     $set_split = explode("_", $setting);
     //
+    // example: xmp_force <- if "force" exists, we don't append, we replace
     $selected_tags = $set_split[0];
     if (isset($set_split[1])) {
         $append_tags = false;
@@ -751,6 +778,7 @@ function unc_tags_apply($F) {
     asort($post_tags_unique);
 
     $comp_result = unc_tools_array_analyse($photo_tags_unique, $post_tags_unique);
+    
     $complete_set = $comp_result['complete_set'];
     asort($complete_set);
     $missing_tags = $comp_result['only_in_1'];
@@ -761,11 +789,17 @@ function unc_tags_apply($F) {
         if (count($missing_tags) > 0) {
             $retval = true;
             wp_set_post_tags($post_id, $missing_tags, $append_tags);
+            // echo "Appended tags";
+        } else {
+            // echo "Tags OK";
         }
-    } else if ($complete_set != $post_tags_unique) {
+    } else if ($photo_tags_unique != $post_tags_unique) {
         // if we replace tags, we overwrite only if the tags are not identical
         wp_set_post_tags($post_id, $photo_tags_unique, $append_tags);
+        // echo "Replaced tags";
         $retval = true;
+    } else {
+        // echo "No tag changes";
     }
     return $retval;
 }

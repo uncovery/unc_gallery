@@ -174,7 +174,7 @@ $UNC_GALLERY['user_settings'] = array(
         ),
         'title' => 'Auto-Tag posts with Keywords',
     ),
-    'keyword_default_description' => array(
+    'tag_default_description' => array(
         'help' => 'When adding a new keyword (see above), do you want to have a default text description applied?',
         'default' => '',
         'type' => 'longtext',

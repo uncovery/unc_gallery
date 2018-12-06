@@ -103,6 +103,32 @@ if ($UNC_GALLERY['debug'] == 'yes') {
 
 
 /**
+ * Apply default tag/category texts if set in 
+ * 
+ * @global type $UNC_GALLERY
+ * @param type $description
+ * @param type $taxonomy
+ * @return array
+ */
+function unc_gallery_default_term_description($description, $taxonomy) {
+    global $UNC_GALLERY;
+    if ($description) {
+        return $description;
+    }
+
+    switch ( $taxonomy ) {
+        case 'category':
+            $description = $UNC_GALLERY['category_default_description'];
+            break;
+        case 'post_tag':
+            $description = $UNC_GALLERY['tag_default_description'];
+            break;
+    }
+    return $description;    
+}
+add_action('pre_term_description', 'unc_gallery_default_term_description');
+
+/**
  * standard wordpress function to activate the plugin.
  * creates the uploads folder
  *
