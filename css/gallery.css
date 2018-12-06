@@ -273,3 +273,7 @@
     border: 1px solid black;
     white-space: nowrap;
 }
+
+.unc_gallery_admin textarea {
+    width: 100%;
+}
