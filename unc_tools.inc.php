@@ -793,11 +793,11 @@ function unc_tools_debug_trace($type, $data = '') {
 }
 
 
-function unc_tools_microtime2string($microtime = false, $format = 'Y-m-d H-i-s') {
+function unc_tools_microtime2string($microtime = false, $format = 'Y-m-d H-i-s-u') {
     if (!$microtime) {
         $microtime = microtime(true);
     }
-    $date_obj = new DateTime();
+    $date_obj = DateTime::createFromFormat('0.u00 U', microtime());
     // wordpress stores named & numbered timezones differently, see here:
     // https://wordpress.stackexchange.com/questions/8400/how-to-get-wordpress-time-zone-setting#8404
     $timezone = get_option('timezone_string');
