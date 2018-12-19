@@ -22,6 +22,8 @@ if (!defined('WPINC')) {
 
 global $UNC_FILE_DATA, $UNC_GALLERY;
 $UNC_GALLERY['debug'] = false;
+// debug run
+$UNC_GALLERY['debug'] = true;
 
 if (!isset($UNC_GALLERY['start_time'])) {
     $UNC_GALLERY['start_time'] = microtime(true);
@@ -99,10 +101,7 @@ foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
     $UNC_GALLERY[$setting] = get_option($UNC_GALLERY['settings_prefix'] . $setting, $D['default']);
 }
 
-// debug run
-$UNC_GALLERY['debug'] = 'yes';
-
-if ($UNC_GALLERY['debug'] == 'yes') {
+if ($UNC_GALLERY['debug']) {
     $UNC_GALLERY['debug_log'] = array();
     register_shutdown_function("unc_tools_debug_write");
 }

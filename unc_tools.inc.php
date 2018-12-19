@@ -767,8 +767,11 @@ function unc_tools_debug_write() {
     
     $path = plugin_dir_path(__FILE__) . "logs";
     
-    foreach ($UNC_GALLERY['debug_log'] as $title => $text) {
-        $msg_text .= "<div class=\"data_block\"><h2>$title:</h2>\n" . unc_tools_array2text($text) . "</div>\n";
+    foreach ($UNC_GALLERY['debug_log'] as $time => $dataset) {
+        $msg_text .= "<div class=\"data_block\"><h2>$time:</h2>\n";
+        foreach ($dataset as $title => $data) {
+            $msg_text .= "<h3>$title:</h3>\n" . unc_tools_array2text($data) . "</div>\n";
+        }
     }
     
     $today = unc_tools_microtime2string();
@@ -786,6 +789,9 @@ function unc_tools_debug_write() {
 
 function unc_tools_debug_trace($type, $data = '') {
     global $UNC_GALLERY;
+    if (!$UNC_GALLERY['debug']) {
+        return;
+    }
     if (is_array($type)) {
         $type = var_export($type, true);
     }

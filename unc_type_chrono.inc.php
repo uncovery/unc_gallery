@@ -12,6 +12,7 @@ if (!defined('WPINC')) {
 }
 
 function unc_chrono_var_init($a) {
+    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
     $chrono_str = $a['chrono'];

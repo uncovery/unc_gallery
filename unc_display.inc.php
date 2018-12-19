@@ -111,10 +111,11 @@ function unc_gallery_display_var_init($atts = array()) {
     $a = shortcode_atts($possible_attributes, $atts);
     $type = $a['type'];
     
-    $UNC_GALLERY['debug'] = $a['debug'];
-    if ($UNC_GALLERY['debug'] == 'true') {
-        unc_tools_debug_trace(__FUNCTION__ , "Start debug output");
+    if ($a['debug'] == 'yes') {
+        $UNC_GALLERY['debug'] = true;
     }
+
+    unc_tools_debug_trace(__FUNCTION__ , "Start debug output");
 
     // several featured files
     // we do not need to validate featured files since we only compare with the list
@@ -232,7 +233,7 @@ function unc_gallery_display_var_init($atts = array()) {
     $UNC_GALLERY['slugs'][] = $slug;
     $UNC_GALLERY['display']['slug'] = $slug;
 
-    unc_tools_debug_trace('UNC_GALLERY display' , $UNC_GALLERY['display']);
+    unc_tools_debug_trace(__FUNCTION__ . " Ends, \$UNC_GALLERY['display'] values: " , $UNC_GALLERY['display']);
     return true;
 }
 

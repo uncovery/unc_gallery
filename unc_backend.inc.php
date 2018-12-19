@@ -203,7 +203,7 @@ function unc_gallery_admin_settings() {
         <li><a href='#tab4'><span>Maintenance</span></a></li>
         <li><a href='#tab5'><span>Data Integrity</span></a></li>
         <li><a href='#tab6'><span>Documentation</span></a></li>";
-    if ($UNC_GALLERY['debug'] == 'yes') {
+    if ($UNC_GALLERY['debug']) {
         echo "<li><a href='#tab7'><span>Debug Logs</span></a></li>\n";
     }
     echo "</ul>\n";

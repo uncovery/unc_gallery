@@ -13,6 +13,7 @@
  */
 function unc_day_var_init($a) {
     global $UNC_GALLERY;
+    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     // we convert the start time and end time to unix timestamp for better
         // comparison
     $UNC_GALLERY['display']['range'] = array('start_time' => false, 'end_time' => false);
