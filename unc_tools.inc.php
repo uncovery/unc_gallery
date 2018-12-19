@@ -772,6 +772,13 @@ function unc_tools_debug_write() {
     }
     
     $today = unc_tools_microtime2string();
+    
+    // calculate & display overall running time
+    $end_time = microtime(true);
+    $execution_time = $end_time - $UNC_GALLERY['start_time'];
+    $execution_time_formatted = number_format($execution_time, 6, ".", "'") . " sec";
+    $msg_text .= "<div class=\"data_block\"><h2>Execution Time: $execution_time_formatted</h2>\n</div>\n";
+    
     $filename = $path . "/log_{$today}_$ip.html";
     $msg_text .= "\n    </body>\n</html>";
     file_put_contents($filename, $msg_text,  FILE_APPEND);
