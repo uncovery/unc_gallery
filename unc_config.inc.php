@@ -36,7 +36,7 @@ $UNC_GALLERY['keywords'] = array(
 
 // file & mime-types
 $UNC_GALLERY['thumbnail_ext'] = 'jpeg'; // do not change this, PNG has issues with IPTC
-$UNC_GALLERY['valid_filetypes'] = array(
+$UNC_GALLERY['valid_filetypes'] = array( // allows only these for uploads
     "image/jpeg" => 'jpeg',
     // "image/png" => 'png', // cannot use png since it does not support IPTC/EXIF
     // "image/gif" => 'gif', // cannot use gif since it does not support IPTC/EXIF
@@ -272,12 +272,5 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'dropdown',
         'options' => array('yes' => 'Delete all images!', 'no' => 'Keep all images!'),
         'title' => 'Uninstall behavior',
-    ),
-    'debug' => array(
-        'help' => 'Use this when asking for support',
-        'default' => 'no',
-        'type' => 'dropdown',
-        'options' => array('yes' => 'Create Debug logs', 'no' => 'Do not create debug logs'),
-        'title' => 'Create debug logfiles?',
     ),
 );

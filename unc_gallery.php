@@ -40,6 +40,10 @@ require_once( plugin_dir_path( __FILE__ ) . "unc_image.inc.php");
 // co nfig has to be last because it runs function in unc_image.inc.php
 require_once( plugin_dir_path( __FILE__ ) . "unc_config.inc.php");
 
+require_once( plugin_dir_path( __FILE__ ) . "/libraries/unc_exif.inc.php");
+require_once( plugin_dir_path( __FILE__ ) . "/libraries/unc_ipct.inc.php");
+require_once( plugin_dir_path( __FILE__ ) . "/libraries/unc_xmp.inc.php");
+
 // actions on activating and deactivating the plugin
 register_activation_hook( __FILE__, 'unc_gallery_plugin_activate');
 register_deactivation_hook( __FILE__, 'unc_gallery_plugin_deactivate');
@@ -103,14 +107,15 @@ if ($UNC_GALLERY['debug'] == 'yes') {
 
 
 /**
- * Apply default tag/category texts if set in 
+ * Apply default tag/category texts if set in the configuration
+ * TODO: Find out why this has sometimes only one parameter instead of two.
  * 
  * @global type $UNC_GALLERY
  * @param type $description
  * @param type $taxonomy
  * @return array
  */
-function unc_gallery_default_term_description($description, $taxonomy) {
+function unc_gallery_default_term_description($description = '', $taxonomy = 'post_tag') {
     global $UNC_GALLERY;
     if ($description) {
         return $description;
@@ -136,6 +141,7 @@ add_action('pre_term_description', 'unc_gallery_default_term_description');
  */
 function unc_gallery_plugin_activate() {
     global $UNC_GALLERY;
+    // we check if the upload path exists (from config) and create if not
     if (!file_exists($UNC_GALLERY['upload_path'])) {
         $result = mkdir($UNC_GALLERY['upload_path'], 0755);
         // check success

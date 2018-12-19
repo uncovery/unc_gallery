@@ -783,10 +783,12 @@ function unc_tools_debug_trace($type, $data = '') {
         $type = var_export($type, true);
     }
     $time = unc_tools_microtime2string();
+    // we loop until we have a unset time
     if (isset($UNC_GALLERY['debug_log'][$time])) {
         unc_tools_debug_trace($type, $data);
     } else {
         $UNC_GALLERY['debug_log'][$time][$type] = $data;
+        // error_log("UNC Gallery $type / $data");
     }
 }
 

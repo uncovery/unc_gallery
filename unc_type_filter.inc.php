@@ -15,6 +15,7 @@ if (!defined('WPINC')) {
  * @param type $a
  */
 function unc_filter_var_init($a) {
+    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
     $filter_str = $a['filter'];
@@ -23,11 +24,11 @@ function unc_filter_var_init($a) {
     } else {
         $filter_arr = explode("|", $filter_str);
     }
-    // if we have 4 filters, it means that we have enough info to  display the
+    // if we have 4 filters, it means that we have enough info to display the
     // image list
     if (count($filter_arr) == 4) {
         $files = unc_filter_image_list($filter_arr);
-    } else { // ifwe have less filters, we still show the options to drill down
+    } else { // if we have less filters, we still show the options to drill down
         $files = array();
     }
 
@@ -48,8 +49,9 @@ function unc_filter_var_init($a) {
  * @param array $filter_arr
  */
 function unc_filter_image_list($filter_arr) {
-    global $wpdb;
-
+    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
+    global $wpdb, $UNC_GALLERY;
+   
     $img_table_name = $wpdb->prefix . "unc_gallery_img";
     $att_table_name = $wpdb->prefix . "unc_gallery_att";
     $group_filter = esc_sql($filter_arr[0]);
@@ -248,6 +250,7 @@ function unc_filter_choice($filter_arr) {
  * @return string
  */
 function unc_filter_map_data($type) {
+    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
     
@@ -488,6 +491,7 @@ function unc_filter_map_gps_convert($latitudeFrom, $longitudeFrom, $latitudeTo, 
  * @return type
  */
 function unc_filter_map_locations($levels, $type, $next_level) {
+    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $wpdb, $UNC_GALLERY;
 
     $att_table_name = $wpdb->prefix . "unc_gallery_att";
@@ -647,6 +651,7 @@ function unc_filter_update(){
 }
 
 function unc_categories_show_posts($cat_id) {
+    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     $limit = 10;
     query_posts("cat=$cat_id&posts_per_page=$limit");
 
@@ -681,6 +686,7 @@ function number_postpercat($idcat) {
 
 
 function unc_filter_check_type($group, $key) {
+    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
     // get the possible filter values from the codes
@@ -709,6 +715,7 @@ function unc_filter_check_type($group, $key) {
  * @return boolean
  */
 function unc_tags_apply($F) {
+    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
     // do we havea post? If so get the id, otherwise bail
@@ -815,6 +822,7 @@ function unc_tags_apply($F) {
  * @return type
  */
 function unc_categories_apply($file_data) {
+    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
     $post_id = get_the_ID();

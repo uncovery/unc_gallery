@@ -18,7 +18,8 @@ function unc_display_ajax_folder() {
 }
 
 /**
- * displays the admin images after an upload
+ * tries to update the admin page images list after an upload
+ * this does not seem to work properly
  *
  * @return type
  */
@@ -42,10 +43,15 @@ function unc_gallery_apply($atts = array()) {
         $atts = array();
     }
         
+    // first we set defauls for all variables that are not declared in the shortcode
+    // we also validate given variables
     $check = unc_gallery_display_var_init($atts);
+    
+    // if there are no problems, we display a page
     if ($check) {
         return unc_gallery_display_page();
     } else {
+        // otherwise, throw an error
         $err_text = implode("<br>", $UNC_GALLERY['errors']);
         $UNC_GALLERY['errors'] = array();
         return $err_text;
@@ -64,6 +70,7 @@ function unc_gallery_display_var_init($atts = array()) {
     global $UNC_GALLERY, $post;
 
     $possible_attributes = array(
+        'debug' => false, // start debug from code
         'type' => 'day',    // display type
         'date' => 'latest', // which date?
         'file' => false,    // specific file?
@@ -79,7 +86,8 @@ function unc_gallery_display_var_init($atts = array()) {
         'ajax_show' => false, // what to refresh in case of an ajax call
         'filter' => false, // if type=tag, the tags will be here
         'files' => false, // internal variable, used by filters
-        'chrono' => false // for chronological display
+        'chrono' => false, // for chronological display
+        'keywords' => false, // show only certain keywords?
     );
 
     // defaults
@@ -88,9 +96,10 @@ function unc_gallery_display_var_init($atts = array()) {
 
     // check if all the attributes exist
     if (!is_array($atts)) {
-        unc_tools_debug_trace(__FUNCTION__  . ": ATTS array is not an array:", $atts);
+        unc_tools_debug_trace(__FUNCTION__  . ": shortcode attributes ATTS array is not an array:", $atts);
     }
     
+    // lets validate that we dont have unknown variables in the shortcode
     foreach ($atts as $key => $value) {
         if (!isset($possible_attributes[$key])) {
             echo unc_display_errormsg("You have an invalid setting '$key' in your gallery shortcode!");
@@ -101,8 +110,13 @@ function unc_gallery_display_var_init($atts = array()) {
     // parse the attributes
     $a = shortcode_atts($possible_attributes, $atts);
     $type = $a['type'];
+    
+    $UNC_GALLERY['debug'] = $a['debug'];
+    if ($UNC_GALLERY['debug'] == 'true') {
+        unc_tools_debug_trace(__FUNCTION__ , "Start debug output");
+    }
 
-    // several featured
+    // several featured files
     // we do not need to validate featured files since we only compare with the list
     // of found files in a folder
     if (strstr($a['featured'], ",")) {
@@ -137,6 +151,7 @@ function unc_gallery_display_var_init($atts = array()) {
     // date
     $keywords = $UNC_GALLERY['keywords'];
 
+    // initialize variables from different modes
     $check = false;
     if ($type == 'day') {
         $check = unc_day_var_init($a);
@@ -228,6 +243,7 @@ function unc_gallery_display_var_init($atts = array()) {
  * @return string
  */
 function unc_gallery_display_page() {
+    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
     $D = $UNC_GALLERY['display'];
@@ -347,6 +363,7 @@ function unc_gallery_display_page() {
  * @return string
  */
 function unc_display_images() {
+    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
     $D = $UNC_GALLERY['display'];
@@ -485,6 +502,7 @@ function unc_display_images() {
  * @return string
  */
 function unc_display_image_html($file_path, $show_thumb, $file_data = false, $link_type = false) {
+    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
     $out = '';
     if (!$file_data) {
@@ -545,6 +563,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false, $li
  * @return type
  */
 function unc_display_photoswipe_js($files) {
+    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
     $slug = $UNC_GALLERY['display']['slug'];

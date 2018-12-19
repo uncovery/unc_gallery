@@ -179,12 +179,14 @@ function unc_uploads_iterate_files() {
         $date_str = $result_arr['date'];
         $date_str_arr[] = $date_str;
         $action = $result_arr['action'];
+        $keywords = $result_arr['keywords'];
+        $location = $result_arr['location'];
         if (!$date_str) {
             $string = unc_display_errormsg($action);
         } else {
             $string = "$date_str: image $action\n";
-
         }
+        $string .= "Keywords: $keywords Location: $location";
         $percentage += $one_file_percent;
         unc_tools_progress_update($process_id, "File " . ($i + 1) . ": " . $string, $percentage);
     }
@@ -405,12 +407,12 @@ function unc_uploads_process_file($i, $overwrite) {
         $action = 'written';
     }
 
-    $check_xmp = unc_image_info_write($new_path);
-    if (!$check_xmp) {
+    $xmp_status = unc_image_info_write($new_path);
+    if (!$xmp_status) {
         return array('date' => false, 'action' => "Could not write XMP/IPTC/EXIF data to database $target_filename");
     }
 
-    return array('date'=> $date_str, 'action' => $target_filename . ": " . $action);
+    return array('date'=> $date_str, 'action' => $target_filename . ": " . $action, 'keywords' => $xmp_status['keywords'], 'location' => $xmp_status['location']);
 }
 
 
@@ -510,7 +512,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ex
 
     // write iptc date to new thumbnail file
     unc_iptc_date_write($target_file_path, $file_date);
-    $new_file_date = unc_image_date($target_file_path);
+    //$new_file_date = unc_image_date($target_file_path);
     imagedestroy($new_image); // free up the memory
     return true;
 }

@@ -231,11 +231,11 @@ function unc_gallery_admin_settings() {
     echo unc_gallery_admin_show_documentation();
     echo "</div>";
     
-    if ($UNC_GALLERY['debug'] == 'yes') {
+    //if ($UNC_GALLERY['debug'] == 'yes') {
         echo "<div id='tab7'>\n";
         echo unc_gallery_admin_show_debuglogs();
         echo "</div>\n";
-    }
+    //}
     echo "</div>";
 }
 

@@ -1,7 +1,10 @@
 <?php
 /**
- * This file handles all filter-type shortcodes variables and
+ * This file handles all chrono-type shortcodes variables and
  * output.
+ * 
+ * this is meant to create a timeline output. unfinished.
+ * 
  */
 
 if (!defined('WPINC')) {
