@@ -65,7 +65,7 @@ function unc_gallery_admin_init() {
         if ($D['type'] == 'text') {
             $callback = 'unc_gallery_setting_text_field_render';
         } else if ($D['type'] == 'longtext') {
-            $callback = 'unc_gallery_setting_longtext_field_render';            
+            $callback = 'unc_gallery_setting_longtext_field_render';
         } else if ($D['type'] == 'dropdown') {
             $callback = 'unc_gallery_setting_drodown_render';
             $args['options'] = $D['options'];
@@ -199,19 +199,20 @@ function unc_gallery_admin_settings() {
     # Set up tab titles
     echo "<li><a href='#tab1'><span>Settings</span></a></li>
         <li><a href='#tab2'><span>Upload</span></a></li>
-        <li><a href='#tab3'><span>Manage Images</span></a></li>
-        <li><a href='#tab4'><span>Maintenance</span></a></li>
-        <li><a href='#tab5'><span>Data Integrity</span></a></li>
-        <li><a href='#tab6'><span>Documentation</span></a></li>";
+        <li><a href='#tab3'><span>Code Creator</span></a></li>
+        <li><a href='#tab4'><span>Manage Images</span></a></li>
+        <li><a href='#tab5'><span>Maintenance</span></a></li>
+        <li><a href='#tab6'><span>Data Integrity</span></a></li>
+        <li><a href='#tab7'><span>Documentation</span></a></li>";
     if ($UNC_GALLERY['debug']) {
-        echo "<li><a href='#tab7'><span>Debug Logs</span></a></li>\n";
+        echo "<li><a href='#tab8'><span>Debug Logs</span></a></li>\n";
     }
     echo "</ul>\n";
 
     echo "<div id='tab1'>
         <form method=\"post\" action=\"options.php\">\n";
     settings_fields('unc_gallery_settings_page');
-    do_settings_sections( 'unc_gallery_settings_page');
+    do_settings_sections('unc_gallery_settings_page');
     submit_button();
     echo "</form>
         </div>
@@ -219,20 +220,23 @@ function unc_gallery_admin_settings() {
     echo unc_uploads_form();
     echo "</div>
         <div id='tab3'>\n";
-    echo unc_gallery_admin_display_images();
+    echo unc_gallery_admin_shortcode_creator();
     echo "</div>
         <div id='tab4'>\n";
-    echo unc_gallery_admin_maintenance();
+    echo unc_gallery_admin_display_images();
     echo "</div>
         <div id='tab5'>\n";
-    echo unc_gallery_data_integrity();
+    echo unc_gallery_admin_maintenance();
     echo "</div>
         <div id='tab6'>\n";
+    echo unc_gallery_data_integrity();
+    echo "</div>
+        <div id='tab7'>\n";
     echo unc_gallery_admin_show_documentation();
     echo "</div>";
-    
+
     //if ($UNC_GALLERY['debug'] == 'yes') {
-        echo "<div id='tab7'>\n";
+        echo "<div id='tab8'>\n";
         echo unc_gallery_admin_show_debuglogs();
         echo "</div>\n";
     //}
@@ -269,15 +273,15 @@ function unc_gallery_admin_display_images() {
 function unc_gallery_admin_maintenance() {
     $out = '<h2>Maintenance</h2>
         <div class="admin_section"><button class="button button-primary" onclick="
-            unc_gallery_generic_ajax(
-                \'unc_gallery_admin_rebuild_thumbs\', 
-                \'maintenance_target_div\', 
-                \'Are you sure?\nThis can take a while for the whole database!\', 
+            unc_gallery_generic_ajax_progress(
+                \'unc_gallery_admin_rebuild_thumbs\',
+                \'maintenance_target_div\',
+                \'Are you sure?\nThis can take a while for the whole database!\',
                 true
             )">
             Rebuild Thumbnails</div>
         <div class="admin_section"><button class="button button-primary" onclick="
-            unc_gallery_generic_ajax(
+            unc_gallery_generic_ajax_progress(
                 \'unc_gallery_admin_remove_data\',
                 \'maintenance_target_div\',
                 \'Are you sure?\nYou will have to rebuild the data with the next button!\',
@@ -289,7 +293,7 @@ function unc_gallery_admin_maintenance() {
             Erase all image data
         </button> This will only remove the image data from the database so it can be re-built with the next button.</div>
         <div class="admin_section"><button class="button button-primary" onclick="
-            unc_gallery_generic_ajax(
+            unc_gallery_generic_ajax_progress(
                 \'unc_gallery_admin_rebuild_data\',
                 \'maintenance_target_div\',
                 \'Are you sure?\nThis can take a while!\',
@@ -300,15 +304,32 @@ function unc_gallery_admin_maintenance() {
             ">
             Re-build missing image data from files.
         </button> This will go through all files and read all EXIF, IPTC, XMP etc data. Since re-loading all of the data can take a long time (depending on how many images you have), this process might not finish 100%.</div>
-        <div class="admin_section"><button class="button button-primary" onclick="unc_gallery_generic_ajax(\'unc_gallery_delete_everything\', \'maintenance_target_div\', \'Are you sure?\nThis will delete ALL photos!\', true)">
+        <div class="admin_section"><button class="button button-primary" onclick="unc_gallery_generic_ajax_progress(\'unc_gallery_delete_everything\', \'maintenance_target_div\', \'Are you sure?\nThis will delete ALL photos!\', true)">
             Delete all pictures
         </button> This will delete ALL images and thumbnails. Use with caution!</div>
         <div class="progress-div">
             <div id="maintenance-process-progress-bar">0%</div>
         </div>
-        <div id="maintenance_target_div"></div>';   
+        <div id="maintenance_target_div"></div>';
     return $out;
 }
+
+function unc_gallery_admin_shortcode_creator() {
+
+    $out = '<h2>Shortcode Creator</h2>
+            <p>This tool helps you create complex filters to display exactly the images you want to see</p>
+            <form id="shortcode_form" method="POST">
+            <div id="add_shortcode_form">';
+
+    // show the form (return it instead of echo
+    $out .= unc_gallery_shortcode_form(true);
+
+    $out .= '</form></div>';
+
+    return $out;
+}
+
+
 
 /**
  * Show the documentation my parsing the README.md file through a markdown parser
@@ -325,12 +346,14 @@ function unc_gallery_admin_show_documentation() {
 
 function unc_gallery_data_integrity() {
     $out = "<h2>Data Integrity checks</h2>";
-    
+
     global $wpdb;
+
     // check for locations where we have more than one GPS data.
     $check_sql = "SELECT loc_table.att_value as location, gps_table.att_value as gps, count(gps_table.att_value) as filecount
-        FROM `wp_unc_gallery_att` as loc_table LEFT JOIN wp_unc_gallery_att as gps_table ON loc_table.file_id=gps_table.file_id 
-        WHERE loc_table.att_name='loc_str' AND gps_table.att_name = 'gps' 
+        FROM `wp_unc_gallery_att` as loc_table
+        LEFT JOIN wp_unc_gallery_att as gps_table ON loc_table.file_id=gps_table.file_id
+        WHERE loc_table.att_name='loc_str' AND gps_table.att_name = 'gps' AND loc_table.att_group='xmp'
         GROUP BY gps_table.att_value";
     $records = $wpdb->get_results($check_sql);
     $locations = array();
@@ -344,11 +367,11 @@ function unc_gallery_data_integrity() {
         $filecount = $line->filecount;
         $locations[$location][] = "$gps ($filecount images)";
     }
-    
+
     if ($has_duplicate_gps) {
         // now remove all single GPS locations from the array
-        $out .= "<h2>You have identical locations with several different GPS data:</h2>
-            The Google Map display won't work for locations where you have several GPS data sets.
+        $out .= "<h2>You have identical XMP locations with several different GPS data:</h2>
+            The Google Map display won't work for XMP locations where you have several GPS data sets.
             <ul>\n";
         foreach ($locations as $loc_name => $loc_data) {
             if (count($loc_data) > 1) {
@@ -360,30 +383,30 @@ function unc_gallery_data_integrity() {
             }
         }
         $out .= "</ul>\n";
-        
+
     } else {
         $out .= "No Data Integrity issues found";
     }
     return $out;
-    
-    // TODO: create a query that deletes orphaned attachment entries where the file is gone 
-    // DELETE `wp_unc_gallery_att` FROM `wp_unc_gallery_att` LEFT JOIN 
+
+    // TODO: create a query that deletes orphaned attachment entries where the file is gone
+    // DELETE `wp_unc_gallery_att` FROM `wp_unc_gallery_att` LEFT JOIN
     //    wp_unc_gallery_img ON wp_unc_gallery_att.file_id=wp_unc_gallery_img.id
-    //    WHERE file_name IS NULL    
+    //    WHERE file_name IS NULL
 }
 
 function unc_gallery_admin_show_debuglogs() {
     $path = plugin_dir_path(__FILE__) . "logs";
     $files = glob($path.'/*.html');
-    
+
     $out = '<h2>Debug Logs</h2>';
     if (count($files) == 0) {
         $out . "No debug logfiles found.";
         return $out;
     }
-    
+
     $out .= '<button class="button button-primary" onclick="
-            unc_gallery_generic_ajax(
+            unc_gallery_generic_ajax_progress(
                 \'unc_gallery_admin_remove_logs\',
                 \'debug_logs_target_div\',
                 \'Are you sure?\nThis will erase all logfiles!\',
@@ -396,7 +419,7 @@ function unc_gallery_admin_show_debuglogs() {
         </button>
         <div id="debug_logs_target_div">';
     $out .= "<ol>";
-    
+
     foreach($files as $file) {
         $path = pathinfo($file);
         $basename = $path['basename'];
@@ -591,8 +614,8 @@ function unc_gallery_admin_remove_logs() {
         echo "Cannot remove logs, you are not admin!";
         wp_die();
     }
-    // delete all existing logfiles 
-  
+    // delete all existing logfiles
+
     $path = plugin_dir_path(__FILE__) . "logs";
     $files = glob($path.'/*.html');
     if (count($files) == 0) {
@@ -603,7 +626,7 @@ function unc_gallery_admin_remove_logs() {
         }
         $out = "Cleared existing data!";
     }
-    
+
     // get the Process ID for the Ajax live update
     $process_id = filter_input(INPUT_POST, 'process_id');
     unc_tools_progress_update($process_id, $out, 100);
