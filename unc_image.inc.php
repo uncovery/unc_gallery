@@ -11,7 +11,7 @@ global $UNC_GALLERY;
 
 /**
  * Get the information of one image from file or database and return it
- * 
+ *
  * @global type $UNC_GALLERY
  * @global array $UNC_FILE_DATA
  * @global type $wpdb
@@ -47,7 +47,7 @@ function unc_image_info_read($file_path) {
 
         }
         $file_code = md5($date_path . "/" . $file_name . ".php");
-        // we are done writing the database, return the image data as set by the unc_image_info_write() function 
+        // we are done writing the database, return the image data as set by the unc_image_info_write() function
         return $UNC_FILE_DATA[$file_code];
     }
 
@@ -98,7 +98,7 @@ function unc_image_info_read($file_path) {
 function unc_image_info_write($file_path) {
     global $UNC_GALLERY, $UNC_FILE_DATA, $wpdb;
     if (!file_exists($file_path)) {
-        
+
         return false;
     }
 
@@ -129,7 +129,7 @@ function unc_image_info_write($file_path) {
 
     $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
     if (!$dtime) {
-        
+
     }
 
     $time_stamp = $dtime->getTimestamp(); // time stamp is easier to compare
@@ -146,7 +146,7 @@ function unc_image_info_write($file_path) {
     // remove existing file info
     $check = unc_image_info_delete($file_name, $file_date);
     if (!$check) {
-        
+
     }
 
     $photo_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
@@ -165,7 +165,7 @@ function unc_image_info_write($file_path) {
 
     $insert_id = $wpdb->insert_id;
     if ($insert_id == 0) {
-        
+
         return false;
     }
 
@@ -210,14 +210,14 @@ function unc_image_info_write($file_path) {
                         $keywords = $arr_value;
                     } else if ($name =='location') {
                         $location = $arr_value;
-                    }               
+                    }
                     $wpdb->insert(
                         $wpdb->prefix . "unc_gallery_att",
                         $data_arr
                     );
                     $insert_id2 = $wpdb->insert_id;
                     if ($insert_id2 == 0) {
-                        
+
                         return false;
                     }
                 }
@@ -233,7 +233,7 @@ function unc_image_info_write($file_path) {
                     $data_arr
                 );
                 $insert_id2 = $wpdb->insert_id;
-                
+
                 // TODO remove the REPLACE here since it's labor intensive.
                 // rather use ON DUPLICATE KEY UPDATE
                 // https://stackoverflow.com/questions/2366813/on-duplicate-key-ignore#4920619
@@ -244,7 +244,7 @@ function unc_image_info_write($file_path) {
                     );
                     $replace_id = $wpdb->insert_id;
                     if ($replace_id == 0) {
-                        
+
                         return false;
                     }
                 }
@@ -333,8 +333,7 @@ function unc_image_info_delete($file_name, $file_date) {
     if (count($check_data) > 0) {
         foreach ($check_data as $row) {
             $id = $row['id'];
-            $wpdb->delete($wpdb->prefix . "unc_gallery_img", array('id' => $id));
-            $wpdb->delete($wpdb->prefix . "unc_gallery_att", array('file_id' => $id));
+            unc_tools_delete_image_data($id);
         }
         return true;
     } else {
@@ -354,16 +353,16 @@ function unc_image_info_delete($file_name, $file_date) {
 function unc_image_date($file_path) {
     $exif = unc_exif_date($file_path);
     if (is_null($exif)) {
-        
+
         $iptc = unc_iptc_date($file_path);
         if ($iptc) {
             return $iptc;
         } else {
-            
+
             return false;
         }
     } else if (!$exif) {
-        
+
         return false;
     } else {
         return $exif;
