@@ -140,16 +140,16 @@ function unc_date_folder_delete($date_str) {
 
     // delete images from DB
     $table_name = $wpdb->prefix . "unc_gallery_img";
-    $sql = "DELETE FROM $table_name WHERE file_time LIKE '$date_str%';";
+    $sql = "SELECT id FROM $table_name WHERE file_time LIKE '$date_str%';";
 
-    $wpdb->get_results($sql);
-    // now clean up all image info
-    $sql_cleanup = 'SELECT * FROM `wp_unc_gallery_att`
-        LEFT JOIN wp_unc_gallery_img ON file_id=id WHERE id = NULL';
+    $files = $wpdb->get_results($sql);
+
+    foreach ($files as $F) {
+        $id = $F->id;
+        unc_tools_delete_image_data($id);
+    }
+
     return;
-
-
-
     // we have 2 paths, images and thumbs
     $path_arr = array($UNC_GALLERY['photos'], $UNC_GALLERY['thumbnails']);
 
@@ -180,6 +180,20 @@ function unc_date_folder_delete($date_str) {
     }
     return $out;
 }
+
+/**
+ * Delete all data of an image and also all image files
+ *
+ * @param type $id
+ */
+function unc_tools_delete_image_data($id) {
+    global $wpdb;
+
+    $wpdb->delete($wpdb->prefix . "unc_gallery_img", array('id' => $id));
+    $wpdb->delete($wpdb->prefix . "unc_gallery_att", array('file_id' => $id));
+
+}
+
 
 /**
  * Take a folder and delete all empty subfolders
@@ -282,14 +296,14 @@ function unc_tools_file_desc($F) {
                 echo "<!-- $set_name / $key is not set! \n" . var_export($F, true) . " -->\n";
                 continue;
             }
-            
+
             // arrays should be exploded
             if (is_array($data)) {
                 $text = implode(",&nbsp;", $data);
             } else {
                 $text = $data;
             }
-            
+
             // write the code. This could be improved for CSS
             $out .= "<b>$desc:</b>&nbsp;$text; ";
 
@@ -342,7 +356,7 @@ function unc_tools_recurse_folders($base_folder) {
     }
     $has_subfolder = false;
     if (!file_exists($base_folder)) {
-        
+
         return false;
     }
     foreach (glob($base_folder . "/*") as $folder) {
@@ -634,7 +648,7 @@ function unc_tools_array_analyse($array1, $array2) {
 
 /**
  * This checks what permissions we have on a folder
- * 
+ *
  * @param type $path
  */
 function unc_tools_folder_access_check($path) {
@@ -671,7 +685,7 @@ function unc_tools_folder_access_check($path) {
     return $report;
 }
 
-function unc_tools_fileperms_text($folder) { 
+function unc_tools_fileperms_text($folder) {
     $perms = fileperms($folder);
     // return the actual numeric file permissions
     $num_perms = $perms;
@@ -727,12 +741,18 @@ function unc_tools_fileperms_text($folder) {
     return "$fileperms_numeric $info";
 }
 
-
+/**
+ * writes the debug log, this is set in gallery main file with
+ * register_shutdown_function("unc_tools_debug_write");
+ *
+ * @global type $UNC_GALLERY
+ * @return type
+ */
 function unc_tools_debug_write() {
     global $UNC_GALLERY;
-    
+
     $debug_setting = $UNC_GALLERY['debug'];
-    
+
     switch($debug_setting) {
         // The 'G' modifier is available since PHP 5.1.0
         case 'no':
@@ -740,13 +760,13 @@ function unc_tools_debug_write() {
         case 'yes':
             break;
     }
-    
+
     if (count($UNC_GALLERY['debug_log']) == 0) {
         return;
     }
-    
+
     $ip = filter_input(INPUT_SERVER, "REMOTE_ADDR");
-    
+
     // HTML header for the error reports
     $msg_text = '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
     <html>
@@ -763,25 +783,25 @@ function unc_tools_debug_write() {
             #footer {font-size:70%;padding: 3px;text-align:right;}
             .std_error ol {padding: 5px;background-color: white;}
         </style>
-        <body>' . "\n";    
-    
+        <body>' . "\n";
+
     $path = plugin_dir_path(__FILE__) . "logs";
-    
+
     foreach ($UNC_GALLERY['debug_log'] as $time => $dataset) {
         $msg_text .= "<div class=\"data_block\"><h2>$time:</h2>\n";
         foreach ($dataset as $title => $data) {
             $msg_text .= "<h3>$title:</h3>\n" . unc_tools_array2text($data) . "</div>\n";
         }
     }
-    
+
     $today = unc_tools_microtime2string();
-    
+
     // calculate & display overall running time
     $end_time = microtime(true);
     $execution_time = $end_time - $UNC_GALLERY['start_time'];
     $execution_time_formatted = number_format($execution_time, 6, ".", "'") . " sec";
     $msg_text .= "<div class=\"data_block\"><h2>Execution Time: $execution_time_formatted</h2>\n</div>\n";
-    
+
     $filename = $path . "/log_{$today}_$ip.html";
     $msg_text .= "\n    </body>\n</html>";
     file_put_contents($filename, $msg_text,  FILE_APPEND);
@@ -820,7 +840,7 @@ function unc_tools_microtime2string($microtime = false, $format = 'Y-m-d H-i-s-u
         // this returns a string like 2 or -2. need to convert to +0200 or -0200
     }
     $date_obj->setTimezone(new DateTimeZone($timezone));
-   
+
     $time_str = $date_obj->format($format) . substr((string)$microtime, 1, 8);
     return $time_str;
 }
@@ -873,4 +893,84 @@ function unc_tools_array2text($variable) {
     }
 
     return $string;
+}
+
+/**
+ * Make a generic <select><option> dropdown
+ *
+ * @param array $data as key -> text pairs
+ * @param string $name is the name of the variable returned
+ * @param string $select_val is the value that will be preselected
+ * @param boolean $autosubmit will insert a onchange submit JS
+ * @param string $class is the CSS Class
+ * @param string $id is the element ID
+ * @param string $instruction is the text that shows with instruction to the dropdown
+ * @return string the HTML of the dropdown
+ */
+function unc_tools_dropdown($data, $name, $select_val = false, $autosubmit = false, $class = false, $id = false, $instruction = false, $custom_html = '') {
+    $submit = '';
+    if ($autosubmit) {
+        $submit = ' onchange="this.form.submit()"';
+    }
+
+    $class_html = '';
+    if ($class) {
+        $class_html = " class=\"$class\"";
+    }
+
+    $id_html = '';
+    if ($id) {
+        $id_html = " id=\"$id\"";
+    }
+
+    $out = "<select name=\"$name\"$submit$class_html$id_html$custom_html>\n";
+    if ($instruction) {
+        $out .= "<option hidden disabled selected value> -- $instruction -- </option>\n";
+    }
+    foreach ($data as $key => $text) {
+        $selected = '';
+        if ($key == $select_val) {
+            $selected = " selected=\"selected\"";
+        }
+        $out .= "     <option value=\"$key\"$selected>$text</option>\n";
+    }
+    $out .= "</select>\n";
+
+    return $out;
+}
+
+function unc_tools_youtube_list() {
+    require_once('/home/includes/unc_youtube/unc_youtube.php');
+
+    $data = list_all();
+    global $wpdb;
+
+    $count = count($data);
+
+    echo "Done reading data, adding $count entries to database now!";
+    foreach ($data as $video) {
+        $id = $video['id'];
+        $title = $video['title'];
+        $thumb = $video['thumb'];
+
+        $regex = '/(?<band>.*): (?<song>.*) \((?<artist>.*)\)/';
+        $matches = false;
+        preg_match($regex, $title, $matches);
+
+
+        $insert_sql = "INSERT INTO `youtube_list`(`id`, `title_raw`, `thumb_url`, `band`, `song`, `artist`, `date_field`) VALUES (%s, %s, %s, %s, %s, %s, %s);";
+        $band = '';
+        $song = '';
+        $artist = '';
+        if (isset( $matches['band'])) {
+            $band =  $matches['band'];
+            $song = $matches['song'];
+            $artist = $matches['artist'];
+            $date = $matches['date'];
+        }
+        $insert_prepared_sql = $wpdb->prepare($insert_sql, $id, $title, $thumb, $band, $song, $artist, $date);
+        $wpdb->query($insert_prepared_sql);
+
+    }
+
 }
