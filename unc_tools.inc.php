@@ -12,8 +12,6 @@ if (!defined('WPINC')) {
  * @param type $process_name
  */
 function unc_tools_progress_get($process_name = false) {
-    global $UNC_GALLERY;
-
     if (!$process_name) {
         $process_name = filter_input(INPUT_POST, 'process_id', FILTER_SANITIZE_STRING);
     }
@@ -293,7 +291,7 @@ function unc_tools_file_desc($F) {
             } else if (isset($F[$key])) {
                 $data = $F[$key];
             } else {
-                echo "<!-- $set_name / $key is not set! \n" . var_export($F, true) . " -->\n";
+                // echo "<!-- $set_name / $key is not set! \n" . var_export($F, true) . " -->\n";
                 continue;
             }
 
@@ -537,6 +535,7 @@ function unc_tools_image_delete() {
         $UNC_GALLERY['thumbnails'] => $file_name,
     );
 
+    // delete the actual files & thumbnails
     foreach ($paths as $path => $del_file_name) {
         $full_path = $UNC_GALLERY['upload_path'] . "/" . $path . "/" . $date_str . "/" . $del_file_name;
         if (file_exists($full_path)) {
@@ -555,7 +554,7 @@ function unc_tools_image_delete() {
         }
     }
 
-    // delete file data
+    // delete file data from the database
     $check = unc_image_info_delete($file_name, $date_wrong);
     if (!$check) {
         ob_clean();
@@ -939,38 +938,18 @@ function unc_tools_dropdown($data, $name, $select_val = false, $autosubmit = fal
     return $out;
 }
 
-function unc_tools_youtube_list() {
-    require_once('/home/includes/unc_youtube/unc_youtube.php');
+/**
+ * random ints, not for crypto.
+ *
+ * @param type $min
+ * @param type $max
+ * @return type
+ */
+function unc_random_number($min, $max) {
+    list($usec, $sec) = explode(' ', microtime());
+    mt_srand($sec + $usec * 1000000);
 
-    $data = list_all();
-    global $wpdb;
-
-    $count = count($data);
-
-    echo "Done reading data, adding $count entries to database now!";
-    foreach ($data as $video) {
-        $id = $video['id'];
-        $title = $video['title'];
-        $thumb = $video['thumb'];
-
-        $regex = '/(?<band>.*): (?<song>.*) \((?<artist>.*)\)/';
-        $matches = false;
-        preg_match($regex, $title, $matches);
-
-
-        $insert_sql = "INSERT INTO `youtube_list`(`id`, `title_raw`, `thumb_url`, `band`, `song`, `artist`, `date_field`) VALUES (%s, %s, %s, %s, %s, %s, %s);";
-        $band = '';
-        $song = '';
-        $artist = '';
-        if (isset( $matches['band'])) {
-            $band =  $matches['band'];
-            $song = $matches['song'];
-            $artist = $matches['artist'];
-            $date = $matches['date'];
-        }
-        $insert_prepared_sql = $wpdb->prepare($insert_sql, $id, $title, $thumb, $band, $song, $artist, $date);
-        $wpdb->query($insert_prepared_sql);
-
-    }
-
+    $randval = mt_rand($min, $max);
+    return $randval;
 }
+

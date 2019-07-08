@@ -310,8 +310,7 @@ function unc_image_info_exiftool($file_path) {
 }
 
 /**
- * Delete the information of one file from the database
- * returns false if the data did not exist
+ * collects the file IDs of the images to be deleted and runs the deleting command
  *
  * @global type $wpdb
  * @global array $UNC_GALLERY
@@ -323,17 +322,15 @@ function unc_image_info_delete($file_name, $file_date) {
     global $wpdb;
     // remove existing file info
 
-    // $sql = "SELECT id FROM " . $wpdb->prefix . "unc_gallery_img WHERE file_time LIKE %s AND file_name=%s;";
-
     $file_date_sql = esc_sql($file_date);
     $file_name_sql = esc_sql($file_name);
     $sql = "SELECT id FROM " . $wpdb->prefix . "unc_gallery_img WHERE file_time LIKE '$file_date_sql%' AND file_name='$file_name_sql';";
     $check_data =  $wpdb->get_results($sql, 'ARRAY_A');
-    //$check_data = $wpdb->get_results($wpdb->prepare($sql, "$file_date%", $file_name), 'ARRAY_A');
+
+    // we count first so that we can send back a false in case we don't find any files
     if (count($check_data) > 0) {
         foreach ($check_data as $row) {
-            $id = $row['id'];
-            unc_tools_delete_image_data($id);
+            unc_tools_delete_image_data($row['id']);
         }
         return true;
     } else {

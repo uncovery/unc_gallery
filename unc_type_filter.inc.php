@@ -51,7 +51,7 @@ function unc_filter_var_init($a) {
 function unc_filter_image_list($filter_arr) {
     unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $wpdb, $UNC_GALLERY;
-   
+
     $img_table_name = $wpdb->prefix . "unc_gallery_img";
     $att_table_name = $wpdb->prefix . "unc_gallery_att";
     $group_filter = esc_sql($filter_arr[0]);
@@ -83,7 +83,7 @@ function unc_filter_image_list($filter_arr) {
 
     $files = $wpdb->get_results($sql, 'ARRAY_A');
     $myfiles = array();
-    
+
     foreach ($files as $file) {
         $file_path = $file['file_path'];
         $file_date = $file['file_time'];
@@ -108,7 +108,7 @@ function unc_filter_choice($filter_arr) {
 
     $desc2 = '';
     $desc1 = '';
-    
+
     // depending on the depth of filters we have, we show more and more
     // specific information
     if (!$filter_arr || count($filter_arr) == 0) {
@@ -141,7 +141,7 @@ function unc_filter_choice($filter_arr) {
         }
     }
     unc_tools_debug_trace('names sql', $names_sql);
-    
+
     if (count($filter_arr) >= 3 ) { // we have enough info for the image list, count result
         $att_value_filter = esc_sql(urldecode($filter_arr[2]));
         $count_sql = "SELECT count(`file_id`) as `counter` FROM $att_table_name
@@ -153,20 +153,20 @@ function unc_filter_choice($filter_arr) {
         if ($row_count > 50) {
             $next_page = $filter_arr[3] + 1;
             $display_page = $next_page;
-            $next_page_link = " <a 
-                class=\"next_page_link\" 
+            $next_page_link = " <a
+                class=\"next_page_link\"
                 onclick=\"filter_select(
                     '$filter_key',
                     '{$filter_arr[2]}',
-                    '$filter_group', 
+                    '$filter_group',
                     '$filter_name',
-                    'list', 
+                    'list',
                     $next_page)\">
                         Next Page
             </a>";
             $desc2  .= "<br>More than 50 images found, showing page $display_page ($row_count results)." . $next_page_link;
         } else if ($row_count == 0) {
-            unc_tools_debug_trace('unc_filter_choice no images found!',  $count_sql);  
+            unc_tools_debug_trace('unc_filter_choice no images found!',  $count_sql);
         }
     }
 
@@ -189,9 +189,9 @@ function unc_filter_choice($filter_arr) {
     } else if (in_array('list', $options) || in_array('link_list', $options)) {
         $columns = 4;
         $out .= $desc1;
-        
+
         $options_string = implode(" ", $options);
-        
+
         if (count($names) < 20) { // we make colums only for large lists
             $out .= "<ul>\n";
             foreach ($names as $N) {
@@ -238,7 +238,7 @@ function unc_filter_choice($filter_arr) {
         $val_opt_text = implode(", ", $valid_options);
         $out .= unc_display_errormsg("You have an option set that is not compatible with filters! Valid options are: $val_opt_text");
     }
-    
+
     return $out;
 }
 
@@ -253,7 +253,8 @@ function unc_filter_map_data($type) {
     unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
-    
+    $error = '';
+
     if (strlen($UNC_GALLERY['google_api_key']) < 1) {
         return "You need to set a google API key in your Uncovery Gallery Configuration to use Google Maps!";
     }
@@ -350,13 +351,14 @@ function unc_filter_map_data($type) {
             $loc_string = implode("-", $loc_name_array);
             $category_id = unc_categories_link_read($loc_string);
             if (!$category_id) {
-                echo "Could not find category_id for $loc_string";
+                $error .= "<!-- Could not find category_id for $loc_string -->";
+            } else {
+                $markers_list .= "['$loc_name_display',$lat,$long,$z_index,'$link',$category_id],\n";
+                $max_lat = max($max_lat, $lat);
+                $max_long = max($max_long, $long);
+                $min_lat = min($min_lat, $lat);
+                $min_long = min($min_long, $long);
             }
-            $markers_list .= "['$loc_name_display',$lat,$long,$z_index,'$link',$category_id],\n";
-            $max_lat = max($max_lat, $lat);
-            $max_long = max($max_long, $long);
-            $min_lat = min($min_lat, $lat);
-            $min_long = min($min_long, $long);
         }
     }
 
@@ -379,7 +381,7 @@ function unc_filter_map_data($type) {
             map.fitBounds(bounds);
         ";
     }
-    
+
     $cluster = '';
     if ($UNC_GALLERY['google_maps_markerstyle'] == 'cluster') {
         $cluster = '
@@ -394,7 +396,7 @@ function unc_filter_map_data($type) {
 
     // Marker Cluster
     // https://developers.google.com/maps/documentation/javascript/marker-clustering
-    
+
     // on-hover visibility method from
     // http://stackoverflow.com/questions/25981512/markerwithlabel-mouseover-issue
 
@@ -404,7 +406,7 @@ function unc_filter_map_data($type) {
 
     // fix the z-index:
     // https://stackoverflow.com/questions/9339431/changing-z-index-of-marker-on-hover-to-make-it-visible/9340671
-    
+
     $map_type = $UNC_GALLERY['google_maps_type'];
 
     $out = '
@@ -440,16 +442,16 @@ function unc_filter_map_data($type) {
                 );
                 google.maps.event.addListener(marker, \'click\', function() {
                     '.$link_code.'
-                });                 
+                });
                 markers.push(marker);
             }
             '. $bounds .'
-            '. $cluster . '      
-                   
+            '. $cluster . '
+
         }
         google.maps.event.addDomListener(window, \'load\', initMap);
- 
-    </script>';
+
+    </script>' . $error;
     return $out;
 }
 
@@ -507,35 +509,35 @@ function unc_filter_map_locations($levels, $type, $next_level) {
                 FROM `$att_table_name` as loc_list
                 LEFT JOIN `$att_table_name` as gps_list ON loc_list.file_id=gps_list.file_id
                 LEFT JOIN `$att_table_name` as item_list on loc_list.file_id=item_list.file_id
-                WHERE loc_list.`att_group`='xmp' 
-                    AND loc_list.att_name = 'loc_str' 
-                    AND loc_list.att_value LIKE '$levels_sql' 
-                    AND item_list.att_name='$next_level' 
+                WHERE loc_list.`att_group`='xmp'
+                    AND loc_list.att_name = 'loc_str'
+                    AND loc_list.att_value LIKE '$levels_sql'
+                    AND item_list.att_name='$next_level'
                     AND gps_list.att_name='gps'
                 GROUP BY gps_list.att_value"; //
         }
-    } else { // cluster 
+    } else { // cluster
         $levels = 3;
         $sql = "SELECT  loc_list.att_value as loc_str, gps_list.att_value as gps, item_list.att_value as item
             FROM `$att_table_name` as loc_list
             LEFT JOIN `$att_table_name` as gps_list ON loc_list.file_id=gps_list.file_id
             LEFT JOIN `$att_table_name` as item_list on loc_list.file_id=item_list.file_id
-            WHERE loc_list.`att_group`='xmp' 
-                AND loc_list.att_name = 'loc_str' 
+            WHERE loc_list.`att_group`='xmp'
+                AND loc_list.att_name = 'loc_str'
                 AND gps_list.att_name='gps'
             GROUP BY gps_list.att_value"; //
     }
-    
+
     // echo "<!-- DEBUG $sql -->\n";
     $locations = $wpdb->get_results($sql, 'ARRAY_A');
 
     $final = array();
     foreach ($locations as $L) {
         $gps_arr = explode(",", $L['gps']);
-        
+
         $gps_0 = unc_filter_gps_round($gps_arr[0]);
         $gps_1 = unc_filter_gps_round($gps_arr[1]);
-        
+
         if (count($levels) == 1 && $UNC_GALLERY['google_maps_markerstyle'] == 'layer') {
             $country = $L['country'];
             $final[$country]['gps']['lat'][] = $gps_0;
@@ -555,14 +557,14 @@ function unc_filter_map_locations($levels, $type, $next_level) {
 
 /**
  * convert GPS coordinates and round them according to settings.
- * 
+ *
  * @global type $UNC_GALLERY
  * @param type $value
  * @return type
  */
 function unc_filter_gps_round($value) {
     global $UNC_GALLERY;
-    
+
     $round_digits = false;
     if ($UNC_GALLERY['gps_round_data'] != false) {
         $round_digits = $UNC_GALLERY['gps_round_data'];
@@ -607,7 +609,7 @@ function unc_filter_gps_avg($array) {
 function unc_filter_update(){
     global $UNC_GALLERY;
     unc_tools_debug_trace(__FUNCTION__ . "GET input", $_GET);
-    
+
     $filter_key = filter_input(INPUT_GET, 'filter_key', FILTER_SANITIZE_STRING);
     $filter_value = filter_input(INPUT_GET, 'filter_value', FILTER_SANITIZE_STRING);
     $filter_group = filter_input(INPUT_GET, 'filter_group', FILTER_SANITIZE_STRING);
@@ -636,7 +638,7 @@ function unc_filter_update(){
     $page = intval($page_raw);
 
     $filter_str .= "|$page";
-    
+
     if ($options == 'map' && $UNC_GALLERY['google_maps_resultstyle'] == 'posts' && $UNC_GALLERY['post_categories'] != 'none') {
         ob_clean();
         unc_categories_show_posts($filter_value);
@@ -646,7 +648,7 @@ function unc_filter_update(){
     // the following line has ECHO = FALSE because we do the echo here
     unc_gallery_display_var_init(array('type' => 'filter', 'filter' => $filter_str, 'ajax_show' => 'all', 'options' => $options));
     ob_clean();
-    echo unc_gallery_display_page();
+    echo unc_display_images();
     wp_die();
 }
 
@@ -658,7 +660,7 @@ function unc_categories_show_posts($cat_id) {
     echo '<div class="archive" style="margin-top:25px;">' . "\n";
     $i = 0;
     $num_posts = number_postpercat($cat_id);
-    
+
     if (have_posts()) {
         while ( have_posts() ) {
             $i++;
@@ -667,7 +669,7 @@ function unc_categories_show_posts($cat_id) {
         }
         $link = get_category_link($cat_id);
         echo "<div style=\"clear:both\">$i of $num_posts posts shown. <a href=\"$link\">Click here to see all posts from this location</a></div>";
-        
+
     } else {
         get_template_part( 'template-parts/post/content', 'none' );
     }
@@ -678,7 +680,7 @@ function unc_categories_show_posts($cat_id) {
 
 function number_postpercat($idcat) {
     global $wpdb;
-    
+
     $query = "SELECT count FROM $wpdb->term_taxonomy WHERE term_id = \"$idcat\"";
     $num = $wpdb->get_col($query);
     return $num[0];
@@ -707,7 +709,7 @@ function unc_filter_check_type($group, $key) {
 
 
 /**
- * Compare existing tags assigned to a post with the image's tags 
+ * Compare existing tags assigned to a post with the image's tags
  * and assign missing ones to the post.
  *
  * @global type $UNC_GALLERY
@@ -721,7 +723,7 @@ function unc_tags_apply($F) {
     // do we havea post? If so get the id, otherwise bail
     $post_id = get_the_ID();
     if (!$post_id) {
-        
+
         return;
     }
 
@@ -759,7 +761,7 @@ function unc_tags_apply($F) {
         }
     }
     if (count($photo_tags) == 0) {
-        
+
         return false;
     }
 
@@ -785,7 +787,7 @@ function unc_tags_apply($F) {
     asort($post_tags_unique);
 
     $comp_result = unc_tools_array_analyse($photo_tags_unique, $post_tags_unique);
-    
+
     $complete_set = $comp_result['complete_set'];
     asort($complete_set);
     $missing_tags = $comp_result['only_in_1'];
@@ -854,36 +856,63 @@ function unc_categories_apply($file_data) {
         $all_cat_index[$lower_name]['parent'] = $C->parent;
     }
 
-    // find out what the current config setting is
-    $setting = $UNC_GALLERY['post_categories'];
-    // split into array: e.g. 'xmp_country_state_city_location'
-    $setting_array = explode("_", $setting); // this will be filled with strings such as 'city' etc
-    $data_type = array_shift($setting_array); // remove the XPM/EXIF from the front of the array
-    // iterate all files and get all the different levels of categories
     $cat_sets = array();
-
-
     $has_cats = false;
-    // we go through all files in the post and get all categories for this post uniquely
-    foreach ($file_data as $F) {
-        // we go through the wanted fields from the setting
-        $file_cats = array();
-        foreach ($setting_array as $exif_code) { // country... state ... city... location
-            $cat_sets[$exif_code] = false; // we assume it does not exist, so with this we also catch empty levels
-            if (!isset($F[$data_type][$exif_code])) { // we look for $F['xmp']['city'] etc
-                $value = '%%none%%';
-            } else {
-                $has_cats = true;
-                $value = $F[$data_type][$exif_code];
+
+    // LOCATION categories
+    if ($UNC_GALLERY['post_categories'] != 'none') {
+        // find out what the current config setting is
+        $setting = $UNC_GALLERY['post_categories'];
+        // split into array: e.g. 'xmp_country_state_city_location'
+        $setting_array = explode("_", $setting); // this will be filled with strings such as 'city' etc
+        $data_type = array_shift($setting_array); // remove the XPM/EXIF from the front of the array
+        // iterate all files and get all the different levels of categories
+
+        // we go through all files in the post and get all categories for this post uniquely
+        foreach ($file_data as $F) {
+            // we go through the wanted fields from the setting
+            $file_cats = array();
+            foreach ($setting_array as $exif_code) { // country... state ... city... location
+                $cat_sets[$exif_code] = false; // we assume it does not exist, so with this we also catch empty levels
+                if (!isset($F[$data_type][$exif_code])) { // we look for $F['xmp']['city'] etc
+                    $value = '%%none%%';
+                } else {
+                    $has_cats = true;
+                    $value = $F[$data_type][$exif_code];
+                }
+                $file_cats[] = $value;
             }
-            $file_cats[] = $value;
+            // we try to create a code to make sure we do not make duplicates
+            $cats_id = implode("-", $file_cats); // this will look like 'hongkong-hongkongisland-central-grappas'
+            // so we created a array key that has the whole list of location names as the line above and then contains an
+            // array of the individual names of the location.
+            $cat_sets[$cats_id] = $file_cats;
         }
-        // we try to create a code to make sure we do not make duplicates
-        $cats_id = implode("-", $file_cats); // this will look like 'hongkong-hongkongisland-central-grappas'
-        // so we created a array key that has the whole list of location names as the line above and then contains an 
-        // array of the individual names of the location.
-        $cat_sets[$cats_id] = $file_cats;
     }
+
+    if ($UNC_GALLERY['event_categories'] != 'none') {
+        $setting = $UNC_GALLERY['post_categories'];
+
+        $regex = '/(?<event>.*) (?<year>\d{4})/';
+
+        $file_cats = array();
+        // iterate all the files
+        foreach ($file_data as $F) {
+            if (isset($F['xmp']['event'])) {
+                $event_str = $F['xmp']['event'];
+                $matches = array();
+                $check = preg_match($regex, $event_str, $matches);
+                $cat_sets[$event_str] = array(
+                    0 => $matches['event'],
+                    1 => $matches['event'] . " " . $matches['year']);
+            }
+        }
+    }
+
+    // EVENT categories
+
+
+    // if we did not find any, just stop here
     if (!$has_cats) {
         return;
     }
@@ -902,7 +931,7 @@ function unc_categories_apply($file_data) {
         $cat_string = '';
         // lets iterate the categories from country -> location
         foreach ($cat_set as $cat) {
-            // we re-build a unique string for the current cat hierarchy to act 
+            // we re-build a unique string for the current cat hierarchy to act
             // as an index for the category/location link.
             $cat_string .= "-" . $cat;
             // check if the post has a category of that name already
@@ -918,7 +947,7 @@ function unc_categories_apply($file_data) {
                 continue;
             }
             // check if the current cat already exists in wordpress, make sure it has the same parent
-            // this has a potential 
+            // this has a potential
             if (isset($all_cat_index[$cat_id]) && $all_cat_index[$cat_id]['parent'] == $next_parent) {
                 $this_id = $all_cat_index[$cat_id]['id'];
             } else {
@@ -928,7 +957,7 @@ function unc_categories_apply($file_data) {
             // strip the first "-"
             $cat_string_index = substr($cat_string, 1);
             unc_categories_link_create($this_id, $cat_string_index);
-            
+
             $post_categories[] = $this_id; // collect the categories to add them to the post
             $next_parent = $this_id;
             $depth++;
@@ -937,11 +966,10 @@ function unc_categories_apply($file_data) {
     wp_set_post_categories($post_id, $post_categories, false); // true means cats will be added, not replaced
 }
 
-
 /**
  * Since we want to show all the posts that are related to a location (exif), we need to link the location to
  * the category that we created. This here creates a link in a table so we can look it up later.
- *  
+ *
  * @param type $category_id
  * @param type $exif_code
  */
@@ -953,7 +981,7 @@ function unc_categories_link_create($category_id, $exif_code) {
     if ($check) {
         return;
     }
-   
+
     // since the key does not exist yet, insert it
     $insert_sql = "INSERT INTO {$wpdb->prefix}unc_gallery_cat_links (location_code,category_id) VALUES (%s,%d);";
     $insert_prepared_sql = $wpdb->prepare($insert_sql, $exif_code, $category_id);
@@ -962,7 +990,7 @@ function unc_categories_link_create($category_id, $exif_code) {
 
 /**
  * This here reads a link in a table so we can look it up later.
- *  
+ *
  * @param type $exif_code
  */
 function unc_categories_link_read($exif_code) {
@@ -970,7 +998,7 @@ function unc_categories_link_read($exif_code) {
     // we check first if we have this already
     $select_sql = "SELECT category_id FROM {$wpdb->prefix}unc_gallery_cat_links WHERE location_code LIKE '%s';";
     $select_prepared_sql = $wpdb->prepare($select_sql, $exif_code);
-    
+
     $data = $wpdb->get_results($select_prepared_sql, 'ARRAY_A');
     if ($wpdb->num_rows == 0) {
         return false;

@@ -42,11 +42,11 @@ function unc_gallery_apply($atts = array()) {
         // if we return the shortcode without arguments, we need to re-set this here.
         $atts = array();
     }
-        
+
     // first we set defauls for all variables that are not declared in the shortcode
     // we also validate given variables
     $check = unc_gallery_display_var_init($atts);
-    
+
     // if there are no problems, we display a page
     if ($check) {
         return unc_gallery_display_page();
@@ -98,7 +98,7 @@ function unc_gallery_display_var_init($atts = array()) {
     if (!is_array($atts)) {
         unc_tools_debug_trace(__FUNCTION__  . ": shortcode attributes ATTS array is not an array:", $atts);
     }
-    
+
     // lets validate that we dont have unknown variables in the shortcode
     foreach ($atts as $key => $value) {
         if (!isset($possible_attributes[$key])) {
@@ -110,7 +110,7 @@ function unc_gallery_display_var_init($atts = array()) {
     // parse the attributes
     $a = shortcode_atts($possible_attributes, $atts);
     $type = $a['type'];
-    
+
     if ($a['debug'] == 'yes') {
         $UNC_GALLERY['debug'] = true;
     }
@@ -311,7 +311,7 @@ function unc_gallery_display_page() {
     } else {
         $selector_div = "No images in the database!";
     }
-    
+
     if ($D['type'] == 'image' || $D['type'] == 'thumb') {
         $thumb = false;
         if ($D['type'] == 'thumb') {
@@ -385,7 +385,7 @@ function unc_display_images() {
     }
 
     // get all the files in the folder with attributes
-    $files = $D['files'];
+    $files = $D['files']; // comes normall from unc_day_images_list()
     if (!$files || count($files) == 0) { // we have no files
         return "-";
     }
@@ -453,12 +453,12 @@ function unc_display_images() {
     if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
         $photoswipe = unc_display_photoswipe_js($files);
     }
-    
+
     if ($UNC_GALLERY['post_keywords'] != 'none') {
         unc_tags_apply($files);
     }
-    
-    if ($UNC_GALLERY['post_categories'] != 'none') {
+
+    if ($UNC_GALLERY['post_categories'] != 'none' || $UNC_GALLERY['event_categories'] != 'none') {
         unc_categories_apply($files);
     }
 

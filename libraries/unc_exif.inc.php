@@ -14,6 +14,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'conversion' => false,
         'unit' => false,
         'description' => 'File Height',
+        'type' => 'integer',
     ),
     'file_width' => array(
         'hex' => false,
@@ -21,6 +22,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'conversion' => false,
         'unit' => false,
         'description' => 'File Width',
+        'type' => 'integer',
     ),        
     'camera_manuf' => array(
         'hex' => '0x010F',
@@ -28,6 +30,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'conversion' => false,
         'unit' => false,
         'description' => 'Make',
+        'type' => 'text',
     ),
     'camera_model' => array(
         'hex' => '0x0110',
@@ -35,6 +38,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'conversion' => false,
         'unit' => false,
         'description' => 'Model',
+        'type' => 'text',
     ),
     'exposure_time' => array(
         'hex' => '0x829A',
@@ -42,6 +46,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'conversion' => false,
         'unit' => 'sec.',
         'description' => 'Exposure Time',
+        'type' => 'text',
     ),
     'f' => array(
         'hex' => '0x829D',
@@ -49,6 +54,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'conversion' => 'unc_tools_divide_string',
         'unit' => false,
         'description' => 'F-Stop',
+        'type' => 'text',
     ),
     'iso' => array(
         'hex' => '0x8827',
@@ -57,6 +63,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'unit' => false,
         'description' => 'ISO',
         'alternates' => array('ISO'),
+        'type' => 'text',
     ),
     'focal_length' => array(
         'hex' => '0x920A',
@@ -64,6 +71,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'conversion' => 'unc_tools_divide_string',
         'unit' => 'mm',
         'description' => 'Focal Length',
+        'type' => 'text',
     ),
     'lens' => array(
         'hex' => '0xA434',
@@ -71,6 +79,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'conversion' => false,
         'unit' => false,
         'description' => 'Lens',
+        'type' => 'text',
     ),
     'created' => array(
         'hex' => '0x9003',
@@ -78,6 +87,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'conversion' => 'unc_exif_convert_date',
         'unit' => false,
         'description' => 'Created',
+        'type' => 'date',
     ),
     'gps_lat' => array(
         'hex' => false,
@@ -85,6 +95,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'conversion' => 'unc_exif_convert_gps',
         'unit' => false,
         'description' => 'GPS Latitude',
+        'type' => 'integer',
     ),
     'gps_lon' => array(
         'hex' => false,
@@ -92,6 +103,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'conversion' => 'unc_exif_convert_gps',
         'unit' => false,
         'description' => 'GPS Longitude',
+        'type' => 'integer',
     ),
     'gps' => array(
         'hex' => false,
@@ -99,6 +111,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'conversion' => 'unc_exif_convert_gps_combo',
         'unit' => false,
         'description' => 'GPS Coordinates',
+        'type' => 'integer',
     ),
     'gps_link' => array(
         'hex' => false,
@@ -106,6 +119,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'conversion' => 'unc_exif_convert_gps_link',
         'unit' => false,
         'description' => 'Map Link',
+        'type' => 'integer',
     )
 );
 

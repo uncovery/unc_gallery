@@ -62,7 +62,7 @@ function unc_uploadajax(max_files, max_size) {
     });
     function success(response){
         // refresh the imagelist via AJAX after upload was successful
-        unc_gallery_generic_ajax('unc_gallery_images_refresh', 'datepicker_target', false);
+        unc_gallery_generic_ajax_progress('unc_gallery_images_refresh', 'datepicker_target', false);
     }
     function uploadProgress(event, position, total, percentComplete) {
         jQuery("#upload-progress-bar").width(percentComplete + '%');
@@ -224,21 +224,36 @@ function delete_image(file_name, rel_date) {
     }
 }
 
+function ranking_submit(rank_up, rank_dn, rank_year) {
+    jQuery.ajax({
+        url: ajaxurl,
+        method: 'GET',
+        dataType: 'text',
+        data: {action: 'unc_ranking_new_image', rank_up: rank_up, rank_dn: rank_dn, rank_year: rank_year},
+        complete: function (response) {
+            jQuery('#ranking_imagebox').html(response.responseText);
+        },
+        error: function () {
+
+        }
+    });  
+}
+
 /**
  * generic AJAX to return results provided that not more data is needed
  *
  * This will return any ECHO from the function in progress
  * as well as get a status report from the process ID that was passed
  *
- * @param {type} action
- * @param {type} target_div
- * @param {type} confirmation_message
- * @param {type} post
- * @param {type} progress_div
- * @param {type} progress_text
+ * @param {type} action this is the name of the action (function on the PHP side)
+ * @param {type} target_div this DIV will be replaced by the outcome
+ * @param {type} confirmation_message check for this before submitting
+ * @param {type} post is the form submitted via POST or GET?
+ * @param {type} progress_div this div will be updated with a progress update
+ * @param {type} progress_text this is the text of the progresss
  * @returns {undefined}
  */
-function unc_gallery_generic_ajax(action, target_div, confirmation_message, post, progress_div, progress_text) {
+function unc_gallery_generic_ajax_progress(action, target_div, confirmation_message, post, progress_div, progress_text) {
     jQuery('#' + target_div).html('');
     if (confirmation_message) {
         var c = confirm(confirmation_message);
@@ -269,6 +284,78 @@ function unc_gallery_generic_ajax(action, target_div, confirmation_message, post
         jQuery('#' + target_div).html('Action cancelled!');
     }
 }
+
+/**
+ * generic AJAX to return results provided that not more data is needed
+ *
+ * This will return any ECHO from the function in progress
+ * as well as get a status report from the process ID that was passed
+ *
+ * @param {type} action this is the name of the action (function on the PHP side)
+ * @param {type} target_div this DIV will be replaced by the outcome
+ * @param {type} confirmation_message check for this before submitting
+ * @param {type} post is the form submitted via POST or GET?
+ * @returns {undefined}
+ */
+function unc_gallery_generic_ajax(action, target_div, confirmation_message, post, fieldname, append) {
+    jQuery('#' + target_div).html('');
+    var c = false;
+    if (confirmation_message) {
+        c = confirm(confirmation_message);
+    }
+    if (post) {
+        method = 'POST';
+    } else {
+        method = 'GET';
+    };
+    var fieldvalue = jQuery('#' + fieldname).val();
+    if (c === confirmation_message) {
+        jQuery.ajax({
+            url: ajaxurl,
+            method: method,
+            dataType: 'text',
+            data: {action: action, fieldname: fieldname, fieldvalue: fieldvalue},
+            complete: function (response) {
+                var newval = response.responseText;
+                if (append) {
+                    var target_contents = jQuery('#' + target_div).val();
+                    var newval = target_contents + response.responseText;
+                }
+                jQuery('#' + target_div).html(newval);
+            },
+            error: function (request, status, error) {
+                confirm(status + ": " + error);
+            }
+        });
+    } else {
+        jQuery('#' + target_div).html('Action cancelled!');
+    }
+}
+
+function unc_gallery_filter_ajax(action, target_div, fieldname, append) {
+    jQuery('#' + target_div).html('');
+
+    var fieldvalue = jQuery('#' + fieldname).val();
+    
+    jQuery.ajax({
+        url: ajaxurl,
+        method: 'POST',
+        dataType: 'text',
+        data: {action: action, fieldname: fieldname, fieldvalue: fieldvalue},
+        complete: function (response) {
+            var newval = response.responseText;
+            if (append) {
+                var target_contents = jQuery('#' + target_div).val();
+                var newval = target_contents + response.responseText;
+            }
+            jQuery('#' + target_div).html(newval);
+        },
+        error: function (request, status, error) {
+            confirm(status + ": " + error);
+        }
+    });
+}
+
 
 // this parses the current iterated date and checks if it's the current displayed
 function formatCurrentDate(dateYmd) {

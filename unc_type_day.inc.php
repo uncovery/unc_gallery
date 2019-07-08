@@ -179,11 +179,12 @@ function unc_day_images_list($D = false) {
         WHERE ($att_table_name.att_name='date_str') AND $sql_filter
         ORDER BY file_time ASC;";
     $file_data = $wpdb->get_results($sql, 'ARRAY_A');
-    
+
     if (count($file_data) == 0) {
-        unc_tools_debug_trace('unc_day_images_list no images for date found!',  $sql); 
+        unc_tools_debug_trace('unc_day_images_list no images for date found!',  $sql);
     }
-    
+
+    // now we get the detailed info per image
     foreach ($file_data as $F) {
         $I = unc_image_info_read($F['file_path']);
         if (in_array($F['file_name'], $D['featured_image'])) {
@@ -234,7 +235,7 @@ function unc_day_images_list($D = false) {
  */
 function unc_day_validate_date($date_str) {
     global $UNC_GALLERY;
-    
+
     $pattern = "/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/";
     if (preg_match($pattern, $date_str)) {
         return $date_str;
@@ -252,7 +253,7 @@ function unc_day_validate_date($date_str) {
  */
 function unc_day_date_span($date1, $date2) {
     global $UNC_GALLERY;
-    
+
     // we try to sort the dates
     if ($date1 < $date2) {
         $early = $date1;
@@ -294,7 +295,7 @@ function unc_day_date_latest() {
     $sql ="SELECT SUBSTR(file_time, 1, 10) as date_str FROM `$img_table_name` ORDER BY file_time DESC LIMIT 1;";
     $file_data = $wpdb->get_results($sql, 'ARRAY_A');
     if (count($file_data) == 0) {
-        unc_tools_debug_trace('unc_day_date_latest no images found!',  $sql);  
+        unc_tools_debug_trace('unc_day_date_latest no images found!',  $sql);
         return false;
     }
     $date_str = $file_data[0]['date_str'];

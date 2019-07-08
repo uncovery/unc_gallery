@@ -95,9 +95,9 @@ function unc_uploads_form() {
  */
 function unc_uploads_iterate_files() {
     global $UNC_GALLERY;
-    
+
     unc_tools_debug_trace(__FUNCTION__, "file upload started");
-    
+
     // get the amount of files
     // do we have an upload or an import?
     $F = false;
@@ -173,25 +173,27 @@ function unc_uploads_iterate_files() {
     $one_file_percent = 100 / $count;
 
     $percentage = 0;
+    $updated = 0;
     for ($i=0; $i < $count; $i++){
         // process one file
         $result_arr = unc_uploads_process_file($i, $overwrite);
         $date_str = $result_arr['date'];
-        $date_str_arr[] = $date_str;
         $action = $result_arr['action'];
-        $keywords = $result_arr['keywords'];
-        $location = $result_arr['location'];
         if (!$date_str) {
             $string = unc_display_errormsg($action);
         } else {
+            $updated++;
+            $keywords = $result_arr['keywords'];
+            $location = $result_arr['location'];
             $string = "$date_str: image $action\n";
+            $string .= "Keywords: $keywords Location: $location";
+            $date_str_arr[] = $date_str;
         }
-        $string .= "Keywords: $keywords Location: $location";
         $percentage += $one_file_percent;
         unc_tools_progress_update($process_id, "File " . ($i + 1) . ": " . $string, $percentage);
     }
 
-    $string = 'All images processed!<br><br>
+    $string = "$count images processed, $updated successfully! <br><br>" . '
         Sample Shortcode for this upload:<br>
         <input
             style="width:100%;"
@@ -203,7 +205,7 @@ function unc_uploads_iterate_files() {
     unc_tools_progress_update($process_id, $string, 100);
     // this signals to the JS function that we can terminate the process_get loop
     unc_tools_progress_update($process_id, false);
-    
+
     unc_tools_debug_trace(__FUNCTION__, "file upload ended");
     wp_die();
 }

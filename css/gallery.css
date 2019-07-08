@@ -277,3 +277,8 @@
 .unc_gallery_admin textarea {
     width: 100%;
 }
+
+.ranking{
+    width: 49%;
+    cursor: pointer;
+}

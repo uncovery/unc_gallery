@@ -3,7 +3,7 @@
 Plugin Name: Uncovery Gallery
 Plugin URI:  https://uncovery.net/about
 Description: A simple, self-generating, date-based gallery with bulk uploading
-Version:     5.0
+Version:     5.2
 Author:      Uncovery
 Author URI:  http://uncovery.net
 License:     GPL2
@@ -22,8 +22,7 @@ if (!defined('WPINC')) {
 
 global $UNC_FILE_DATA, $UNC_GALLERY;
 $UNC_GALLERY['debug'] = false;
-// debug run
-$UNC_GALLERY['debug'] = true;
+$UNC_GALLERY['errors'] = array(); // we store internal errors here
 
 if (!isset($UNC_GALLERY['start_time'])) {
     $UNC_GALLERY['start_time'] = microtime(true);
@@ -34,8 +33,10 @@ $UNC_GALLERY['data_version'] = 1; // increase this number when you change the fo
 require_once( plugin_dir_path( __FILE__ ) . "/libraries/unc_exif.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "/libraries/unc_ipct.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "/libraries/unc_xmp.inc.php");
+require_once( plugin_dir_path( __FILE__ ) . "/libraries/unc_rss_feed.inc.php");
 
 require_once( plugin_dir_path( __FILE__ ) . "unc_backend.inc.php");
+require_once( plugin_dir_path( __FILE__ ) . "unc_shortcode.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_upload.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_display.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_type_day.inc.php");
@@ -43,6 +44,7 @@ require_once( plugin_dir_path( __FILE__ ) . "unc_type_filter.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_type_chrono.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_tools.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_image.inc.php");
+require_once( plugin_dir_path( __FILE__ ) . "unc_ranking.inc.php");
 // co nfig has to be last because it runs function in unc_image.inc.php
 require_once( plugin_dir_path( __FILE__ ) . "unc_config.inc.php");
 
@@ -57,8 +59,19 @@ if (is_admin() === true){ // admin actions
     add_action('admin_menu', 'unc_gallery_admin_menu');
 }
 
+function photos_feed_init(){
+   add_feed( 'photos_feed', 'photos_feed');
+}
+add_action('init', 'photos_feed_init');
+
 // shortcode for the [unc_gallery] replacements
 add_shortcode('unc_gallery', 'unc_gallery_apply');
+add_shortcode('unc_gallery_new', 'unc_gallery_shortcode_translate');
+add_shortcode('unc_gallery_ranking', 'unc_ranking_show');
+
+// end-user ajax for image ranking
+add_action('wp_ajax_unc_ranking_new_image', 'unc_ranking_new_image');
+add_action('wp_ajax_nopriv_unc_ranking_new_image', 'unc_ranking_new_image');
 
 // this activates the returns without header & footer on upload Ajax POST
 if (is_admin() === true) {
@@ -73,11 +86,14 @@ if (is_admin() === true) {
     add_action('wp_ajax_unc_chrono_update', 'unc_chrono_update');
     add_action('wp_ajax_unc_gallery_image_delete', 'unc_tools_image_delete');
     add_action('wp_ajax_unc_gallery_images_refresh', 'unc_gallery_images_refresh');
+    // admin maintenance functions
     add_action('wp_ajax_unc_gallery_admin_rebuild_thumbs', 'unc_gallery_admin_rebuild_thumbs');
     add_action('wp_ajax_unc_gallery_admin_rebuild_data', 'unc_gallery_admin_rebuild_data');
     add_action('wp_ajax_unc_gallery_admin_remove_data',  'unc_gallery_admin_remove_data');
     add_action('wp_ajax_unc_gallery_delete_everything', 'unc_gallery_admin_delete_everything');
     add_action('wp_ajax_unc_gallery_admin_remove_logs', 'unc_gallery_admin_remove_logs');
+    // shortcode maker
+    add_action('wp_ajax_unc_gallery_shortcode_form', 'unc_gallery_shortcode_form');
 }
 
 add_action( 'wp_enqueue_scripts', 'unc_gallery_enqueue_css_and_js' );
@@ -101,6 +117,7 @@ foreach ($UNC_GALLERY['user_settings'] as $setting => $D) {
     $UNC_GALLERY[$setting] = get_option($UNC_GALLERY['settings_prefix'] . $setting, $D['default']);
 }
 
+$UNC_GALLERY['debug'] = true;
 if ($UNC_GALLERY['debug']) {
     $UNC_GALLERY['debug_log'] = array();
     register_shutdown_function("unc_tools_debug_write");
@@ -110,7 +127,7 @@ if ($UNC_GALLERY['debug']) {
 /**
  * Apply default tag/category texts if set in the configuration
  * TODO: Find out why this has sometimes only one parameter instead of two.
- * 
+ *
  * @global type $UNC_GALLERY
  * @param type $description
  * @param type $taxonomy
@@ -130,7 +147,7 @@ function unc_gallery_default_term_description($description = '', $taxonomy = 'po
             $description = $UNC_GALLERY['tag_default_description'];
             break;
     }
-    return $description;    
+    return $description;
 }
 add_action('pre_term_description', 'unc_gallery_default_term_description');
 
@@ -184,18 +201,31 @@ function unc_mysql_db_create() {
     ) $charset_collate;";
 
     dbDelta($sql_att);
-    
+
     $table_name_att = $wpdb->prefix . "unc_gallery_cat_links";
     $sql_link = "CREATE TABLE $table_name_att (
         `location_code` varchar(128) NOT NULL,
         `category_id` mediumint(9) NOT NULL,
         UNIQUE KEY `category_id` (`category_id`),
         UNIQUE KEY `location_code` (`location_code`)
-    ) $charset_collate;";    
-    
+    ) $charset_collate;";
+
     dbDelta($sql_link);
 
-    add_option( "unc_gallery_db_version", "2.3" );
+    $table_name_rank = $wpdb->prefix . "unc_gallery_ranking";
+    $sql_rank = "CREATE TABLE $table_name_rank (
+        `file_id` mediumint(9) NOT NULL,
+        `ranking` mediumint(9) NOT NULL,
+        `ranked` mediumint(9) NOT NULL,
+        `rank_time` datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+        UNIQUE KEY `file_id` (`file_id`),
+        KEY `rank_time` (`rank_time`),
+        KEY `ranking` (`ranking`)
+    ) $charset_collate;";
+
+    dbDelta($sql_rank);
+
+    add_option( "unc_gallery_db_version", "2.5" );
 }
 
 /**
@@ -243,14 +273,16 @@ function unc_gallery_enqueue_css_and_js() {
     global $UNC_GALLERY, $post;
 
     //we load the code only if we are actually using it.
-    // the issue is that we don't know at this point if we are 
+    // the issue is that we don't know at this point if we are
     // a) showing only the excerpt or also the content
     // b) if we are using the map
     // since a lot of the code has to be in the header, we need to enqueue the scripts here.
-    if (!is_null($post) && !has_shortcode($post->post_content, 'unc_gallery') ) {
+    if (!is_null($post) && (
+        !has_shortcode($post->post_content, 'unc_gallery') && !has_shortcode($post->post_content, 'unc_gallery_ranking')
+        )) {
         return;
     }
-   
+
     // jquery etc
     wp_enqueue_script('jquery-ui');
     wp_enqueue_script('jquery-form');
@@ -288,6 +320,6 @@ function unc_gallery_enqueue_css_and_js() {
         wp_register_script('unc_gallery_makercluster_js', plugin_dir_url( __FILE__ ) . 'js/markerclusterer.js', array(), '', false);
         wp_enqueue_script('unc_gallery_google_maps');
         wp_enqueue_script('unc_gallery_makerwithlabel_js');
-        wp_enqueue_script('unc_gallery_makercluster_js');           
+        wp_enqueue_script('unc_gallery_makercluster_js');
     }
 }

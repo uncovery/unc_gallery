@@ -17,6 +17,15 @@ $UNC_GALLERY['photos'] = "photos";                  // subfolder of upload_path 
 $UNC_GALLERY['thumbnails'] = "thumbs";              // subfolder of upload_path where the thumbs go in
 $UNC_GALLERY['settings_prefix'] = 'unc_gallery_';   // internal prefix for the config storage.
 
+$UNC_GALLERY['operators'] = array(
+    'l' => 'is larger',
+    's' => 'is smaller',
+    'e' => 'is equal',
+    'ne' => 'is not equal',
+    'c' => 'contains',
+    'nc' => 'does not contain'
+);
+
 // options for displays
 $UNC_GALLERY['keywords'] = array(
     'type' => array(
@@ -129,7 +138,7 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'multiple',
         'options' => array('permalink' => 'Image Permalink', 'file_name' => 'Filename', 'dimensions' => 'Dimensions'), // this function just returns an array
         'title' => 'Description Other Data choices',
-    ),      
+    ),
     'show_exif_data' => array(
         'help' => 'Which EXIF data do you want to show in image descriptions?',
         'default' => array('exposure_time', 'f', 'iso'),
@@ -150,7 +159,7 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'multiple',
         'options' => unc_image_options_array('iptc'), // this function just returns an array
         'title' => 'Description IPTC Data choices',
-    ),  
+    ),
     'image_data_method' => array(
         'help' => 'What method do you want to use to retrieve image data? ExifTool requires PHP\'s exec() and the <a href="http://www.sno.phy.queensu.ca/~phil/exiftool/install.html">Exiftool</a>.',
         'default' => 'internal',
@@ -179,7 +188,7 @@ $UNC_GALLERY['user_settings'] = array(
         'default' => '',
         'type' => 'longtext',
         'title' => 'Default Keyword description',
-    ),     
+    ),
     'post_categories' => array(
         'help' => 'Do you want to automatically add XMP-data location-based hierarchical categories to posts? This will not remove manually added categories, only create and add new ones',
         'default' => 'none',
@@ -197,7 +206,19 @@ $UNC_GALLERY['user_settings'] = array(
         'default' => '',
         'type' => 'longtext',
         'title' => 'Default Category description',
-    ),    
+    ),
+    'event_categories' => array(
+        'help' => 'Do you want to automatically add Event-categories based on the IPCT-Extension EVENT field? '
+            . 'This will not remove manually added categories, only create and add new ones. '
+            . 'Please chose the format you named events if you enable this.',
+        'default' => 'none',
+        'type' => 'dropdown',
+        'options' => array(
+            'none' => 'Do not auto-categorize events',
+            'name_year' => 'Format: [Eventname Year] / e.g. Coachella 2010',
+        ),
+        'title' => 'Auto-Categorize posts by Event',
+    ),
     'google_api_key' => array(
         'help' => 'Your google API key to display maps.',
         'default' => '',
@@ -225,7 +246,7 @@ $UNC_GALLERY['user_settings'] = array(
             'layer' => 'Click through layers',
         ),
         'title' => 'Google Map Marker Style',
-    ),   
+    ),
     'google_maps_resultstyle' => array(
         'help' => 'Do you want to show photos or posts when clicking on a map point? Posts works only if you have "Auto-Categorize posts by Location" enabled.',
         'default' => 'posts',
@@ -235,23 +256,23 @@ $UNC_GALLERY['user_settings'] = array(
             'posts' => 'Show posts',
         ),
         'title' => 'Google Map Result type',
-    ), 
+    ),
     'gps_round_data' => array(
         'help' => 'Do you want to round the GPS accuracy? This is recommended to group locations together.',
         'default' => '5',
         'type' => 'dropdown',
         'options' => array(
-            'false' => 'Don\t round',
-            '0' => 'Zero digits after the comma',
-            '1' => '1 digits after the comma',
-            '2' => '2 digits after the comma',
-            '3' => '3 digits after the comma',
-            '4' => '4 digits after the comma',
-            '5' => '5 digits after the comma',
-            '6' => '6 digits after the comma',
+            'false' => 'Don\'t round',
+            '0' => 'Zero digits after the comma (111km)',
+            '1' => '1 digits after the comma (11km)',
+            '2' => '2 digits after the comma (1km)',
+            '3' => '3 digits after the comma (110m)',
+            '4' => '4 digits after the comma (11m)',
+            '5' => '5 digits after the comma (1m)',
+            '6' => '6 digits after the comma (11cm)',
         ),
         'title' => 'Google Map Result type',
-    ),    
+    ),
     'settings_location' => array(
         'help' => 'Do you want the admin screen of this plugin to be shown as a menu entry in the sidebar or a sub-menu of the settings menu?',
         'default' => 'sidebar',

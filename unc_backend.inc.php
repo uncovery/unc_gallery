@@ -385,8 +385,68 @@ function unc_gallery_data_integrity() {
         $out .= "</ul>\n";
 
     } else {
-        $out .= "No Data Integrity issues found";
+        $out .= "No gps Integrity issues found";
     }
+
+    $data_no_file_sql = "SELECT file_id
+        FROM `wp_unc_gallery_att`
+        LEFT JOIN wp_unc_gallery_img ON file_id=id
+        WHERE id IS NULL
+        group by file_id";
+    $data_no_file = $wpdb->get_results($data_no_file_sql, ARRAY_A);
+
+    $count = count($data_no_file);
+    $out .= "Found $count datasets without file!";
+    foreach ($data_no_file as $D) {
+        $wpdb->delete($wpdb->prefix . "unc_gallery_att", array('file_id' => $D['file_id']));
+        $out .= "x";
+    }
+
+    /*
+ *
+ *
+ *
+   // this is another check trying to find out if we have 2 different location names on the same GPS location
+
+    $check_2_sql = "SELECT locations.att_value as location, count(locations.att_value) as locations_counter, gps_data.att_value as gps
+        FROM wp_unc_gallery_att AS locations
+        LEFT JOIN wp_unc_gallery_att AS gps_data ON locations.file_id = gps_data.file_id
+        WHERE locations.att_name = 'loc_str' AND locations.att_group = 'xmp' AND gps_data.att_name = 'gps'
+        GROUP BY locations.att_value";
+
+    $records2 = $wpdb->get_results($check_sql);
+    $locations2 = array();
+    $has_duplicate_gps2 = false;
+    foreach ($records2 as $line) {
+        $location = $line->location;
+        $gps = $line->gps;
+        if (isset($locations[$location])) {
+            $has_duplicate_gps = true;
+        }
+        $filecount = $line->filecount;
+        $locations[$location][] = "$gps ($filecount images)";
+    }
+
+    if ($has_duplicate_gps) {
+        // now remove all single GPS locations from the array
+        $out .= "<h2>You have identical XMP locations with several different GPS data:</h2>
+            The Google Map display won't work for XMP locations where you have several GPS data sets.
+            <ul>\n";
+        foreach ($locations as $loc_name => $loc_data) {
+            if (count($loc_data) > 1) {
+                $out .= "<li>$loc_name\n<ul>\n";
+                foreach ($loc_data as $gps) {
+                    $out .= "<li>$gps</li>\n";
+                }
+                $out .= "</ul>\n</li>\n";
+            }
+        }
+        $out .= "</ul>\n";
+
+    } else {
+        $out .= "No gps Integrity issues found";
+    }
+*/
     return $out;
 
     // TODO: create a query that deletes orphaned attachment entries where the file is gone
