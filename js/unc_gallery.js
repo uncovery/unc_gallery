@@ -231,12 +231,18 @@ function ranking_submit(rank_up, rank_dn, rank_year) {
         dataType: 'text',
         data: {action: 'unc_ranking_new_image', rank_up: rank_up, rank_dn: rank_dn, rank_year: rank_year},
         complete: function (response) {
+            // google analytics tracking of picture ranking
+            try {
+                ga( 'send', 'event', 'Picture Ranking', 'Ranked a picture', null, null );
+            } catch( err ) {}
             jQuery('#ranking_imagebox').html(response.responseText);
+
+
         },
         error: function () {
 
         }
-    });  
+    });
 }
 
 /**
@@ -336,7 +342,7 @@ function unc_gallery_filter_ajax(action, target_div, fieldname, append) {
     jQuery('#' + target_div).html('');
 
     var fieldvalue = jQuery('#' + fieldname).val();
-    
+
     jQuery.ajax({
         url: ajaxurl,
         method: 'POST',

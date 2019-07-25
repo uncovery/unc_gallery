@@ -527,7 +527,10 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false, $li
             $F['index'] = 0;
             $F['index']++;
         }
-        $gal_text = "onClick=\"unc_g_photoswipe_$slug({$F['index']}); return false;\"";
+        $gallery_id = "unc_g_photoswipe_$slug";
+        $image_id = $gallery_id . "_" . $F['index'];
+
+        $gal_text = "onClick=\"$gallery_id({$F['index']}); return false;\"";
     } else if ($UNC_GALLERY['image_view_method'] == 'lightbox') {
         $gal_text = "data-lightbox=\"gallery_{$F['file_name']}\"";
     }
@@ -545,7 +548,7 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false, $li
         $link_url = get_post_permalink();
     }
 
-    $out .= "        <a href=\"$link_url\" $gal_text title=\"{$F['file_name']}\">
+    $out .= "        <a href=\"$link_url\" $gal_text title=\"{$F['file_name']}\" id=\"$image_id\">
             <img alt=\"image\" src=\"$shown_image\">$overlay_text
         </a>\n";
     if (current_user_can('manage_options') && is_admin()) {
@@ -589,7 +592,18 @@ function unc_display_photoswipe_js($files) {
     $out .= "];
         var pswpElement = document.querySelectorAll('.pswp')[0];
         var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, uncg_items_$slug, options);
+        // listen to the event that a photo was opened or changed and then trigger a google event
+        gallery.listen('afterChange', function(name) {
+            pswipe_google_event();
+        });
         gallery.init();
+
+        // google analytics photo click
+        function pswipe_google_event() {
+            try {
+                ga( 'send', 'event', 'Picture Click', 'Opened a picture', null, null );
+            } catch( err ) {}
+        }
     }
 </script>";
     return $out;
