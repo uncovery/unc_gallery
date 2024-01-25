@@ -284,14 +284,14 @@ function unc_prints_buy_button($item_id, $sandbox = false) {
             'business_email' => 'sb-a4cot2332118@business.example.com', // password = }7w>eN4W
         //  'customer_email' => 'sb-ayvgl2333377@personal.example.com', // passwprd = z!c*-)6E
             'button_id' => '',  // not used?
-            'client_id' => 'AbPS6D2Ooh6GtcnlL9xobVlsriIjN-FfdWVn9KMZdd0UTngpoXHmkvwpZoahAjZ6Bt7MEXcYH5k44Lff',
-            'secret' => 'EKMutetOuj_b_BHqhJfGzfnkjqZx8Y7yd5I3HOSmzoGv7CkreIIV_3jF6NsCLAIhWk5snAnfeJSM1_Tr',
+            'client_id' => '',
+            'secret' => '',
         ),
         'operation' => array(
             'paypal_url' => "https://www.paypal.com/cgi-bin/webscr",
             'business_email' => 'oliver@hongkong-rocks.com',
-            'client_id' => 'AZseNNxnE1uKqdE1uEGbP4zV1Qg3K594KAy1pkA1o_p2MRjupi8CtfQln648lBnx8sgL3p1kO2KPDPB7',
-            'secret' => 'EEEIzlWyxl3WKhnpIsId0CptfnUNPOSgIjrT506wQaqMAu6tKEFc9PiRHehA9HuyCrXINqcGK1sbWCMt',
+            'client_id' => '',
+            'secret' => '',
 
         ),
     );
