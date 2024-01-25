@@ -254,7 +254,7 @@ function unc_gallery_admin_display_images() {
 
     $out = "<h2>Manage Images</h2>\n";
     // check first if there is a folder to delete:
-    $folder_del = filter_input(INPUT_GET, 'folder_del', FILTER_SANITIZE_STRING);
+    $folder_del = filter_input(INPUT_GET, 'folder_del');
     if (!is_null($folder_del)) {
         // TODO: the return here should be in a notifcation area
         $out .= unc_date_folder_delete($folder_del);
@@ -272,41 +272,65 @@ function unc_gallery_admin_display_images() {
  */
 function unc_gallery_admin_maintenance() {
     $out = '<h2>Maintenance</h2>
-        <div class="admin_section"><button class="button button-primary" onclick="
-            unc_gallery_generic_ajax_progress(
-                \'unc_gallery_admin_rebuild_thumbs\',
-                \'maintenance_target_div\',
-                \'Are you sure?\nThis can take a while for the whole database!\',
-                true
-            )">
-            Rebuild Thumbnails</div>
-        <div class="admin_section"><button class="button button-primary" onclick="
-            unc_gallery_generic_ajax_progress(
-                \'unc_gallery_admin_remove_data\',
-                \'maintenance_target_div\',
-                \'Are you sure?\nYou will have to rebuild the data with the next button!\',
-                true,
-                \'maintenance-process-progress-bar\',
-                \'Remove\'
-            )
-            ">
-            Erase all image data
-        </button> This will only remove the image data from the database so it can be re-built with the next button.</div>
-        <div class="admin_section"><button class="button button-primary" onclick="
-            unc_gallery_generic_ajax_progress(
-                \'unc_gallery_admin_rebuild_data\',
-                \'maintenance_target_div\',
-                \'Are you sure?\nThis can take a while!\',
-                true,
-                \'maintenance-process-progress-bar\',
-                \'Rebuild\'
-            )
-            ">
-            Re-build missing image data from files.
-        </button> This will go through all files and read all EXIF, IPTC, XMP etc data. Since re-loading all of the data can take a long time (depending on how many images you have), this process might not finish 100%.</div>
-        <div class="admin_section"><button class="button button-primary" onclick="unc_gallery_generic_ajax_progress(\'unc_gallery_delete_everything\', \'maintenance_target_div\', \'Are you sure?\nThis will delete ALL photos!\', true)">
-            Delete all pictures
-        </button> This will delete ALL images and thumbnails. Use with caution!</div>
+
+        <div class="admin_section">
+            <button class="button button-primary" onclick="
+                unc_gallery_generic_ajax_progress(
+                    \'unc_gallery_admin_rebuild_thumbs\',
+                    \'maintenance_target_div\',
+                    \'Are you sure?\nThis can take a while for the whole database!\',
+                    true
+                )">
+            Rebuild Thumbnails
+            </button>
+        </div>
+
+        <div class="admin_section">
+            <button class="button button-primary" onclick="
+                unc_gallery_generic_ajax_progress(
+                    \'unc_gallery_admin_remove_data\',
+                    \'maintenance_target_div\',
+                    \'Are you sure?\nYou will have to rebuild the data with the next button!\',
+                    true,
+                    \'maintenance-process-progress-bar\',
+                    \'Remove\'
+                )
+                ">
+                Erase all image data
+            </button>
+            This will only remove the image data from the database so it can be re-built with the next button.
+        </div>
+
+        <div class="admin_section">
+            <button class="button button-primary" onclick="
+                unc_gallery_generic_ajax_progress(
+                    \'unc_gallery_admin_rebuild_data\',
+                    \'maintenance_target_div\',
+                    \'Are you sure?\nThis can take a while!\',
+                    true,
+                    \'maintenance-process-progress-bar\',
+                    \'Rebuild\'
+                )
+                ">
+                Re-build missing image data from files.
+            </button>
+            This will go through all files and read all EXIF, IPTC, XMP etc data. Since re-loading all of the data can take a long time (depending on how many images you have), this process might not finish 100%.
+        </div>
+
+        <div class="admin_section">
+            <button class="button button-primary" onclick="unc_gallery_generic_ajax_progress(\'unc_gallery_delete_everything\', \'maintenance_target_div\', \'Are you sure?\nThis will delete ALL photos!\', true)">
+                Delete all pictures
+            </button>
+            This will delete ALL images and thumbnails. Use with caution!
+        </div>
+
+        <div class="admin_section">
+            <button class="button button-primary" onclick="unc_gallery_generic_ajax_progress(\'unc_gallery_admin_orphaned_files\', \'maintenance_target_div\', \'Are you sure?\nThis will delete orphaned images!\', true)">
+                Delete orphaned pictures
+            </button>
+            This will delete orphaned images and thumbnails and check if they are in the database. Files not in the database will be deleted.
+        </div>
+
         <div class="progress-div">
             <div id="maintenance-process-progress-bar">0%</div>
         </div>
@@ -359,13 +383,16 @@ function unc_gallery_data_integrity() {
     $locations = array();
     $has_duplicate_gps = false;
     foreach ($records as $line) {
-        $location = $line->location;
-        $gps = $line->gps;
-        if (isset($locations[$location])) {
+        // split GPS by comma
+        $gps_array = explode(",", $line->gps);
+        $gps_one = unc_filter_gps_round($gps_array[0]);
+        $gps_two = unc_filter_gps_round($gps_array[1]);
+        $gps_new_string = $gps_one . "," . $gps_two;
+
+        if (isset($locations[$line->location][$gps_new_string])) {
             $has_duplicate_gps = true;
         }
-        $filecount = $line->filecount;
-        $locations[$location][] = "$gps ($filecount images)";
+        $locations[$line->location][$gps_new_string] = "[$line->gps] ([$line->filecount] images)";
     }
 
     if ($has_duplicate_gps) {
@@ -402,7 +429,17 @@ function unc_gallery_data_integrity() {
         $out .= "x";
     }
 
-    /*
+    $duplicate_file_path = "SELECT count(file_path) as counter, file_path FROM `wp_unc_gallery_img` group by file_path having counter > 1";
+    $duplicate_file_path_data = $wpdb->get_results($duplicate_file_path, ARRAY_A);
+    $count = count($duplicate_file_path_data);
+    $out .= "<br>Found $count datasets without duplicate file paths: <br>";
+    foreach ($duplicate_file_path_data as $D) {
+        $out .= $D['file_path'] . "<br>";
+    }
+
+
+
+ /*
  *
  *
  *
@@ -496,7 +533,6 @@ function unc_gallery_admin_show_debuglogs() {
  */
 function unc_gallery_admin_rebuild_thumbs() {
     global $UNC_GALLERY;
-    unc_tools_debug_trace(__FUNCTION__);
     ob_clean();
     if (!current_user_can('manage_options') || !is_admin()) {
         echo "Cannot rebuild Thumbs, you are not admin!";
@@ -563,7 +599,6 @@ function unc_gallery_admin_rebuild_data() {
         echo "Cannot rebuild data, you are not admin!";
         wp_die();
     }
-    $dirPath = $UNC_GALLERY['upload_path'];
 
     // let's count the number of files in the database so
     // we get an image how much work is to do
@@ -576,16 +611,79 @@ function unc_gallery_admin_rebuild_data() {
     // send the first update
     $process_step_id = unc_tools_progress_update($process_id, "Cleared existing data");
 
-    // TODO Check where do we delete empty folders?
-    // unc_tools_folder_delete_empty($data_folder);
+    // calculate progress update percentages
+    $overall_one_percent = 100 / $count;
+    $overall_percentage = 0;
 
-    // iterate all image folders
-    $photo_folder = $dirPath . "/" . $UNC_GALLERY['photos'];
-    $target_folders = unc_tools_recurse_folders($photo_folder);
+    $text = '';
+    $file_no = 0;
+    foreach ($target_folders as $date => $folder) {
+        $process_step_id++;
+        $text = "Processing $date: <span class=\"file_progress\" style=\"width:0%\">0 % ($file_no files done)</span>";
+        $process_step_id = unc_tools_progress_update($process_id, $text, $overall_percentage);
+        // iterate all files in a folder, write file info to DB
+        $folder_files = glob($folder . "/*");
+        $folder_file_count = count($folder_files);
+        $file_one_percent = 100 / $folder_file_count;
+        $folder_percentage = 0;
+        foreach ($folder_files as $image_file) {
+            if (!is_dir($image_file)) { // && stristr($image_file, '2018') TODO YEar filter
+                // TODO: ERror in case the info cannot be written
+                unc_image_info_write($image_file);
+                $folder_percentage += $file_one_percent;
+                $overall_percentage += $overall_one_percent;
+                $file_no++;
+            }
+            $folder_percentage_text = intval($folder_percentage);
+            $text = "Processing $date: <span class=\"file_progress\" style=\"width:$folder_percentage_text%\">$folder_percentage_text % ($file_no files done)</span>";
+            unc_tools_progress_update($process_id, $text, $overall_percentage, $process_step_id);
+        }
+        $text = "Processing $date: <span class=\"file_progress\" style=\"width:100%\">100 %</span>";
+        unc_tools_progress_update($process_id, $text, $overall_percentage, $process_step_id);
+    }
+    unc_tools_progress_update($process_id, "Done!", 100);
+    // this signals to the JS function that we can terminate the process_get loop
+    unc_tools_progress_update($process_id, false);
+    wp_die();
+}
+
+/**
+ * build the missing data
+ *
+ * @global type $UNC_GALLERY
+ */
+function unc_gallery_convert_image_format() {
+    global $UNC_GALLERY, $wpdb;
+    ob_clean();
+
+    // $max_time = ini_get('max_execution_time');
+
+    if (!current_user_can('manage_options')) {
+        echo "Cannot convert data, you are not admin!";
+        wp_die();
+    }
+
+    // let's count the number of files in the database so
+    // we get an impression how much work is to do
+    $count_files_sql = "SELECT count(id) AS counter FROM " . $wpdb->prefix . "unc_gallery_img WHERE file_name LIKE '%.jpeg';";
+    $file_counter = $wpdb->get_results($count_files_sql, 'ARRAY_A');
+    $count = $file_counter[0]['counter'];
+
+    // get the Process ID for the Ajax live update
+    $process_id = filter_input(INPUT_POST, 'process_id');
+    // send the first update
+    $process_step_id = unc_tools_progress_update($process_id, "Cleared existing data");
 
     // calculate progress update percentages
     $overall_one_percent = 100 / $count;
     $overall_percentage = 0;
+
+    // lets get all the data
+    $count_files_sql = "SELECT file_path FROM " . $wpdb->prefix . "unc_gallery_img WHERE file_name LIKE '%.jpeg';";
+
+    $att_fields_to_replace = array(
+        'permalink', 'file_url', 'thumb_url', 'file_path', 'file_name'
+    );
 
     $text = '';
     $file_no = 0;
@@ -692,4 +790,35 @@ function unc_gallery_admin_remove_logs() {
     unc_tools_progress_update($process_id, $out, 100);
     unc_tools_progress_update($process_id, false);
     wp_die();
+}
+
+function unc_gallery_admin_orphaned_files() {
+    global $UNC_GALLERY;
+    ob_clean();
+    if (!current_user_can('manage_options')) {
+        echo "Cannot delete all, you are not admin!";
+    } else {
+        // delete orphaned files
+        unc_tools_recurse_files($UNC_GALLERY['photos'], 'unc_gallery_admin_orphaned_files_check', false);
+
+        // delete orphaned thumbnails
+        unc_tools_recurse_files($UNC_GALLERY['thumbnails'], 'unc_gallery_admin_orphaned_thumbs_check', false);
+
+        echo "Done!";
+    }
+    wp_die();
+}
+
+function unc_gallery_admin_orphaned_files_check($path) {
+    global $wpdb;
+
+    $sql = "SELECT `id` FROM `wp_unc_gallery_img` WHERE `file_path` = '$path';";
+    $files = $wpdb->get_results($sql);
+    if (count($files) == 0) {
+        unlink($path);
+        return true;
+    } else {
+        return false;
+    }
+
 }

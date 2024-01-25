@@ -13,7 +13,6 @@
  */
 function unc_day_var_init($a) {
     global $UNC_GALLERY;
-    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     // we convert the start time and end time to unix timestamp for better
         // comparison
     $UNC_GALLERY['display']['range'] = array('start_time' => false, 'end_time' => false);
@@ -156,6 +155,8 @@ function unc_day_images_list($D = false) {
             $sql_filter = " (file_time >= '$start_time' AND file_time <= '$end_time')";
         } else if ($D['range']['start_time'] > $D['range']['end_time']){
             $sql_filter = " ((file_time >= '$date 00:00:00' AND file_time <= '$end_time') OR (file_time >= '$start_time' AND file_time <= '$date 23:59:59'))";
+        } else { // both times are the same
+            $sql_filter = " (file_time = '$start_time')";
         }
     } else if ($D['range']['end_time']) { // get everything from day start until end time
         $end_time = $D['date_range']['end_time'];
@@ -167,7 +168,7 @@ function unc_day_images_list($D = false) {
         $sql_filter = " (file_time >= '$start_time' AND file_time <= '$date 23:59:59')";
     } else {
         $dates = $D['dates'];
-        $date_sql = implode($dates, "','");
+        $date_sql = implode("','", $dates);
         $sql_filter = " (att_value IN('$date_sql'))";
     }
 
@@ -234,7 +235,6 @@ function unc_day_images_list($D = false) {
  * @return boolean
  */
 function unc_day_validate_date($date_str) {
-    global $UNC_GALLERY;
 
     $pattern = "/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/";
     if (preg_match($pattern, $date_str)) {
@@ -242,6 +242,7 @@ function unc_day_validate_date($date_str) {
     }else{
         return false;
     }
+
 }
 
 /**

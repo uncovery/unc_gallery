@@ -9,31 +9,30 @@ global $UNC_GALLERY;
 
 // https://surniaulula.com/2013/04/09/read-adobe-xmp-xml-in-php/
 $UNC_GALLERY['codes']['xmp'] = array(
-    'email' => array(
-        'description' => 'Creator Email',
-        'regex' => '<Iptc4xmpCore:CreatorContactInfo[^>]+?CiEmailWork="([^"]*)"',
-        'key' => array("CreatorContactInfo" => "CiEmailWork"),
-        'type' => 'text',
-    ),
-    /*
-    <Iptc4xmpExt:Event>
-        <rdf:Alt>
-            <rdf:li xml:lang="x-default">Higher Ground 2018</rdf:li>
-        </rdf:Alt>
-    </Iptc4xmpExt:Event>
-    */
-    
+//    'email' => array(
+//        'description' => 'Creator Email',
+//        'regex' => '<Iptc4xmpCore:CreatorContactInfo[^>]+?CiEmailWork="([^"]*)"',
+//        'key' => "CreatorContactInfo",
+//        'type' => 'text',
+//    ),
     'event' => array(
         'description' => 'Event',
         'regex' => '<Iptc4xmpExt:Event>\s*<rdf:Alt>\s*(.*?)\s*<\/rdf:Alt>\s*<\/Iptc4xmpExt:Event>',
         'key' => "Event",
         'type' => 'text',
     ),
-    'name' => array(
-        'description' => 'Owner Name',
-        'regex' => '<rdf:Description[^>]+?aux:OwnerName="([^"]*)"',
-        'type' => 'text',
+    'persons_in_image' => array(
+        'description' => 'PersonInImage',
+        'regex' => '<Iptc4xmpExt:PersonInImage>\s*<rdf:Bag>\s*(.*?)\s*<\/rdf:Bag>\s*<\/Iptc4xmpExt:PersonInImage>',
+        'key' => "PersonInImage",
+        'type' => 'array',
     ),
+//    'name' => array(
+//        'description' => 'Owner Name',
+//        'regex' => '<rdf:Description[^>]+?aux:OwnerName="([^"]*)"',
+//        'type' => 'array',
+//        'key' => 'creator',
+//    ),
     'creation_date' => array(
         'description' => 'Creation Date',
         'regex' => '<rdf:Description[^>]+?xmp:CreateDate="([^"]*)"',
@@ -116,21 +115,22 @@ $UNC_GALLERY['codes']['xmp'] = array(
         'description' => 'Creator',
         'regex' => '<dc:creator>\s*<rdf:Seq>\s*(.*?)\s*<\/rdf:Seq>\s*<\/dc:creator>',
         'key' => 'Creator',
-        'type' => 'text',
+        'type' => 'array',
     ),
     'keywords' => array(
         'description' => 'Keywords',
         'regex' => '<dc:subject>\s*<rdf:Bag>\s*(.*?)\s*<\/rdf:Bag>\s*<\/dc:subject>',
         'key' => 'Subject',
-        'type' => 'text',
+        'type' => 'array',
     ),
-    'hierarchicalh_keywords' => array(
+    'hierarchical_keywords' => array(
         'description' => 'Hierarchical Keywords',
         'regex' => '<lr:hierarchicalSubject>\s*<rdf:Bag>\s*(.*?)\s*<\/rdf:Bag>\s*<\/lr:hierarchicalSubject>',
         'key' => 'HierarchicalSubject',
-        'type' => 'text',
+        'type' => 'array',
     ),
 );
+
 
 /**
  * perform our proprietary XMP fixes
@@ -139,101 +139,20 @@ $UNC_GALLERY['codes']['xmp'] = array(
  * @return type
  */
 function unc_xmp_fix($xmp_raw) {
-    // custom location string
-    $val_array = array(
-        'country', 'state', 'city', 'location',
-    );
-    $loc_arr = array();
-    foreach ($val_array as $loc_type) {
-        if (isset($xmp_raw[$loc_type])) {
-            $loc_arr[$loc_type] = $xmp_raw[$loc_type];
-        } else {
-            $loc_arr[$loc_type] = 'n/a';
-            $xmp_raw[$loc_type] = 'n/a';
-        }
-    }
-    $loc_str = implode("|", $loc_arr);
-    $xmp_raw['loc_str'] = $loc_str;
-
-    // custom flat keyword, hierarchical keywords need to be split into a third dimension
-    if (isset($xmp_raw['Hierarchical Keywords'])) {
-        foreach ($xmp_raw['Hierarchical Keywords'] as $li => $val) {
-            $final_val = explode( '|', $val );
-            $xmp_raw['Hierarchical Keywords'][$li] = $final_val;
-        }
-        unset($li, $val);
-    }
-    return $xmp_raw;
-}
-
-
-/**
- * Code to read XMP file contents from files
- * source: https://surniaulula.com/2013/04/09/read-adobe-xmp-xml-in-php/
- *
- * @global type $UNC_GALLERY
- * @param type $filepath
- * @return boolean
- */
-function unc_xmp_get($filepath) {
-    $max_size = 1240000; // maximum size read (1MB)
-    $chunk_size = 65536; // read 64k at a time
-    $start_tag = '<x:xmpmeta';
-    $end_tag = '</x:xmpmeta>';
-    $xmp_raw = null;
-
-    $file_fh = fopen($filepath, 'rb');
-
-    // check if we can get the file data
-    if ($file_fh) {
-        $chunk = '';
-        // get the file size
-        $file_size = filesize($filepath);
-        // as long as we are not exceeding the max size or the file size, operate
-        while (($file_pos = ftell($file_fh)) < $file_size  && $file_pos < $max_size ) {
-            // read a chunk of the file
-            $chunk .= fread( $file_fh, $chunk_size );
-            // check if we can find the end_tag
-            if (($end_pos = strpos($chunk, $end_tag)) !== false) {
-                if (($start_pos = strpos( $chunk, $start_tag)) !== false) {
-                    $xmp_raw = substr($chunk, $start_pos, $end_pos - $start_pos + strlen($end_tag));
-                }
-                break;  // stop reading after finding the end tag of the xmp data
-            }
-        }
-        fclose($file_fh);
-        // convert to php
-        $xmp_arr = unc_xmp_get_array($xmp_raw);
-        return $xmp_arr;
-    } else {
-        return false;
-    }
-}
-
-
-/**
- * convert raw XMP data into a PHP array
- *
- * @param type $xmp_raw
- * @return type
- */
-function unc_xmp_get_array($xmp_raw) {
     global $UNC_GALLERY;
-    $xmp_arr = array();
-    foreach ($UNC_GALLERY['codes']['xmp'] as $key => $D ) {
-        $match = false;
-        // get a single text string
-        $regex = $D['regex'];
-        preg_match( "/$regex/is", $xmp_raw, $match);
-        if (isset($match[1]) && $match[1] != '') {
-            $xmp_arr[$key] = $match[1];
-        } else { // no match, next one;
+
+    $data_out = array();
+    foreach ($UNC_GALLERY['codes']['xmp'] as $key => $C) {
+        $xmp_key = $C['key'];
+        if (!isset($xmp_raw[$xmp_key])) {
             continue;
         }
-
-        // if string contains a list, then re-assign the variable as an array with the list elements
-        $xmp_arr[$key] = preg_match_all( "/<rdf:li[^>]*>([^>]*)<\/rdf:li>/is", $xmp_arr[$key], $match ) ? $match[1] : $xmp_arr[$key];
+        if ($C['type'] == 'array') {
+            $data_out[$key] = implode(", ", $xmp_raw[$xmp_key]);
+        } else {
+            $data_out[$key] = $xmp_raw[$xmp_key];
+        }
     }
-    return $xmp_arr;
-}
 
+    return $data_out;
+}

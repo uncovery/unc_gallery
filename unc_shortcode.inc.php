@@ -16,7 +16,7 @@ function unc_gallery_shortcode_form($return = true) {
     );
 
     foreach ($fields as $field) {
-        $$field = filter_input(INPUT_POST, $field, FILTER_SANITIZE_STRING);
+        $$field = filter_input(INPUT_POST, $field);
     }
 
     // $out = var_export($_POST, true) . "<br>";

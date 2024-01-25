@@ -5,6 +5,27 @@ if (!defined('WPINC')) {
 }
 
 /**
+ * Get the URL of an image based on the image ID in the database
+ *
+ * @global type $wpdb
+ * @param type $id
+ * @return boolean
+ */
+function unc_tools_image_url_from_id($id) {
+    global $wpdb;
+
+    $att_table = $wpdb->prefix . "unc_gallery_att";
+    $query = $wpdb->prepare("SELECT att_value FROM $att_table
+        WHERE file_id=%d AND att_name='file_url' LIMIT 1;", $id);
+    $I = $wpdb->get_results($query, 'ARRAY_A');
+    if (count($I) == 0) {
+        return false;
+    } else {
+        return $I[0]['att_value'];
+    }
+}
+
+/**
  * This is called by Javascript on a timer when we upload images
  * this gets the current status from a session variable
  *
@@ -13,9 +34,8 @@ if (!defined('WPINC')) {
  */
 function unc_tools_progress_get($process_name = false) {
     if (!$process_name) {
-        $process_name = filter_input(INPUT_POST, 'process_id', FILTER_SANITIZE_STRING);
+        $process_name = filter_input(INPUT_POST, 'process_id');
     }
-
 
     ob_start();
     session_start();
@@ -192,6 +212,29 @@ function unc_tools_delete_image_data($id) {
 
 }
 
+/**
+ * convert an image from one format to another
+ *
+ * @param type $image_path
+ * @param type $target_path
+ * @param type $source_format
+ * @param type $target_format
+ * @param type $quality
+ */
+function unc_image_convert($image_path, $target_path, $source_format = 'jpeg', $target_format = 'webp', $quality=100) {
+    $source_function = 'imagecreatefrom' .  $source_format;
+    $tmp_source_image = $source_function($image_path);
+    $w = imagesx($tmp_source_image);
+    $h = imagesy($tmp_source_image);
+    $tmp_target_image = imagecreatetruecolor($w,$h);
+    imagecopy($tmp_target_image, $tmp_source_image, 0, 0, 0, 0, $w, $h);
+    $target_function = "image" . $target_format;
+    $target_function($tmp_target_image, $target_path, $quality);
+    imagedestroy($tmp_source_image);
+    imagedestroy($tmp_target_image);
+}
+
+
 
 /**
  * Take a folder and delete all empty subfolders
@@ -313,13 +356,13 @@ function unc_tools_file_desc($F) {
 
 
 /**
- * recurse a folder and apply a custom function to the files
+ * recourse a folder and apply a custom function to the files and folders
  *
  * @param type $base_folder
  * @param type $function
  * @return array
  */
-function unc_tools_recurse_files($base_folder, $file_function, $dir_function) {
+function unc_tools_recurse_files($base_folder, $file_function = false, $dir_function = false) {
     global $TMP_FOLDERS;
     // safety net
     if (strpos($base_folder, './')) {
@@ -333,10 +376,14 @@ function unc_tools_recurse_files($base_folder, $file_function, $dir_function) {
             $TMP_FOLDERS[] = unc_tools_recurse_files($file, $file_function, $dir_function);
         } else {
             // working on $file in folder $main
-            $TMP_FOLDERS[] = $file_function($file);
+            if ($file_function) {
+                $TMP_FOLDERS[] = $file_function($file);
+            }
         }
     }
-    $TMP_FOLDERS[] = $dir_function($base_folder);
+    if ($dir_function) {
+        $TMP_FOLDERS[] = $dir_function($base_folder);
+    }
     return $TMP_FOLDERS;
 }
 
@@ -520,14 +567,14 @@ function unc_tools_image_delete() {
         wp_die();
     }
 
-    $file_name_raw = filter_input(INPUT_GET, 'file_name', FILTER_SANITIZE_STRING);
+    $file_name_raw = filter_input(INPUT_GET, 'file_name');
     if (!$file_name = unc_tools_filename_validate($file_name_raw)) {
         ob_clean();
         echo "File name $file_name_raw is not allowed!";
         wp_die();
     }
 
-    $date_wrong = filter_input(INPUT_GET, 'date', FILTER_SANITIZE_STRING);
+    $date_wrong = filter_input(INPUT_GET, 'date');
     $date_str = str_replace("-", "/", $date_wrong);
 
     $paths = array(
@@ -754,9 +801,9 @@ function unc_tools_debug_write() {
 
     switch($debug_setting) {
         // The 'G' modifier is available since PHP 5.1.0
-        case 'no':
+        case false:
             return;
-        case 'yes':
+        case true:
             break;
     }
 
@@ -820,7 +867,7 @@ function unc_tools_debug_trace($type, $data = '') {
         unc_tools_debug_trace($type, $data);
     } else {
         $UNC_GALLERY['debug_log'][$time][$type] = $data;
-        // error_log("UNC Gallery $type / $data");
+        error_log("UNC Gallery $type / " . var_export($data, true));
     }
 }
 
@@ -834,8 +881,7 @@ function unc_tools_microtime2string($microtime = false, $format = 'Y-m-d H-i-s-u
     // https://wordpress.stackexchange.com/questions/8400/how-to-get-wordpress-time-zone-setting#8404
     $timezone = get_option('timezone_string');
     if ($timezone == '') {
-        $offset = get_option('gmt_offset');
-        $timezone = sprintf("%+'05g", $offset * 100) . "\n";
+        $timezone = "Asia/Hong_Kong";
         // this returns a string like 2 or -2. need to convert to +0200 or -0200
     }
     $date_obj->setTimezone(new DateTimeZone($timezone));
@@ -880,10 +926,10 @@ function unc_tools_array2text($variable) {
                     $class = "details";
                 }
                 $string .= "<li class=\"$class\"><span>$key</span> &rArr; ";
-                if (count($elem) == 0) {
-                    $elem_string = "array()</li>\n";
-                } else {
+                if (is_array($elem)) {
                     $elem_string = unc_tools_array2text($elem) . "</li>\n";
+                } else {
+                    $elem_string = "$elem</li>\n";
                 }
                 $string .= $elem_string;
             }

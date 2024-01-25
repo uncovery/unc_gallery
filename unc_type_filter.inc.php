@@ -15,7 +15,6 @@ if (!defined('WPINC')) {
  * @param type $a
  */
 function unc_filter_var_init($a) {
-    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
     $filter_str = $a['filter'];
@@ -49,7 +48,6 @@ function unc_filter_var_init($a) {
  * @param array $filter_arr
  */
 function unc_filter_image_list($filter_arr) {
-    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $wpdb, $UNC_GALLERY;
 
     $img_table_name = $wpdb->prefix . "unc_gallery_img";
@@ -98,7 +96,6 @@ function unc_filter_image_list($filter_arr) {
 
 function unc_filter_choice($filter_arr) {
     global $UNC_GALLERY, $wpdb;
-    unc_tools_debug_trace(__FUNCTION__, $filter_arr);
     $img_table_name = $wpdb->prefix . "unc_gallery_img";
     $att_table_name = $wpdb->prefix . "unc_gallery_att";
     $group_filter = esc_sql($filter_arr[0]);
@@ -140,7 +137,6 @@ function unc_filter_choice($filter_arr) {
             $desc1 = "Please select filter field value:&nbsp;";
         }
     }
-    unc_tools_debug_trace('names sql', $names_sql);
 
     if (count($filter_arr) >= 3 ) { // we have enough info for the image list, count result
         $att_value_filter = esc_sql(urldecode($filter_arr[2]));
@@ -201,10 +197,11 @@ function unc_filter_choice($filter_arr) {
             }
             $out .= "</ul>\n";
         } else { // make columns
-            $columns = 4;
+            $columns = 3;
             $last_letter = false;
             $start = true;
             $this_column = 0;
+            $colwidth = (100 / $columns) - 1;
             $out .= "<div class=\"filter_row\">\n";
             foreach ($names as $N) {
                 $nice_term = ucwords(str_replace("_", " ", $N['term']));
@@ -221,7 +218,7 @@ function unc_filter_choice($filter_arr) {
                         }
                     }
                     // make letter header
-                    $out .= "<div class=\"filter_column\">\n<h3>$first_letter</h3>\n"
+                    $out .= "<div class=\"filter_column\" style=\"width:$colwidth%\">\n<h3>$first_letter</h3>\n"
                         . "<ul>\n";
                 }
                 $out .= "<li onclick=\"filter_select('$filter_key', '$fixed_term', '$filter_group', '$filter_name', '$options_string', 0)\">$nice_term</li>\n";
@@ -249,11 +246,8 @@ function unc_filter_choice($filter_arr) {
  * @param type $type
  * @return string
  */
-function unc_filter_map_data($type) {
-    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
+function unc_filter_map_data($type, $zoom_to = null) {
     global $UNC_GALLERY;
-
-    $error = '';
 
     if (strlen($UNC_GALLERY['google_api_key']) < 1) {
         return "You need to set a google API key in your Uncovery Gallery Configuration to use Google Maps!";
@@ -266,11 +260,12 @@ function unc_filter_map_data($type) {
     }
 
     $my_levels = array();
+
     // lets construct a new $levels array from the GET data
     $i = 0;
     $queries = array();
     foreach ($levels as $level) {
-        $temp_value = filter_input(INPUT_GET, $level, FILTER_SANITIZE_STRING);
+        $temp_value = filter_input(INPUT_GET, $level);
         // if one value is missing or empty we take what we got so far.
         if (is_null($temp_value)) {
             break;
@@ -303,6 +298,26 @@ function unc_filter_map_data($type) {
     if (count($locations_details) == 0) {
         return "Could not find any results on this location;";
     }
+
+    return unc_filter_map_display($locations_details, $levels, $level, $my_levels, $queries, $link_code, $zoom_to);
+}
+
+
+/**
+ * display the actual map
+ *
+ * @global type $UNC_GALLERY
+ * @param type $locations_details
+ * @param type $levels
+ * @param type $level
+ * @param type $my_levels
+ * @param type $queries
+ * @return string
+ */
+function unc_filter_map_display($locations_details, $levels, $level, $my_levels, $queries, $link_code, $zoom_to = false) {
+    global $UNC_GALLERY;
+
+    $error = '';
 
     // we are interested only in the average GPS data per location
     $locations = unc_filter_gps_avg($locations_details);
@@ -380,6 +395,13 @@ function unc_filter_map_data($type) {
             bounds.extend(new google.maps.LatLng ($min_lat,$min_long));
             map.fitBounds(bounds);
         ";
+    }
+
+    if ($zoom_to) {
+        $avg_long = $zoom_to[1];
+        $avg_lat = $zoom_to[0];
+        $zoom = 'zoom: 16,';
+        $bounds = '';
     }
 
     $cluster = '';
@@ -493,7 +515,6 @@ function unc_filter_map_gps_convert($latitudeFrom, $longitudeFrom, $latitudeTo, 
  * @return type
  */
 function unc_filter_map_locations($levels, $type, $next_level) {
-    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $wpdb, $UNC_GALLERY;
 
     $att_table_name = $wpdb->prefix . "unc_gallery_att";
@@ -537,6 +558,10 @@ function unc_filter_map_locations($levels, $type, $next_level) {
 
         $gps_0 = unc_filter_gps_round($gps_arr[0]);
         $gps_1 = unc_filter_gps_round($gps_arr[1]);
+
+        if (!is_array($levels)) {
+            $levels = array();
+        }
 
         if (count($levels) == 1 && $UNC_GALLERY['google_maps_markerstyle'] == 'layer') {
             $country = $L['country'];
@@ -608,14 +633,13 @@ function unc_filter_gps_avg($array) {
  */
 function unc_filter_update(){
     global $UNC_GALLERY;
-    unc_tools_debug_trace(__FUNCTION__ . "GET input", $_GET);
 
-    $filter_key = filter_input(INPUT_GET, 'filter_key', FILTER_SANITIZE_STRING);
-    $filter_value = filter_input(INPUT_GET, 'filter_value', FILTER_SANITIZE_STRING);
-    $filter_group = filter_input(INPUT_GET, 'filter_group', FILTER_SANITIZE_STRING);
-    $filter_name = filter_input(INPUT_GET, 'filter_name', FILTER_SANITIZE_STRING);
-    $options = filter_input(INPUT_GET, 'options', FILTER_SANITIZE_STRING);
-    $page_raw = filter_input(INPUT_GET, 'page', FILTER_SANITIZE_STRING);
+    $filter_key = filter_input(INPUT_GET, 'filter_key');
+    $filter_value = filter_input(INPUT_GET, 'filter_value');
+    $filter_group = filter_input(INPUT_GET, 'filter_group');
+    $filter_name = filter_input(INPUT_GET, 'filter_name');
+    $options = filter_input(INPUT_GET, 'options');
+    $page_raw = filter_input(INPUT_GET, 'page');
 
     $filter_str = '';
     if (strlen($filter_group) > 1) { // we have a group set
@@ -653,7 +677,6 @@ function unc_filter_update(){
 }
 
 function unc_categories_show_posts($cat_id) {
-    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     $limit = 10;
     query_posts("cat=$cat_id&posts_per_page=$limit");
 
@@ -688,7 +711,6 @@ function number_postpercat($idcat) {
 
 
 function unc_filter_check_type($group, $key) {
-    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
     // get the possible filter values from the codes
@@ -717,7 +739,6 @@ function unc_filter_check_type($group, $key) {
  * @return boolean
  */
 function unc_tags_apply($F) {
-    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
     // do we havea post? If so get the id, otherwise bail
@@ -757,7 +778,7 @@ function unc_tags_apply($F) {
         // now, we have tags, go through them
         foreach ($image_tags as $tag) {
             // we lowercase them to make them comparable
-            $photo_tags[] = ucwords(strtolower($tag));
+            $photo_tags[] = ucwords(strtolower($tag), " (");
         }
     }
     if (count($photo_tags) == 0) {
@@ -779,7 +800,7 @@ function unc_tags_apply($F) {
     $posttags_obj = get_the_tags();
     if ($posttags_obj) {
         foreach($posttags_obj as $tag) {
-            $post_tags[] = ucwords(strtolower($tag->name));
+            $post_tags[] = ucwords(strtolower($tag->name), " (");
         }
     }
 
@@ -824,7 +845,6 @@ function unc_tags_apply($F) {
  * @return type
  */
 function unc_categories_apply($file_data) {
-    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
     $post_id = get_the_ID();
@@ -886,9 +906,13 @@ function unc_categories_apply($file_data) {
             $cats_id = implode("-", $file_cats); // this will look like 'hongkong-hongkongisland-central-grappas'
             // so we created a array key that has the whole list of location names as the line above and then contains an
             // array of the individual names of the location.
-            $cat_sets[$cats_id] = $file_cats;
+            if (!strstr($cats_id, "n/a")) {
+                $cat_sets[$cats_id] = $file_cats;
+            }
         }
     }
+
+    // echo "\n<!-- UNC found cats: "  . var_export($cat_sets, true) . " -->\n";
 
     if ($UNC_GALLERY['event_categories'] != 'none') {
         $setting = $UNC_GALLERY['post_categories'];
@@ -910,10 +934,9 @@ function unc_categories_apply($file_data) {
     }
 
     // EVENT categories
-
-
     // if we did not find any, just stop here
     if (!$has_cats) {
+        // echo "\n<!-- UNC No event cats -->\n";
         return;
     }
 
@@ -1006,3 +1029,49 @@ function unc_categories_link_read($exif_code) {
         return $data[0]['category_id'];
     }
 }
+
+/**
+ * if we have the numeric ID of a category, let's find the GPS for it so we can display a map.
+ *.
+ * @param type $category_id
+ */
+function unc_category_get_gps($category_id) {
+    global $wpdb;
+    // we check first if we have this already
+    $select_sql = "SELECT location_code FROM {$wpdb->prefix}unc_gallery_cat_links WHERE category_id = '%d';";
+    $select_prepared_sql = $wpdb->prepare($select_sql, $category_id);
+
+    $data = $wpdb->get_results($select_prepared_sql, 'ARRAY_A');
+    if ($wpdb->num_rows == 0) {
+        echo "could not find category in link list";
+        return false;
+    } else {
+        // we just take the first one
+        $loc_string = $data[0]['location_code'];
+    }
+    // need to replace - with |.
+
+    $loc_string = str_replace("-", "|", $loc_string);
+
+    $gps_select = "SELECT gps_table.att_value FROM `wp_unc_gallery_att` as loc_table
+        LEFT JOIN `wp_unc_gallery_att` as gps_table ON loc_table.file_id=gps_table.file_id
+        WHERE loc_table.att_group='xmp'
+        AND loc_table.att_name='loc_str'
+        AND loc_table.att_value='%s'
+        AND gps_table.att_name='gps'
+        LIMIT 1;";
+    $gps_prepared_sql = $wpdb->prepare($gps_select, $loc_string);
+
+    $gps_data = $wpdb->get_results($gps_prepared_sql, 'ARRAY_A');
+    if ($wpdb->num_rows == 0) {
+        return false;
+    } else {
+        // we just take the first one
+        $gps_string = $gps_data[0]['att_value'];
+    }
+
+    $arr = explode(",", $gps_string);
+    return $arr;
+}
+
+

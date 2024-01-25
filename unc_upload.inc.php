@@ -9,8 +9,6 @@ if (!defined('WPINC')) {
  * @return string
  */
 function unc_uploads_form() {
-    global $UNC_GALLERY;
-
     if (isset($_SESSION['uploads_iterate_files'])) {
         unset($_SESSION['uploads_iterate_files']);
     }
@@ -96,8 +94,6 @@ function unc_uploads_form() {
 function unc_uploads_iterate_files() {
     global $UNC_GALLERY;
 
-    unc_tools_debug_trace(__FUNCTION__, "file upload started");
-
     // get the amount of files
     // do we have an upload or an import?
     $F = false;
@@ -176,7 +172,7 @@ function unc_uploads_iterate_files() {
     $updated = 0;
     for ($i=0; $i < $count; $i++){
         // process one file
-        $result_arr = unc_uploads_process_file($i, $overwrite);
+        $result_arr = unc_uploads_process_file($i, $overwrite, $process_id);
         $date_str = $result_arr['date'];
         $action = $result_arr['action'];
         if (!$date_str) {
@@ -184,29 +180,31 @@ function unc_uploads_iterate_files() {
         } else {
             $updated++;
             $keywords = $result_arr['keywords'];
-            $location = $result_arr['location'];
             $string = "$date_str: image $action\n";
-            $string .= "Keywords: $keywords Location: $location";
+            $string .= "Keywords: $keywords";
             $date_str_arr[] = $date_str;
         }
         $percentage += $one_file_percent;
         unc_tools_progress_update($process_id, "File " . ($i + 1) . ": " . $string, $percentage);
     }
 
-    $string = "$count images processed, $updated successfully! <br><br>" . '
-        Sample Shortcode for this upload:<br>
-        <input
-            style="width:100%;"
-            id="upload_short_code_sample"
-            onClick="SelectAll(\'upload_short_code_sample\');"
-            type="text"
-            value="[unc_gallery start_time=&quot;' . min($date_str_arr) . '&quot; end_time=&quot;' . max($date_str_arr) . '&quot;]"
-        ><br>';
+    if ($updated > 0) {
+        $string = "$count images processed, $updated successfully! <br><br>" . '
+            Sample Shortcode for this upload:<br>
+            <input
+                style="width:100%;"
+                id="upload_short_code_sample"
+                onClick="SelectAll(\'upload_short_code_sample\');"
+                type="text"
+                value="[unc_gallery start_time=&quot;' . min($date_str_arr) . '&quot; end_time=&quot;' . max($date_str_arr) . '&quot;]"
+            ><br>';
+    } else {
+        $string = "No files uploaded<br>";
+    }
+
     unc_tools_progress_update($process_id, $string, 100);
     // this signals to the JS function that we can terminate the process_get loop
     unc_tools_progress_update($process_id, false);
-
-    unc_tools_debug_trace(__FUNCTION__, "file upload ended");
     wp_die();
 }
 
@@ -218,21 +216,9 @@ function unc_uploads_iterate_files() {
  * @param type $overwrite
  * @return boolean
  */
-function unc_uploads_process_file($i, $overwrite) {
+function unc_uploads_process_file($i, $overwrite, $process_id) {
     global $UNC_GALLERY;
     $action = false;
-    //$_FILES(1) {
-    //    ["userImage"]=> array(5) {
-    //        ["name"]=> array(1) { [0]=> string(23) "2013-11-02 21.00.38.jpg" }
-    //        ["type"]=> array(1) { [0]=> string(10) "image/jpeg" }
-    //        ["tmp_name"]=> array(1) { [0]=> string(14) "/tmp/phptgNK2k" }
-    //        ["error"]=> array(1) { [0]=> int(0) }
-    //        ["size"]=> array(1) { [0]=> int(213485) }
-    //    }
-    //}
-
-    // the FILE array from the server
-
 
     if (isset($UNC_GALLERY['import'])) {
         $type = 'import';
@@ -242,74 +228,83 @@ function unc_uploads_process_file($i, $overwrite) {
         $F = $UNC_GALLERY['upload_files'];
     }
 
+    $source_name = $F['name'][$i];
+    $source_tmp_path = $F['tmp_name'][$i];
+
     // get the current path of the temp name
-    if ($type == 'upload' && is_uploaded_file($F['tmp_name'][$i])) {
-        $sourcePath = $F['tmp_name'][$i];
-    } else if ($type == 'import' && is_file($F['tmp_name'][$i])) {
-        $sourcePath = $F['tmp_name'][$i];
-    } else {
-        return array('date'=> false, 'action' => "Cannot find uploaded file {$F['tmp_name'][$i]}!");
+    if ($type == 'upload' && !is_uploaded_file($source_tmp_path)) {
+        return array('date'=> false, 'action' => "Cannot find uploaded file $source_tmp_path!");
+    } else if ($type == 'import' && !is_file($source_tmp_path)) {
+        return array('date'=> false, 'action' => "Cannot find imported file $source_tmp_path!");
     }
 
     // is there an error with the file?
     if ($F["error"][$i] !== 0){
         $errormsg = $F["error"][$i];
-        return array('date'=> false, 'action' => "Unable to process file ($errormsg), upload cancelled: " . $F['name'][$i]);
+        return array('date'=> false, 'action' => "Unable to process file ($errormsg), upload cancelled: $source_name");
     }
 
-    // if there is an imagesize, we have a valid image
-    $image_check = getimagesize($F['tmp_name'][$i]);
-
+    // if the image has height & width, we have a valid image
+    $image_check = getimagesize($source_tmp_path);
     if (!$image_check) {
-        return array('date'=> false, 'action' => "Not image file, upload cancelled of file " . $F['name'][$i]);
+        return array('date'=> false, 'action' => "Not image file, upload cancelled of file $source_name");
     }
+    $original_width = $image_check[0];
+    $original_height = $image_check[1];
 
     // let's set variables for the currently uploaded file so we do not have to get the same data twice.
     $UNC_GALLERY['upload_file_info'] = array(
         'image_size' => $image_check,
-        'temp_name' => $F['tmp_name'][$i],
+        'temp_name' => $source_tmp_path,
         'type' => $type,
     );
 
-    $original_width = $image_check[0];
-    $original_height = $image_check[1];
-
     // let's make sure the image is not 0-size
     if ($original_width == 0 || $original_height == 0) {
-        echo unc_display_errormsg("Image size {$F['name'][$i]} = 0");
+        echo unc_display_errormsg("Image size $source_name = 0");
         return false;
     }
 
     // let's shrink only if we need to
     if ($original_width == $UNC_GALLERY['thumbnail_height'] && $original_height == $UNC_GALLERY['thumbnail_height']) {
-        return array('date'=> false, 'action' => "Image size {$F['name'][$i]} is smaller than thumbnail!");
+        return array('date'=> false, 'action' => "Image size $source_name is smaller than thumbnail!");
     }
 
     // get imagetype
     $exif_imagetype = $image_check[2];
     if (!$exif_imagetype) {
-        return array('date'=> false, 'action' => "Could not determine image type of file " . $F['name'][$i] . ", upload cancelled!");
+        return array('date'=> false, 'action' => "Could not determine image type of file $source_name, upload cancelled!");
     }
     $UNC_GALLERY['upload_file_info']['exif_imagetype'] = $exif_imagetype;
 
     // get mime-type and check if it's in the list of valid ones
     $mime_type = image_type_to_mime_type($exif_imagetype);
     if (!isset($mime_type, $UNC_GALLERY['valid_filetypes'])){
-        return array('date'=> false, 'action' => "Invalid file type :" . $F["type"][$i]);
-    } else { // get extension for optional resize
-        $extension = $UNC_GALLERY['valid_filetypes'][$mime_type];
+        return array('date'=> false, 'action' => "Invalid file type for $source_name:" . $F["type"][$i]);
     }
-    $UNC_GALLERY['upload_file_info']['extension'] = $extension;
+
+    // get extension for optional resize
+    $extension = $UNC_GALLERY['valid_filetypes'][$mime_type];
 
     // we set the new filename of the image including extension so there is no guessing
-    $file_no_ext = pathinfo($F['name'][$i], PATHINFO_FILENAME);
+    $file_no_ext = pathinfo($source_name, PATHINFO_FILENAME);
+
+//    // in case we want to convert the file to another format, give the extension now
+//    if ($UNC_GALLERY['image_filetype_convert'] != 'none') {
+//        $new_extension = $UNC_GALLERY['image_filetype_convert'];
+//
+//       //  unc_image_convert($source_tmp_path, $target_path);
+//    }
+
+    $UNC_GALLERY['upload_file_info']['extension'] = $extension;
+
     $target_filename = $file_no_ext . "." . $extension;
     $UNC_GALLERY['upload_file_info']['target_filename'] = $target_filename;
 
     // we need the exif date to know when the image was taken
-    $date_str = unc_image_date($sourcePath);
+    $date_str = unc_image_date($source_tmp_path);
     if (!$date_str) {
-        return array('date'=> false, 'action' => "Cannot read EXIF or IPTC date of file $sourcePath");
+        return array('date'=> false, 'action' => "Cannot read EXIF or IPTC date of file $source_tmp_path");
     }
     $UNC_GALLERY['upload_file_info']['date_str'] = $date_str;
 
@@ -363,27 +358,28 @@ function unc_uploads_process_file($i, $overwrite) {
         $action = 'overwritten';
     }
 
-    // finally, move the file
+    // finally, move the file. either we resize in case this is a setting
     if ($UNC_GALLERY['picture_long_edge'] > 0) {
         $resize_check = unc_import_image_resize(
-            $F['tmp_name'][$i],
+            $source_tmp_path,
             $new_path,
             $UNC_GALLERY['picture_long_edge'],
             $extension,
             $UNC_GALLERY['image_quality'],
+            $process_id,
             'max_height'
         );
         if (!$resize_check) {
-            return array('date'=> false, 'action' => "Could not resize {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path");
+            return array('date'=> false, 'action' => "Could not resize $source_name from $source_tmp_path to $new_path");
         }
-    } else {
+    } else { // otherwise we take the file as-is
         if ($type == 'upload') {
-            $rename_chk = move_uploaded_file($F['tmp_name'][$i], $new_path);
+            $rename_chk = move_uploaded_file($source_tmp_path, $new_path);
         } else { // import
-            $rename_chk = copy($F['tmp_name'][$i], $new_path);
+            $rename_chk = copy($source_tmp_path, $new_path);
         }
         if (!$rename_chk) {
-            return array('date'=> false, 'action' => "Could not move {$F['name'][$i]} from {$F['tmp_name'][$i]} to $new_path");
+            return array('date'=> false, 'action' => "Could not move $source_name from $source_tmp_path to $new_path");
         }
     }
 
@@ -396,15 +392,17 @@ function unc_uploads_process_file($i, $overwrite) {
     // now make the thumbnail
     $thumb_format = $UNC_GALLERY['thumbnail_format'];
     $check = unc_import_image_resize(
-        $new_path,
-        $new_thumb_path,
+        $new_path, // the imported/uploded main image
+        $new_thumb_path, // the thumb target that will be created
         $UNC_GALLERY['thumbnail_height'],
-        $UNC_GALLERY['thumbnail_ext'],
+        $extension, // we use the same image extension as the main file
         $UNC_GALLERY['thumbnail_quality'],
+        $process_id,
         $thumb_format
     );
+
     if (!$check) {
-        return array('date'=> false, 'action' => "Could not create the thumbnail for {$F['tmp_name'][$i]} / $new_thumb_path!");
+        return array('date'=> false, 'action' => "Could not create the thumbnail for $source_tmp_path / $new_thumb_path!");
     } else if (!$action) {
         $action = 'written';
     }
@@ -417,7 +415,6 @@ function unc_uploads_process_file($i, $overwrite) {
     return array('date'=> $date_str, 'action' => $target_filename . ": " . $action, 'keywords' => $xmp_status['keywords'], 'location' => $xmp_status['location']);
 }
 
-
 /**
  * Resize an image so the long edge becomes a given value
  *
@@ -428,9 +425,10 @@ function unc_uploads_process_file($i, $overwrite) {
  * @param string $extension the file extension
  * @param int @quality quality from 1 (worst) to 100 (best)
  * @param string $format
+ * @param int @process_id
  * @return boolean
  */
-function unc_import_image_resize($image_file_path, $target_file_path, $size, $extension, $quality, $format = false) {
+function unc_import_image_resize($image_file_path, $target_file_path, $size, $extension, $quality, $process_id, $format = false) {
     global $UNC_GALLERY;
     $img_types = array(1 => 'GIF', 2 => 'JPEG', 3 => 'PNG');
 
@@ -439,7 +437,7 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ex
         $image_data = unc_image_info_read($image_file_path);
         $original_width = $image_data['exif']['file_width'];
         $original_height = $image_data['exif']['file_height'];
-        $image_ext = $img_types[2]; // TODO this should not be hardcoded, but currently we only accept JPG
+        $image_ext = $ext = pathinfo($image_file_path, PATHINFO_EXTENSION);
         $file_date = $image_data['date_str'];
     } else {
         // let's get the image size from the last check
@@ -475,15 +473,14 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ex
         $new_height = $size;
         $new_width = intval($original_width * ($size / $original_height));
     }
-    // get image extension from MIME type
 
     // set the function names for processing
-    $img_generator = "Image" . $extension;
-    $imgcreatefrom = "ImageCreateFrom" . $image_ext;
+    $imgcreatefrom = "imagecreatefrom" . strtolower($image_ext);
 
     $new_image = imagecreatetruecolor($new_width, $new_height); // create a blank canvas
-    $old_image = $imgcreatefrom($image_file_path); // take the old image to memort
-
+    // unc_tools_progress_update($process_id, "imagecreatetruecolor($new_width, $new_height);");
+    $old_image = $imgcreatefrom($image_file_path); // take the old image to memory
+    // unc_tools_progress_update($process_id, "$imgcreatefrom($image_file_path);");
     $source_width = $original_width;
     $source_height = $original_height;
 
@@ -501,12 +498,24 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ex
     }
 
     $resize_check = imagecopyresized($new_image, $old_image, 0, 0, $source_x, $source_y, $new_width, $new_height, $source_width, $source_height); // resize it
-    if (!$resize_check) { // ;et's check if the file was resized
+    $val_array = array('nw'=> $new_width, 'nh'=>$new_height, 'ow'=>$original_width, 'oh'=> $original_height);
+    foreach ($val_array as $name => $value) {
+        if (!is_string($value) && !is_int($value)) {
+            unc_tools_progress_update($process_id, "checking $name! $value");
+            wp_die("Value $name is invalid!");
+        }
+    }
+    // unc_tools_progress_update($process_id, "imagecopyresized(new_image, old_image 0, 0, $source_x, $source_y, $new_width, $new_height, $source_width, $source_height)");
+    if (!$resize_check) { // let's check if the file was resized
         echo "Could not resize image to dimensions $new_width, $new_height, $original_width, $original_height!";
         wp_die();
     }
 
+    $img_generator = "image" . strtolower($extension);
     $image_check = $img_generator($new_image, $target_file_path, $quality);
+
+    // unc_tools_progress_update($process_id, "$img_generator($target_file_path, $quality)");
+    // unc_tools_progress_update($process_id, "renaming & compressing...");
     if (!$image_check || !file_exists($target_file_path)) { // let's check if the file was created
         echo "File $target_file_path was not created through $img_generator at quality $quality!";
         wp_die();
@@ -516,5 +525,6 @@ function unc_import_image_resize($image_file_path, $target_file_path, $size, $ex
     unc_iptc_date_write($target_file_path, $file_date);
     //$new_file_date = unc_image_date($target_file_path);
     imagedestroy($new_image); // free up the memory
+    imagedestroy($old_image);
     return true;
 }

@@ -19,9 +19,8 @@ global $UNC_GALLERY;
  * @return boolean
  */
 function unc_image_info_read($file_path) {
-    global $UNC_GALLERY, $UNC_FILE_DATA, $wpdb;
+    global $UNC_FILE_DATA, $wpdb;
     if (!file_exists($file_path)) {
-
         return false;
     }
 
@@ -34,7 +33,7 @@ function unc_image_info_read($file_path) {
     // check in the database if we have identical data (mathc wiht filename/date pair) there as well
     $img_table_name = $wpdb->prefix . "unc_gallery_img";
     $att_table_name = $wpdb->prefix . "unc_gallery_att";
-    $sql = "SELECT `att_group`, `att_name`, `att_value` FROM $img_table_name
+    $sql = "SELECT `att_group`, `att_name`, `att_value`, $img_table_name.id FROM $img_table_name
         LEFT JOIN $att_table_name ON id=file_id
         WHERE file_name = '$file_name' AND file_time LIKE '$date_str%';";
     $file_data = $wpdb->get_results($sql);
@@ -53,7 +52,9 @@ function unc_image_info_read($file_path) {
 
     // if we found the data in the DB, we iterate it and set the $UNC_FILE_DATA array and return it as well
     $F = array();
+
     foreach ($file_data as $D) {
+        $F['file_id'] = $D->id;
         $field = $D->att_name;
         $group = $D->att_group;
         $value = $D->att_value;
@@ -79,6 +80,7 @@ function unc_image_info_read($file_path) {
             }
         }
     }
+
     if (count($F) == 0) {
         return false;
     }
@@ -102,24 +104,22 @@ function unc_image_info_write($file_path) {
         return false;
     }
 
-    if ($UNC_GALLERY['image_data_method'] == 'exiftool') {
-        $all_data = unc_image_info_exiftool($file_path);
-        if (!$all_data) {
-            return false;
-        }
-        $exif_raw = $all_data['exif'];
-        $xmp_raw = $all_data['xmp'];
-        $iptc_raw = $all_data['iptc'];
-    } else {
-        $exif_raw = unc_exif_get($file_path);
-        $xmp_raw = unc_xmp_get($file_path);
-        $iptc_raw = unc_iptc_get($file_path);
+    $all_data = unc_image_info_exiftool($file_path);
+    if (!$all_data) {
+        return false;
     }
+    $exif_raw = $all_data['exif'];
+    $xmp_raw = $all_data['xmp'];
+    $iptc_raw = $all_data['iptc'];
 
     // fix all the data sets
     $exif = unc_exif_fix($exif_raw);
     $xmp = unc_xmp_fix($xmp_raw);
     $iptc = unc_iptc_fix($iptc_raw);
+
+    // error_log(var_export($exif, true));
+    // error_log(var_export($iptc, true));
+    // error_log(var_export($iptc, true));
 
     if (!isset($exif['created'])) {
         $file_date = unc_iptc_convert_date($iptc['created_date'], $iptc['created_time']);
@@ -128,8 +128,8 @@ function unc_image_info_write($file_path) {
     }
 
     $dtime = DateTime::createFromFormat("Y-m-d G:i:s", $file_date);
-    if (!$dtime) {
-
+    if (!$dtime || is_null($dtime)) {
+        error_log("Eror creating Timestamp from File date: $file_date, doe not match format");
     }
 
     $time_stamp = $dtime->getTimestamp(); // time stamp is easier to compare
@@ -146,7 +146,7 @@ function unc_image_info_write($file_path) {
     // remove existing file info
     $check = unc_image_info_delete($file_name, $file_date);
     if (!$check) {
-
+        error_log("Error deleting old file $file_name, $file_date");
     }
 
     $photo_url = content_url($UNC_GALLERY['upload_folder'] . "/" . $UNC_GALLERY['photos'] . "/$date_path/$file_name");
@@ -165,7 +165,7 @@ function unc_image_info_write($file_path) {
 
     $insert_id = $wpdb->insert_id;
     if ($insert_id == 0) {
-
+        error_log("Could not insert image into gallery DB: $file_path");
         return false;
     }
 
@@ -217,7 +217,7 @@ function unc_image_info_write($file_path) {
                     );
                     $insert_id2 = $wpdb->insert_id;
                     if ($insert_id2 == 0) {
-
+                        error_log("Could not insert image attributes arrays into gallery DB: $file_path");
                         return false;
                     }
                 }
@@ -233,7 +233,11 @@ function unc_image_info_write($file_path) {
                     $data_arr
                 );
                 $insert_id2 = $wpdb->insert_id;
-
+                if ($insert_id2 == 0) {
+                    error_log("Could not insert image attributes value into gallery DB: $file_path");
+                    error_log(var_export($data_arr, true));
+                    return false;
+                }
                 // TODO remove the REPLACE here since it's labor intensive.
                 // rather use ON DUPLICATE KEY UPDATE
                 // https://stackoverflow.com/questions/2366813/on-duplicate-key-ignore#4920619
@@ -244,7 +248,8 @@ function unc_image_info_write($file_path) {
                     );
                     $replace_id = $wpdb->insert_id;
                     if ($replace_id == 0) {
-
+                        error_log("Could not replace image attributes data into gallery DB: $file_path");
+                        error_log(var_export($data_arr, true));
                         return false;
                     }
                 }
@@ -274,7 +279,10 @@ function unc_image_info_exiftool($file_path) {
     $output = '';
     $command = 'exiftool -s -g -a -json -struct -xmp:all -iptc:all -exif:all -file:all "'.$file_path.'"'; //  -composite:all
     exec($command, $output);
+
+    // the result are many lines of json, so let's combine it into one string
     $metadata_json = implode('', $output);
+    // now let's decode the json into an array
     $metadata_array = json_decode($metadata_json, true);
     if (is_null($metadata_array)) { // json error, exiftool does not exist etc.
         return false;
@@ -282,8 +290,13 @@ function unc_image_info_exiftool($file_path) {
 
     $D = $metadata_array[0];
 
-    $data_sets = array('exif' => 'EXIF', 'xmp' => 'XMP', 'iptc' => 'IPTC', 'other' => 'Other');
+    // copy "FILE" section into Exif
+    foreach ($D['File'] as $key => $value) {
+        $D['EXIF'][$key] = $value;
+    }
 
+    // the data is grouped by sub-arrays:
+    $data_sets = array('exif' => 'EXIF', 'xmp' => 'XMP', 'iptc' => 'IPTC');
     // iterate data types
     $file_data = array();
     foreach ($data_sets as $our_set => $json_set) {
@@ -384,3 +397,21 @@ function unc_image_options_array($var) {
     return $out;
 }
 
+function umc_image_id2path($id) {
+    global $wpdb;
+
+    // safety convert to int
+    $int_id = intval($id);
+
+    $img_table = $wpdb->prefix . "unc_gallery_img";
+    $sql = "SELECT file_path FROM $img_table WHERE id=$int_id;";
+    $file_path = $wpdb->get_var($sql);
+
+    if ($file_path) {
+        return $file_path;
+    } else {
+        return false;
+    }
+
+
+}

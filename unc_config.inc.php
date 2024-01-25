@@ -44,15 +44,20 @@ $UNC_GALLERY['keywords'] = array(
 );
 
 // file & mime-types
-$UNC_GALLERY['thumbnail_ext'] = 'jpeg'; // do not change this, PNG has issues with IPTC
 $UNC_GALLERY['valid_filetypes'] = array( // allows only these for uploads
     "image/jpeg" => 'jpeg',
-    // "image/png" => 'png', // cannot use png since it does not support IPTC/EXIF
-    // "image/gif" => 'gif', // cannot use gif since it does not support IPTC/EXIF
+    "image/heic" => 'heic',
+    "image/webp" => 'webp',
 );
 
 // This is used to automatically / dynamically create the settings menu
 $UNC_GALLERY['user_settings'] = array(
+    'photo_rss_hashtags' => array(
+        'help' => 'The RSS feed for all photos will include hashtags. Enter them here.',
+        'default' => '#photo',
+        'type' => 'text',
+        'title' => 'Photo RSS Hashtags',
+    ),
     'thumbnail_height' => array(
         'help' => 'The desired thumbnail height in pixels. Applies only for new uploads. Use the "Rebuild Thumbnails" function in the "Maintenance" tab to re-generate all tumbnails after changing this.',
         'default' => '120',
@@ -71,6 +76,13 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'dropdown',
         'options' => array('max_height' => 'Do not crop', 'square' => 'Square (like facebook/instagram)'),
         'title' => 'Thumbnail Format',
+    ),
+    'image_filetype_convert' => array(
+        'help' => 'Do you want to convert all images to a more efficient filetype?',
+        'default' => 'none',
+        'type' => 'dropdown',
+        'options' => array('none'=> 'Keep as-is', 'webp' => 'WebP'),
+        'title' => 'Image File Type',
     ),
     'picture_long_edge' => array(
         'help' => 'Shrink the full-size images so that the long edge will be this long (in pixels, 0 for disable). Warning: Resizing will remove all photo meta-data except for the date.',
@@ -129,7 +141,7 @@ $UNC_GALLERY['user_settings'] = array(
         'help' => 'Do you want to use photoswipe (mobile enabled) or lightbox, or just an image link to view images?',
         'default' => 'photoswipe',
         'type' => 'dropdown',
-        'options' => array('photoswipe' => 'Photoswipe', 'lightbox' => 'Lightbox', 'none' => 'Direct image link'),
+        'options' => array('photoswipe' => 'Photoswipe', 'lightbox' => 'Lightbox', 'galleria' => 'Galleria.io', 'none' => 'Direct image link'),
         'title' => 'Image view method',
     ),
     'show_other_data' => array(
@@ -159,16 +171,6 @@ $UNC_GALLERY['user_settings'] = array(
         'type' => 'multiple',
         'options' => unc_image_options_array('iptc'), // this function just returns an array
         'title' => 'Description IPTC Data choices',
-    ),
-    'image_data_method' => array(
-        'help' => 'What method do you want to use to retrieve image data? ExifTool requires PHP\'s exec() and the <a href="http://www.sno.phy.queensu.ca/~phil/exiftool/install.html">Exiftool</a>.',
-        'default' => 'internal',
-        'type' => 'dropdown',
-        'options' => array(
-            'internal' => 'Internal code (slow)',
-            'exiftool' => 'ExifTool (faster)',
-        ),
-        'title' => 'Image data access method',
     ),
     'post_keywords' => array(
         'help' => 'Do you want to automatically add missing keywords from photos to posts? This will not remove any tags from posts, only create & add new ones.',
@@ -208,7 +210,7 @@ $UNC_GALLERY['user_settings'] = array(
         'title' => 'Default Category description',
     ),
     'event_categories' => array(
-        'help' => 'Do you want to automatically add Event-categories based on the IPCT-Extension EVENT field? '
+        'help' => 'Do you want to automatically add Event-categories based on the iptc-Extension EVENT field? '
             . 'This will not remove manually added categories, only create and add new ones. '
             . 'Please chose the format you named events if you enable this.',
         'default' => 'none',

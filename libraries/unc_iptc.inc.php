@@ -33,14 +33,18 @@ $UNC_GALLERY['codes']['iptc'] = array(
     'sublocation' => array('code' => '092', 'description' => 'Location', 'key' => 'Sub-location', 'type' => 'location'),
     'province_state' => array('code' => '095', 'description' => 'State', 'key' => 'Province-State', 'type' => 'location'),
     'country_code' => array('code' => '100', 'description' => 'Country Code', 'key' => false, 'type' => 'location'),
-    'country' => array('code' => '101', 'description' => 'Country', 'key' => 'Country-PrimaryLocationName', 'type' => 'location'),
+    'country' => array(
+        'code' => '101',
+        'description' => 'Country',
+        'key' => 'Country-PrimaryLocationName',
+        'type' => 'location'),
     'original_transmission_reference' => array('code' => '103', 'description' => 'Original Transmission Reference', 'key' => false, 'type' => 'text'),
     'headline' => array('code' => '105', 'description' => 'Headline', 'key' => false, 'type' => 'text'),
     'credit' => array('code' => '110', 'description' => 'Credit', 'key' => false, 'type' => 'text'),
     'source' => array('code' => '115', 'description' => 'Source', 'key' => false, 'type' => 'text'),
     'copyright_string' => array('code' => '116', 'description' => 'Copyright String', 'key' => false, 'type' => 'text'),
     'caption' => array('code' => '120', 'description' => 'Caption', 'key' => false, 'type' => 'text'),
-    'local_caption' => array('code' => '100', 'description' => 'Local Caption', 'key' => false, 'type' => 'text'), 
+    'local_caption' => array('code' => '100', 'description' => 'Local Caption', 'key' => false, 'type' => 'text'),
 );
 
 
@@ -51,24 +55,38 @@ $UNC_GALLERY['codes']['iptc'] = array(
  * @return type
  */
 function unc_iptc_fix($iptc_raw) {
-     global $UNC_GALLERY;
+    global $UNC_GALLERY;
+
+    $data_out = array();
+
+    foreach ($UNC_GALLERY['codes']['iptc'] as $key => $C) {
+        $iptc_key = $C['key'];
+        if (!isset($C['key']) || !isset($iptc_raw[$iptc_key])) {
+            continue;
+        }
+        if ($C['type'] == 'array') {
+            $data_out[$key] = implode(", ", $iptc_raw[$iptc_key]);
+        } else {
+            $data_out[$key] = $iptc_raw[$iptc_key];
+        }
+    }
 
     // location info
     $val_array = array('country','province_state','city','sublocation');
     $loc_arr = array();
     foreach ($val_array as $loc_id) {
-        if (isset($iptc_raw[$loc_id])) {
-            $loc_arr[$loc_id] = $iptc_raw[$loc_id];
+        if (isset($data_out[$loc_id])) {
+            $loc_arr[$loc_id] = $data_out[$loc_id];
         } else {
             $loc_arr[$loc_id] = 'n/a';
-            $iptc_raw[$loc_id] = 'n/a';
+            $data_out[$loc_id] = 'n/a';
         }
     }
     $loc_str = implode("|", $loc_arr);
-    $iptc_raw['loc_str'] = $loc_str;
-    return $iptc_raw;
-}
+    $data_out['loc_str'] = $loc_str;
 
+    return $data_out;
+}
 
 /**
  * Get the IPTC date of an image
@@ -78,14 +96,13 @@ function unc_iptc_fix($iptc_raw) {
  * @return boolean
  */
 function unc_iptc_date($file_path) {
-    global $UNC_GALLERY;
 
     $iptc_obj = new IPTC($file_path);
 
     $iptc_date = $iptc_obj->get('created_date'); //  '20160220',
     $iptc_time = $iptc_obj->get('created_time'); //  '235834',
     if (strlen($iptc_date . $iptc_time) != 14) {
-        
+
         return false;
     }
     $search_pattern = '/(\d\d\d\d)(\d\d)(\d\d) (\d\d)(\d\d)(\d\d)/';
@@ -138,21 +155,6 @@ function unc_iptc_date_write($file_path, $date_str) {
     $target_iptc_obj->set('created_time', $iptc_time);
     $target_iptc_obj->write();
 }
-
-
-/**
- * Get all IPTC tags
- *
- * @param type $file_path
- * @return type
- */
-function unc_iptc_get($file_path) {
-    global $UNC_GALLERY;
-
-    $iptc_obj = new IPTC($file_path);
-    return $iptc_obj->dump();
-}
-
 
 
 /**
@@ -238,7 +240,7 @@ class iptc {
     function write() {
         global $UNC_GALLERY;
         if(!function_exists('iptcembed')) {
-            
+
             return false;
         }
         $mode = 0;

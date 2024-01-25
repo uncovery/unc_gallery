@@ -21,7 +21,7 @@ if (!defined('WPINC')) {
 }
 
 global $UNC_FILE_DATA, $UNC_GALLERY;
-$UNC_GALLERY['debug'] = false;
+$UNC_GALLERY['debug'] = true;
 $UNC_GALLERY['errors'] = array(); // we store internal errors here
 
 if (!isset($UNC_GALLERY['start_time'])) {
@@ -31,7 +31,7 @@ if (!isset($UNC_GALLERY['start_time'])) {
 $UNC_GALLERY['data_version'] = 1; // increase this number when you change the format!
 
 require_once( plugin_dir_path( __FILE__ ) . "/libraries/unc_exif.inc.php");
-require_once( plugin_dir_path( __FILE__ ) . "/libraries/unc_ipct.inc.php");
+require_once( plugin_dir_path( __FILE__ ) . "/libraries/unc_iptc.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "/libraries/unc_xmp.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "/libraries/unc_rss_feed.inc.php");
 
@@ -44,7 +44,10 @@ require_once( plugin_dir_path( __FILE__ ) . "unc_type_filter.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_type_chrono.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_tools.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_image.inc.php");
+require_once( plugin_dir_path( __FILE__ ) . "unc_image_display.inc.php");
 require_once( plugin_dir_path( __FILE__ ) . "unc_ranking.inc.php");
+require_once( plugin_dir_path( __FILE__ ) . "unc_prints.inc.php");
+// require_once( plugin_dir_path( __FILE__ ) . "unc_tagging.inc.php");
 // co nfig has to be last because it runs function in unc_image.inc.php
 require_once( plugin_dir_path( __FILE__ ) . "unc_config.inc.php");
 
@@ -60,14 +63,17 @@ if (is_admin() === true){ // admin actions
 }
 
 function photos_feed_init(){
-   add_feed( 'photos_feed', 'photos_feed');
+   add_feed('photos_feed', 'photos_feed');
 }
 add_action('init', 'photos_feed_init');
 
 // shortcode for the [unc_gallery] replacements
 add_shortcode('unc_gallery', 'unc_gallery_apply');
+add_shortcode('unc_gallery_image', 'unc_image_display');
 add_shortcode('unc_gallery_new', 'unc_gallery_shortcode_translate');
 add_shortcode('unc_gallery_ranking', 'unc_ranking_show');
+add_shortcode('unc_gallery_prints', 'unc_prints_list');
+// add_shortcode('unc_gallery_tagging', 'unc_tagging_show');
 
 // end-user ajax for image ranking
 add_action('wp_ajax_unc_ranking_new_image', 'unc_ranking_new_image');
@@ -92,6 +98,7 @@ if (is_admin() === true) {
     add_action('wp_ajax_unc_gallery_admin_remove_data',  'unc_gallery_admin_remove_data');
     add_action('wp_ajax_unc_gallery_delete_everything', 'unc_gallery_admin_delete_everything');
     add_action('wp_ajax_unc_gallery_admin_remove_logs', 'unc_gallery_admin_remove_logs');
+    add_action('wp_ajax_unc_gallery_admin_orphaned_files', 'unc_gallery_admin_orphaned_files');
     // shortcode maker
     add_action('wp_ajax_unc_gallery_shortcode_form', 'unc_gallery_shortcode_form');
 }
@@ -183,6 +190,7 @@ function unc_mysql_db_create() {
         file_time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
         file_name varchar(128) NOT NULL,
         file_path varchar(256) NOT NULL,
+        updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY `id` (`id`),
         UNIQUE KEY `file_time` (`file_time`,`file_name`)
     ) $charset_collate;";
@@ -217,15 +225,16 @@ function unc_mysql_db_create() {
         `file_id` mediumint(9) NOT NULL,
         `ranking` mediumint(9) NOT NULL,
         `ranked` mediumint(9) NOT NULL,
-        `rank_time` datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+        `rank_time` datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
         UNIQUE KEY `file_id` (`file_id`),
         KEY `rank_time` (`rank_time`),
         KEY `ranking` (`ranking`)
     ) $charset_collate;";
 
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql_rank);
 
-    add_option( "unc_gallery_db_version", "2.5" );
+    add_option( "unc_gallery_db_version", "2.7" );
 }
 
 /**
@@ -244,7 +253,7 @@ function unc_gallery_plugin_deactivate() {
 }
 
 /**
- * Unistalling the plugin
+ * Uninstalling the plugin
  *
  * @global type $UNC_GALLERY
  */
@@ -278,7 +287,9 @@ function unc_gallery_enqueue_css_and_js() {
     // b) if we are using the map
     // since a lot of the code has to be in the header, we need to enqueue the scripts here.
     if (!is_null($post) && (
-        !has_shortcode($post->post_content, 'unc_gallery') && !has_shortcode($post->post_content, 'unc_gallery_ranking')
+        !has_shortcode($post->post_content, 'unc_gallery') && 
+        !has_shortcode($post->post_content, 'unc_gallery_ranking') && 
+        !has_shortcode($post->post_content, 'unc_gallery_image')
         )) {
         return;
     }
@@ -301,19 +312,18 @@ function unc_gallery_enqueue_css_and_js() {
         wp_enqueue_style('unc_gallery_lightbox_css', plugin_dir_url( __FILE__ ) . 'css/lightbox.min.css');
     } else if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
         //photoswipe
-        wp_register_script('unc_gallery_photoswipe_ui_js', plugin_dir_url( __FILE__ ) . 'js/photoswipe-ui-default.min.js', array(), '4.1.2', true);
-        wp_register_script('unc_gallery_photoswipe_js', plugin_dir_url( __FILE__ ) . 'js/photoswipe.min.js', array(), '4.1.2', true);
-        wp_enqueue_script('unc_gallery_photoswipe_ui_js');
-        wp_enqueue_script('unc_gallery_photoswipe_js');
+        // the JS in included in unc_display_photoswipe_js()
         wp_enqueue_style('unc_gallery_photoswipe_css', plugin_dir_url( __FILE__ ) . 'css/photoswipe.css');
-        wp_enqueue_style('unc_gallery_photoswipe_skin_css', plugin_dir_url( __FILE__ ) . 'css/default-skin.css');
-        // these two add the HTML from function unc_display_photoswipe() to the page footer
-        // without this, photoswipe does not work (duh).
-        add_action('wp_footer', 'unc_display_photoswipe');
-        add_action('admin_footer', 'unc_display_photoswipe');
+    }  else if ($UNC_GALLERY['image_view_method'] == 'galleria') {
+        wp_register_script('unc_gallery_galleria_js', plugin_dir_url( __FILE__ ) . 'js/galleria/galleria.min.js', array(), '1.6.1', false);
+        wp_register_script('unc_gallery_galleria_theme_js', plugin_dir_url( __FILE__ ) . 'js/galleria/galleria.folio.min.js', array(), '1.6.1', false);
+        wp_enqueue_script('unc_gallery_galleria_js');
+        wp_enqueue_script('unc_gallery_galleria_theme_js');
+        wp_enqueue_style('unc_gallery_galleria_css', plugin_dir_url( __FILE__ ) . 'js/galleria/galleria.folio.min.css');
+
     }
     // load google maps if it's set
-    if (strlen($UNC_GALLERY['google_api_key']) > 1) {
+    if (!is_front_page() && strlen($UNC_GALLERY['google_api_key']) > 1) {
         $api_key = $UNC_GALLERY['google_api_key'];
         wp_register_script('unc_gallery_google_maps', "https://maps.googleapis.com/maps/api/js?key=$api_key", array(), '', false);
         wp_register_script('unc_gallery_makerwithlabel_js', plugin_dir_url( __FILE__ ) . 'js/markerwithlabel.js', array(), '', false);
@@ -321,5 +331,5 @@ function unc_gallery_enqueue_css_and_js() {
         wp_enqueue_script('unc_gallery_google_maps');
         wp_enqueue_script('unc_gallery_makerwithlabel_js');
         wp_enqueue_script('unc_gallery_makercluster_js');
-    }
+    } 
 }

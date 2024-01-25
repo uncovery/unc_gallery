@@ -10,7 +10,7 @@ global $UNC_GALLERY;
 $UNC_GALLERY['codes']['exif'] = array(
     'file_height' => array(
         'hex' => false,
-        'key' => 'file_height',
+        'key' => 'ImageHeight',
         'conversion' => false,
         'unit' => false,
         'description' => 'File Height',
@@ -18,7 +18,7 @@ $UNC_GALLERY['codes']['exif'] = array(
     ),
     'file_width' => array(
         'hex' => false,
-        'key' => 'file_width',
+        'key' => 'ImageWidth',
         'conversion' => false,
         'unit' => false,
         'description' => 'File Width',
@@ -51,14 +51,14 @@ $UNC_GALLERY['codes']['exif'] = array(
     'f' => array(
         'hex' => '0x829D',
         'key' => 'FNumber',
-        'conversion' => 'unc_tools_divide_string',
+        'conversion' => false,
         'unit' => false,
         'description' => 'F-Stop',
         'type' => 'text',
     ),
     'iso' => array(
         'hex' => '0x8827',
-        'key' => 'ISOSpeedRatings',
+        'key' => 'ISO',
         'conversion' => false,
         'unit' => false,
         'description' => 'ISO',
@@ -99,7 +99,7 @@ $UNC_GALLERY['codes']['exif'] = array(
     ),
     'gps_lon' => array(
         'hex' => false,
-        'key' => array('GPSLongitudeRef' => 'Hemisphere', 'GPSLongitude' => 'Coordinates', 'GPSVersion' => 'Version'),
+        'key' => array('GPSLongitudeRef' => 'Hemisphere', 'GPSLongitude' => 'Coordinates', 'GPSVersionID' => 'Version'),
         'conversion' => 'unc_exif_convert_gps',
         'unit' => false,
         'description' => 'GPS Longitude',
@@ -107,7 +107,7 @@ $UNC_GALLERY['codes']['exif'] = array(
     ),
     'gps' => array(
         'hex' => false,
-        'key' => array('GPSLatitudeRef' => 'GPSLatitudeRef', 'GPSLatitude' =>'GPSLatitude', 'GPSLongitudeRef' => 'GPSLongitudeRef', 'GPSLongitude' => 'GPSLongitude', 'GPSVersion' => 'Version'),
+        'key' => array('GPSLatitudeRef' => 'GPSLatitudeRef', 'GPSLatitude' =>'GPSLatitude', 'GPSLongitudeRef' => 'GPSLongitudeRef', 'GPSLongitude' => 'GPSLongitude', 'GPSVersionID' => 'Version'),
         'conversion' => 'unc_exif_convert_gps_combo',
         'unit' => false,
         'description' => 'GPS Coordinates',
@@ -115,12 +115,20 @@ $UNC_GALLERY['codes']['exif'] = array(
     ),
     'gps_link' => array(
         'hex' => false,
-        'key' => array('GPSLatitudeRef' => 'GPSLatitudeRef', 'GPSLatitude' =>'GPSLatitude', 'GPSLongitudeRef' => 'GPSLongitudeRef', 'GPSLongitude' => 'GPSLongitude', 'GPSVersion' => 'Version'),
+        'key' => array('GPSLatitudeRef' => 'GPSLatitudeRef', 'GPSLatitude' =>'GPSLatitude', 'GPSLongitudeRef' => 'GPSLongitudeRef', 'GPSLongitude' => 'GPSLongitude', 'GPSVersionID' => 'Version'),
         'conversion' => 'unc_exif_convert_gps_link',
         'unit' => false,
         'description' => 'Map Link',
         'type' => 'integer',
-    )
+    ),
+    'gps_version' => array(
+        'hex' => false,
+        'key' => 'GPSVersionID',
+        'conversion' => false,
+        'unit' => false,
+        'description' => 'GPS Version',
+        'type' => 'string',
+    )    
 );
 
 
@@ -138,9 +146,6 @@ function unc_exif_get($image_path) {
     $exif = exif_read_data($image_path);
 
     restore_error_handler();
-
-    $exif['file_width'] = $exif['COMPUTED']['Width'];
-    $exif['file_height'] = $exif['COMPUTED']['Height'];
 
     return $exif;
 }
@@ -173,6 +178,7 @@ function unc_exif_fix($exif) {
             $val = $exif[$hex_tag];
         } else {
             // value is not set
+            error_log("$code has no value!!");
             continue;
         }
         // run the conversion function
@@ -313,16 +319,14 @@ function unc_exif_date($file_path) {
  * @return type
  */
 function unc_exif_convert_date($date) {
-    global $UNC_GALLERY;
     $search_pattern = '/(\d\d\d\d):(\d\d):(\d\d \d\d:\d\d:\d\d)/';
     $replace_pattern = '$1-$2-$3';
     $fixed_date = preg_replace($search_pattern, $replace_pattern, $date);
     return $fixed_date;
 }
 
-
 /**
- * catch warnings during EXIF file data retreival so we know which
+ * catch warnings during EXIF file data retrieval so we know which
  * files have issues and can report back to the user.
  *
  * @global array $UNC_GALLERY
@@ -335,5 +339,6 @@ function unc_exif_catch_errors($errno, $errstr, $errfile, $errline) {
     global $UNC_GALLERY;
     $UNC_GALLERY['errors'][] = array('error' => $errstr, 'filename' => $errfile);
 }
+
 
 

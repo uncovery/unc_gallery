@@ -66,7 +66,6 @@ function unc_gallery_apply($atts = array()) {
  * @return type
  */
 function unc_gallery_display_var_init($atts = array()) {
-    unc_tools_debug_trace(__FUNCTION__ , $atts);
     global $UNC_GALLERY, $post;
 
     $possible_attributes = array(
@@ -96,7 +95,7 @@ function unc_gallery_display_var_init($atts = array()) {
 
     // check if all the attributes exist
     if (!is_array($atts)) {
-        unc_tools_debug_trace(__FUNCTION__  . ": shortcode attributes ATTS array is not an array:", $atts);
+        error_log("shortcode attributes ATTS array is not an array");
     }
 
     // lets validate that we dont have unknown variables in the shortcode
@@ -114,8 +113,6 @@ function unc_gallery_display_var_init($atts = array()) {
     if ($a['debug'] == 'yes') {
         $UNC_GALLERY['debug'] = true;
     }
-
-    unc_tools_debug_trace(__FUNCTION__ , "Start debug output");
 
     // several featured files
     // we do not need to validate featured files since we only compare with the list
@@ -233,7 +230,6 @@ function unc_gallery_display_var_init($atts = array()) {
     $UNC_GALLERY['slugs'][] = $slug;
     $UNC_GALLERY['display']['slug'] = $slug;
 
-    unc_tools_debug_trace(__FUNCTION__ . " Ends, \$UNC_GALLERY['display'] values: " , $UNC_GALLERY['display']);
     return true;
 }
 
@@ -244,11 +240,9 @@ function unc_gallery_display_var_init($atts = array()) {
  * @return string
  */
 function unc_gallery_display_page() {
-    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
     $D = $UNC_GALLERY['display'];
-    unc_tools_debug_trace(__FUNCTION__, $D);
     // do not let wp manipulate linebreaks
     remove_filter('the_content', 'wpautop');
 
@@ -364,7 +358,6 @@ function unc_gallery_display_page() {
  * @return string
  */
 function unc_display_images() {
-    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
     $D = $UNC_GALLERY['display'];
@@ -391,7 +384,8 @@ function unc_display_images() {
     }
 
     // display except for skipped files and files out of time range
-    $images = '';
+    $slug = $UNC_GALLERY['display']['slug'];
+    $images = "<div class=\"$slug galleria-container\" id=\"$slug\">";
     $featured = '';
 
     $featured_fixed = false;
@@ -442,16 +436,19 @@ function unc_display_images() {
                 . "</li>\n";*/
         } else {
             $counter++;
-            $images .= "<div class=\"one_photo\">\n"
+            $images .= "<div class=\"one_photo pswp-gallery__item\">\n"
                 . unc_display_image_html($F['file_path'], true, $F)
                 . "</div>\n";
         }
         $i++;
     }
+    $images .= "</div>";
 
     $photoswipe = '';
     if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
-        $photoswipe = unc_display_photoswipe_js($files);
+        $photoswipe = unc_display_photoswipe_js();
+    } else if ($UNC_GALLERY['image_view_method'] == 'galleria') {
+        $photoswipe = unc_display_galleria_js($files);
     }
 
     if ($UNC_GALLERY['post_keywords'] != 'none') {
@@ -463,21 +460,7 @@ function unc_display_images() {
     }
 
     if ($D['slideshow']) {
-        $photoswipe = '';  /*'<script type="text/javascript">
-        jQuery(document).ready(function() {
-            var slider = jQuery("#lightSlider").lightSlider({
-                adaptiveHeight:true,
-                item:1,
-                auto:true,
-                slideMargin:0,
-                loop:true,
-                adaptiveHeight:true,
-                mode:\'fade\',
-                speed:800,
-                pause:4000,
-                });
-        });
-        </script>'; */
+        $photoswipe = '';
     }
 
     $summary = "<div class=\"images_summary\">$counter images</div>";
@@ -503,7 +486,6 @@ function unc_display_images() {
  * @return string
  */
 function unc_display_image_html($file_path, $show_thumb, $file_data = false, $link_type = false) {
-    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
     $out = '';
     if (!$file_data) {
@@ -520,25 +502,36 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false, $li
         $class = 'featured_image';
     }
 
-    $gal_text = '';
-    if ($UNC_GALLERY['image_view_method'] == 'photoswipe') {
-        $slug = $UNC_GALLERY['display']['slug'];
-        if (!isset($F['index'])) {
-            $F['index'] = 0;
-            $F['index']++;
-        }
-        $gallery_id = "unc_g_photoswipe_$slug";
-        $image_id = $gallery_id . "_" . $F['index'];
+    // Keywords
 
-        $gal_text = "onClick=\"$gallery_id({$F['index']}); return false;\"";
+    $keywords_text = '';
+     if (isset($F['xmp']['keywords'])) {
+        if (is_array($F['xmp']['keywords'])) {
+            $keywords_text = implode(", ", $F['xmp']['keywords']);
+        } else {
+            $keywords_text = $F['xmp']['keywords'];
+        }
+    }
+
+    $location_string = $F['iptc']['loc_str'];
+    $loc_string_nice = str_replace("|", ", ", $location_string);
+    $photo_caption = "$keywords_text, photo taken in $loc_string_nice";
+
+    $gal_text = '';
+    $photoswipe_data = '';
+    $photoswipe_caption = '';
+    $overlay_text = '';
+
+    if ($UNC_GALLERY['image_view_method'] == 'photoswipe' || $UNC_GALLERY['image_view_method'] == 'galleria') {
+        $photoswipe_data = "data-pswp-width=\"{$F['exif']['file_width']}\" data-pswp-height=\"{$F['exif']['file_height']}\" target=\"_blank\"";
+        $image_detail_url = get_site_url() . "/image-detail/?unc_gallery_id=" . $F['file_id'];
+        $photoswipe_caption = "<div class=\"hidden-caption-content\">$photo_caption<br><a href=\"$image_detail_url\" target=\"_blank\">Click for image details</a></div>";
     } else if ($UNC_GALLERY['image_view_method'] == 'lightbox') {
         $gal_text = "data-lightbox=\"gallery_{$F['file_name']}\"";
     }
     // TODO: Decide on what the imamge description in HTML should look like.
     if ($UNC_GALLERY['not_shown']) {
         $overlay_text = "<span class=\"not_shown_overlay\">+" . $UNC_GALLERY['not_shown'] . "</span>";
-    } else {
-        $overlay_text = '';
     }
 
     // what do we link to?
@@ -548,9 +541,11 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false, $li
         $link_url = get_post_permalink();
     }
 
-    $out .= "        <a href=\"$link_url\" $gal_text title=\"{$F['file_name']}\" id=\"$image_id\">
-            <img alt=\"image\" src=\"$shown_image\">$overlay_text
-        </a>\n";
+
+
+    $out .= "        <a href=\"$link_url\" $gal_text title=\"{$F['file_name']}\" $photoswipe_data>
+            <img alt=\"$photo_caption\" title=\"$photo_caption\" src=\"$shown_image\">$overlay_text
+        </a>\n$photoswipe_caption";
     if (current_user_can('manage_options') && is_admin()) {
         $out .= "         <button class=\"delete_image_link\" title=\"Delete Image\" onClick=\"delete_image('{$F['file_name']}','{$F['date_str']}')\">
             <img src=\"" . plugin_dir_url( __FILE__ ) . "images/delete.png\" width=\"20\" height=\"20\" alt=\"Delete Image\">
@@ -566,45 +561,90 @@ function unc_display_image_html($file_path, $show_thumb, $file_data = false, $li
  * @param type $files
  * @return type
  */
-function unc_display_photoswipe_js($files) {
-    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
+function unc_display_photoswipe_js() {
+    global $UNC_GALLERY;
+
+    $slug = $UNC_GALLERY['display']['slug'];
+    $out = "
+
+    <script type=\"module\">
+        import PhotoSwipeLightbox from '/wp-content/plugins/unc_gallery/js/photoswipe-lightbox.esm.min.js';
+        const options = {
+            gallery: '#$slug',
+            children: '.pswp-gallery__item',
+            pswpModule: () => import('/wp-content/plugins/unc_gallery/js/photoswipe.esm.min.js')
+        };
+        const lightbox = new PhotoSwipeLightbox(options);
+        lightbox.on('uiRegister', function() {
+          lightbox.pswp.ui.registerElement({
+            name: 'custom-caption',
+            order: 9,
+            isButton: false,
+            appendTo: 'root',
+            html: 'Caption text',
+            onInit: (el, pswp) => {
+              lightbox.pswp.on('change', () => {
+                const currSlideElement = lightbox.pswp.currSlide.data.element;
+                let captionHTML = '';
+                if (currSlideElement) {
+                  const hiddenCaption = currSlideElement.querySelector('.hidden-caption-content');
+                  if (hiddenCaption) {
+                    // get caption from element with class hidden-caption-content
+                    captionHTML = hiddenCaption.innerHTML;
+                  } else {
+                    // get caption from alt attribute
+                    captionHTML = currSlideElement.querySelector('img').getAttribute('alt');
+                  }
+                }
+                el.innerHTML = captionHTML || '';
+              });
+            }
+          });
+        });
+        lightbox.init();
+    </script>";
+    return $out;
+}
+
+/**
+ * generate JS code for the galleria plugin
+ *
+ * @param type $files
+ */
+function unc_display_galleria_js($files) {
     global $UNC_GALLERY;
 
     $slug = $UNC_GALLERY['display']['slug'];
     $out = '
 <script type="text/javascript">
-    function unc_g_photoswipe_' . $slug . '(index) {
-        var options = {
-            index: index
-        };
+    (function() {
         var uncg_items_' . $slug . ' = [';
     foreach ($files as $F) {
         $desc = unc_tools_file_desc($F);
         $out .= "
     {
-        src: '{$F['file_url']}',
-        w: {$F['exif']['file_width']},
-        h: {$F['exif']['file_height']},
-        msrc: '{$F['thumb_url']}',
+        image: '{$F['file_url']}',
+        thumb: '{$F['thumb_url']}',
         title: \"$desc\"
     },";
     }
-    $out .= "];
-        var pswpElement = document.querySelectorAll('.pswp')[0];
-        var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, uncg_items_$slug, options);
-        // listen to the event that a photo was opened or changed and then trigger a google event
-        gallery.listen('afterChange', function(name) {
-            pswipe_google_event();
-        });
-        gallery.init();
 
+    $out .= "];
+        Galleria.ready(function() {
+            this.bind(\"thumbnail\", function(e) {
+                pswipe_google_event();
+            });
+        });
+        Galleria.run('.$slug', {
+            dataSource: uncg_items_$slug
+        });
         // google analytics photo click
         function pswipe_google_event() {
             try {
                 ga( 'send', 'event', 'Picture Click', 'Opened a picture', null, null );
             } catch( err ) {}
         }
-    }
+    }());
 </script>";
     return $out;
 }
@@ -618,80 +658,4 @@ function unc_display_photoswipe_js($files) {
  */
 function unc_display_errormsg($error) {
     return "<div class=\"unc_gallery_error\">ERROR: $error</div>";
-}
-
-/**
- * Display the photswipe HTML. This comes at the bottom of the page, is normally not visible.
- *
- * @global type $UNC_GALLERY
- */
-function unc_display_photoswipe() {
-    $out = '<!-- Root element of PhotoSwipe. Must have class pswp. -->
-<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
-
-    <!-- Background of PhotoSwipe.
-         It\'s a separate element as animating opacity is faster than rgba(). -->
-    <div class="pswp__bg"></div>
-
-    <!-- Slides wrapper with overflow:hidden. -->
-    <div class="pswp__scroll-wrap">
-
-        <!-- Container that holds slides.
-            PhotoSwipe keeps only 3 of them in the DOM to save memory.
-            Don\'t modify these 3 pswp__item elements, data is added later on. -->
-        <div class="pswp__container">
-            <div class="pswp__item"></div>
-            <div class="pswp__item"></div>
-            <div class="pswp__item"></div>
-        </div>
-
-        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
-        <div class="pswp__ui pswp__ui--hidden">
-
-            <div class="pswp__top-bar">
-
-                <!--  Controls are self-explanatory. Order can be changed. -->
-
-                <div class="pswp__counter"></div>
-
-                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
-
-                <button class="pswp__button pswp__button--share" title="Share"></button>
-
-                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-
-                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
-
-                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
-                <!-- element will get class pswp__preloader--active when preloader is running -->
-                <div class="pswp__preloader">
-                    <div class="pswp__preloader__icn">
-                      <div class="pswp__preloader__cut">
-                        <div class="pswp__preloader__donut"></div>
-                      </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-                <div class="pswp__share-tooltip"></div>
-            </div>
-
-            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-            </button>
-
-            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
-            </button>
-
-            <div class="pswp__caption">
-                <div class="pswp__caption__center"></div>
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-';
-    echo $out;
 }

@@ -2,9 +2,9 @@
 /**
  * This file handles all chrono-type shortcodes variables and
  * output.
- * 
+ *
  * this is meant to create a timeline output. unfinished.
- * 
+ *
  */
 
 if (!defined('WPINC')) {
@@ -12,7 +12,6 @@ if (!defined('WPINC')) {
 }
 
 function unc_chrono_var_init($a) {
-    unc_tools_debug_trace(__FUNCTION__ , func_get_args());
     global $UNC_GALLERY;
 
     $chrono_str = $a['chrono'];
