@@ -154,5 +154,19 @@ function unc_xmp_fix($xmp_raw) {
         }
     }
 
+    // location info
+    $val_array = array('country','state','city','location');
+    $loc_arr = array();
+    foreach ($val_array as $loc_id) {
+        if (isset($data_out[$loc_id])) {
+            $loc_arr[$loc_id] = $data_out[$loc_id];
+        } else {
+            $loc_arr[$loc_id] = 'n/a';
+            $data_out[$loc_id] = 'n/a';
+        }
+    }
+    $loc_str = implode("|", $loc_arr);
+    $data_out['loc_str'] = $loc_str;
+
     return $data_out;
 }
