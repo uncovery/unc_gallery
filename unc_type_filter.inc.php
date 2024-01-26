@@ -530,7 +530,7 @@ function unc_filter_map_locations($levels, $type, $next_level) {
                 FROM `$att_table_name` as loc_list
                 LEFT JOIN `$att_table_name` as gps_list ON loc_list.file_id=gps_list.file_id
                 LEFT JOIN `$att_table_name` as item_list on loc_list.file_id=item_list.file_id
-                WHERE loc_list.`att_group`='xmp'
+                WHERE loc_list.`att_group`='iptc'
                     AND loc_list.att_name = 'loc_str'
                     AND loc_list.att_value LIKE '$levels_sql'
                     AND item_list.att_name='$next_level'
@@ -543,7 +543,7 @@ function unc_filter_map_locations($levels, $type, $next_level) {
             FROM `$att_table_name` as loc_list
             LEFT JOIN `$att_table_name` as gps_list ON loc_list.file_id=gps_list.file_id
             LEFT JOIN `$att_table_name` as item_list on loc_list.file_id=item_list.file_id
-            WHERE loc_list.`att_group`='xmp'
+            WHERE loc_list.`att_group`='iptc'
                 AND loc_list.att_name = 'loc_str'
                 AND gps_list.att_name='gps'
             GROUP BY gps_list.att_value"; //
@@ -1055,7 +1055,7 @@ function unc_category_get_gps($category_id) {
 
     $gps_select = "SELECT gps_table.att_value FROM `wp_unc_gallery_att` as loc_table
         LEFT JOIN `wp_unc_gallery_att` as gps_table ON loc_table.file_id=gps_table.file_id
-        WHERE loc_table.att_group='xmp'
+        WHERE loc_table.att_group='iptc'
         AND loc_table.att_name='loc_str'
         AND loc_table.att_value='%s'
         AND gps_table.att_name='gps'
