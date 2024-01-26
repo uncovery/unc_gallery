@@ -377,7 +377,7 @@ function unc_gallery_data_integrity() {
     $check_sql = "SELECT loc_table.att_value as location, gps_table.att_value as gps, count(gps_table.att_value) as filecount
         FROM `wp_unc_gallery_att` as loc_table
         LEFT JOIN wp_unc_gallery_att as gps_table ON loc_table.file_id=gps_table.file_id
-        WHERE loc_table.att_name='loc_str' AND gps_table.att_name = 'gps' AND loc_table.att_group='xmp'
+        WHERE loc_table.att_name='loc_str' AND gps_table.att_name = 'gps' AND loc_table.att_group='iptc'
         GROUP BY gps_table.att_value";
     $records = $wpdb->get_results($check_sql);
     $locations = array();
@@ -448,7 +448,7 @@ function unc_gallery_data_integrity() {
     $check_2_sql = "SELECT locations.att_value as location, count(locations.att_value) as locations_counter, gps_data.att_value as gps
         FROM wp_unc_gallery_att AS locations
         LEFT JOIN wp_unc_gallery_att AS gps_data ON locations.file_id = gps_data.file_id
-        WHERE locations.att_name = 'loc_str' AND locations.att_group = 'xmp' AND gps_data.att_name = 'gps'
+        WHERE locations.att_name = 'loc_str' AND locations.att_group = 'iptc' AND gps_data.att_name = 'gps'
         GROUP BY locations.att_value";
 
     $records2 = $wpdb->get_results($check_sql);
@@ -595,16 +595,16 @@ function unc_gallery_admin_rebuild_data() {
 
     // $max_time = ini_get('max_execution_time');
 
-    if (!current_user_can('manage_options')) {
-        echo "Cannot rebuild data, you are not admin!";
-        wp_die();
-    }
 
     // let's count the number of files in the database so
     // we get an image how much work is to do
     $count_files_sql = "SELECT count(id) AS counter FROM " . $wpdb->prefix . "unc_gallery_img;";
     $file_counter = $wpdb->get_results($count_files_sql, 'ARRAY_A');
     $count = $file_counter[0]['counter'];
+
+    if ($count == 0) {
+        $count = 1;
+    }
 
     // get the Process ID for the Ajax live update
     $process_id = filter_input(INPUT_POST, 'process_id');
@@ -614,6 +614,11 @@ function unc_gallery_admin_rebuild_data() {
     // calculate progress update percentages
     $overall_one_percent = 100 / $count;
     $overall_percentage = 0;
+
+    // enumerate all folders
+    $dirPath = $UNC_GALLERY['upload_path'];
+    $photo_folder = $dirPath . "/" . $UNC_GALLERY['photos'];
+    $target_folders = unc_tools_recurse_folders($photo_folder);
 
     $text = '';
     $file_no = 0;
@@ -627,9 +632,12 @@ function unc_gallery_admin_rebuild_data() {
         $file_one_percent = 100 / $folder_file_count;
         $folder_percentage = 0;
         foreach ($folder_files as $image_file) {
-            if (!is_dir($image_file)) { // && stristr($image_file, '2018') TODO YEar filter
-                // TODO: ERror in case the info cannot be written
-                unc_image_info_write($image_file);
+            if (!is_dir($image_file)) {
+                // let's write the data, but only if it's new
+                $data_exists = umc_image_exists_in_img_table($image_file);
+                if (!$data_exists) {
+                    unc_image_info_write($image_file, true);
+                }
                 $folder_percentage += $file_one_percent;
                 $overall_percentage += $overall_one_percent;
                 $file_no++;
@@ -753,8 +761,8 @@ function unc_gallery_admin_remove_data() {
         wp_die();
     }
     // delete all existing data to make sure
-    $sql1 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_img";
-    $wpdb->get_results($sql1);
+//    $sql1 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_img";
+//    $wpdb->get_results($sql1);
     $sql2 = "TRUNCATE " . $wpdb->prefix . "unc_gallery_att";
     $wpdb->get_results($sql2);
 

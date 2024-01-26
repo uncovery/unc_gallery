@@ -100,7 +100,6 @@ function unc_image_info_read($file_path) {
 function unc_image_info_write($file_path) {
     global $UNC_GALLERY, $UNC_FILE_DATA, $wpdb;
     if (!file_exists($file_path)) {
-
         return false;
     }
 
@@ -412,6 +411,24 @@ function umc_image_id2path($id) {
     } else {
         return false;
     }
+}
 
+/**
+ * checck if a file exists in the database, otherwise fail
+ * @global type $wpdb
+ * @param type $path
+ * @return bool
+ */
+function umc_image_exists_in_img_table($path) {
+    global $wpdb;
 
+    $img_table = $wpdb->prefix . "unc_gallery_img";
+    $sql = "SELECT count(file_path) FROM $img_table WHERE file_path='$path';";
+    $file_path = $wpdb->get_var($sql);
+
+    if ($file_path) {
+        return true;
+    } else {
+        return false;
+    }
 }
