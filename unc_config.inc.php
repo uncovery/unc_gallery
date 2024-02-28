@@ -275,6 +275,19 @@ $UNC_GALLERY['user_settings'] = array(
         ),
         'title' => 'Google Map Result type',
     ),
+    'rss_feed_mode' => array(
+        'help' => 'For the photos RSS feed, do you want to sort by date taken or by date updated??',
+        'default' => 'updated',
+        'type' => 'dropdown',
+        'options' => array('updated' => 'Show latest updates', 'taken' => 'Show by file date'),
+        'title' => 'RSS Feed sort order',
+    ),
+    'rss_feed_time' => array(
+        'help' => 'How far back shall the RSS feed last?',
+        'default' => '-1 week',
+        'type' => 'text',
+        'title' => 'RSS Feed time distance',
+    ),
     'settings_location' => array(
         'help' => 'Do you want the admin screen of this plugin to be shown as a menu entry in the sidebar or a sub-menu of the settings menu?',
         'default' => 'sidebar',
