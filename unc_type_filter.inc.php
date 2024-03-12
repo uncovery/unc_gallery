@@ -334,8 +334,10 @@ function unc_filter_map_display($locations_details, $levels, $level, $my_levels,
     foreach ($locations as $L) {
         foreach ($L as $loc_name => $gps) {
             $z_index++;
+            // create the URL for people to click at
             $loc_name_display = addslashes(urldecode($loc_name));
             if ($UNC_GALLERY['google_maps_markerstyle'] == 'cluster') {
+                // in case of cluster display, we just link to the final result
                 $loc_name_array = explode("|", $loc_name_display);
                 $i = 0;
                 $link_tmp = "?";
@@ -345,6 +347,7 @@ function unc_filter_map_display($locations_details, $levels, $level, $my_levels,
                 }
                 $link = substr($link_tmp, 0, -1);
             } else {
+                // in case of flayer display, we link to the next level down.
                 $this_queries = $queries;
                 $this_queries[] = "$level=" . urlencode($loc_name);
                 if (count($queries) == count($levels)) {
@@ -369,6 +372,8 @@ function unc_filter_map_display($locations_details, $levels, $level, $my_levels,
                 $error .= "<!-- Could not find category_id for $loc_string -->";
             } else {
                 $markers_list .= "['$loc_name_display',$lat,$long,$z_index,'$link',$category_id],\n";
+                // TODO: The zoom should focus on the selection done in $my_levels
+
                 $max_lat = max($max_lat, $lat);
                 $max_long = max($max_long, $long);
                 $min_lat = min($min_lat, $lat);
@@ -518,6 +523,7 @@ function unc_filter_map_locations($levels, $type, $next_level) {
     global $wpdb, $UNC_GALLERY;
 
     $att_table_name = $wpdb->prefix . "unc_gallery_att";
+    // layer means we show only the country, then the region etc when people click on it.
     if ($UNC_GALLERY['google_maps_markerstyle'] == 'layer') {
         if (count($levels) == 1) { // we have no input, look for countries
             $sql = "SELECT loc_list.att_value as country, gps_list.att_value as gps FROM `$att_table_name` as loc_list
@@ -530,20 +536,20 @@ function unc_filter_map_locations($levels, $type, $next_level) {
                 FROM `$att_table_name` as loc_list
                 LEFT JOIN `$att_table_name` as gps_list ON loc_list.file_id=gps_list.file_id
                 LEFT JOIN `$att_table_name` as item_list on loc_list.file_id=item_list.file_id
-                WHERE loc_list.`att_group`='iptc'
+                WHERE loc_list.`att_group`='xmp'
                     AND loc_list.att_name = 'loc_str'
                     AND loc_list.att_value LIKE '$levels_sql'
                     AND item_list.att_name='$next_level'
                     AND gps_list.att_name='gps'
                 GROUP BY gps_list.att_value"; //
         }
-    } else { // cluster
+    } else { // cluster means we show everything but let people zoom in to show details.
         $levels = 3;
         $sql = "SELECT  loc_list.att_value as loc_str, gps_list.att_value as gps, item_list.att_value as item
             FROM `$att_table_name` as loc_list
             LEFT JOIN `$att_table_name` as gps_list ON loc_list.file_id=gps_list.file_id
             LEFT JOIN `$att_table_name` as item_list on loc_list.file_id=item_list.file_id
-            WHERE loc_list.`att_group`='iptc'
+            WHERE loc_list.`att_group`='xmp'
                 AND loc_list.att_name = 'loc_str'
                 AND gps_list.att_name='gps'
             GROUP BY gps_list.att_value"; //
