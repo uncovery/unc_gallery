@@ -93,14 +93,14 @@ function unc_image_display() {
 
 
     $out .= "<h3>Image details</h3>
-        <ul>
+        <ul class=\"post_list\">
             <li><b>Date taken: </b>{$F['default']['file_date']}</li>
             <li><b>In this image: </b>$tag_string</li>
             $location
         </ul>
 
     <h3>Camera details</h3>
-        <ul>
+        <ul class=\"post_list\">
             $camera_info
         </ul>";
 
