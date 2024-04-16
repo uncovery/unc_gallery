@@ -23,7 +23,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'unit' => false,
         'description' => 'File Width',
         'type' => 'integer',
-    ),        
+    ),
     'camera_manuf' => array(
         'hex' => '0x010F',
         'key' => 'Make',
@@ -69,7 +69,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'hex' => '0x920A',
         'key' => 'FocalLength',
         'conversion' => 'unc_tools_divide_string',
-        'unit' => 'mm',
+        'unit' => false,
         'description' => 'Focal Length',
         'type' => 'text',
     ),
@@ -128,7 +128,7 @@ $UNC_GALLERY['codes']['exif'] = array(
         'unit' => false,
         'description' => 'GPS Version',
         'type' => 'string',
-    )    
+    )
 );
 
 
